@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @Push
 @SpringBootApplication
-@Theme(variant = Lumo.DARK)
+@Theme(value = "my-theme", variant = Lumo.DARK)
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {

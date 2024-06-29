@@ -32,7 +32,6 @@ public class ApiProxy {
             var uriBuilder = UriComponentsBuilder.fromUriString(uri)
                     .queryParams(queryParams)
                     .buildAndExpand(uriVariables);
-            log.info("URI: {}", uriBuilder.toUriString());
 
             var response = restTemplate.exchange(
                     uriBuilder.toUriString(),
@@ -40,6 +39,7 @@ public class ApiProxy {
                     new HttpEntity<>(headers),
                     String.class);
             var statusCode = (HttpStatus) response.getStatusCode();
+            log.info("URI: {}, response: {}", uriBuilder.toUriString(), statusCode); // TODO remove
 
             return new ApiResponse(statusCode, statusCode.getReasonPhrase());
         } catch (HttpStatusCodeException e) {

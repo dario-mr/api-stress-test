@@ -1,11 +1,14 @@
 package com.dario.ast.view;
 
+import com.dario.ast.core.domain.StressRequest;
 import com.dario.ast.core.service.StressService;
 import com.dario.ast.proxy.ApiResponse;
+import com.dario.ast.view.component.Headline;
+import com.dario.ast.view.component.ToggleLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
@@ -14,7 +17,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 
 import java.util.HashMap;
@@ -31,10 +33,12 @@ import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
 @Route
-@Slf4j
 @RequiredArgsConstructor
 @PageTitle("API Stress Test")
-public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
+public class MainView extends VerticalLayout {
+    // TODO can this shit be cleaned?
+    // TODO save parameters for re-use
+    // TODO add validation
 
     private final StressService stressService;
 
@@ -44,11 +48,12 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
     private final VerticalLayout uriVariablesLayout = new VerticalLayout();
     private final VerticalLayout queryParamsLayout = new VerticalLayout();
     private final NumberField requestNumberField = new NumberField("Number of requests");
+    private final NumberField threadPoolSizeField = new NumberField("Threads");
     private final TextField completedText = new TextField("Completed");
     private final TextField failedText = new TextField("Failed");
     private final TextField errorText = new TextField("Errors");
-    private final Button startButton = new Button("Start stress test");
-    private final Button stopButton = new Button("Stop stress test");
+    private final Button startButton = new Button("START");
+    private final Button stopButton = new Button("STOP");
 
     private long completedRequests = 0, failedRequests = 0;
     private final Set<String> errorMessages = new HashSet<>();
@@ -76,8 +81,10 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
         requestNumberField.setMin(1);
         requestNumberField.setValue(10d);
 
-        startButton.addClickListener(event -> startStressTest());
+        threadPoolSizeField.setMin(1);
+        threadPoolSizeField.setValue(12d);
 
+        startButton.addClickListener(event -> startStressTest());
         stopButton.addClickListener(event -> stopStressTest());
         stopButton.setVisible(false);
 
@@ -86,14 +93,26 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
         errorText.setReadOnly(true);
         errorText.setWidthFull();
 
-        var container = new VerticalLayout(new H1("API Stress Test"),
+        var runContent = new HorizontalLayout(requestNumberField, threadPoolSizeField, startButton, stopButton);
+        runContent.setVerticalComponentAlignment(END, startButton, stopButton);
+        var runLayout = new VerticalLayout(new H3("Run"), runContent);
+        runLayout.setPadding(false);
+        runLayout.setSpacing(false);
+
+        var resultsContent = new HorizontalLayout(completedText, failedText, errorText);
+        resultsContent.setWidthFull();
+        var resultsLayout = new VerticalLayout(new H3("Results"), resultsContent);
+        resultsLayout.setPadding(false);
+        resultsLayout.setSpacing(false);
+
+        var container = new VerticalLayout(
+                new Headline(),
                 urlLayout,
-                new H2("Headers"), headersLayout,
-                new H2("URI Variables"), uriVariablesLayout,
-                new H2("Query Parameters"), queryParamsLayout,
-                new H2("Iterations"), requestNumberField,
-                startButton, stopButton,
-                completedText, failedText, errorText);
+                new ToggleLayout("Headers", headersLayout),
+                new ToggleLayout("URI Variables", uriVariablesLayout),
+                new ToggleLayout("Query Parameters", queryParamsLayout), new Hr(),
+                runLayout, new Hr(),
+                resultsLayout);
         container.setMaxWidth("1000px");
 
         add(container);
@@ -103,31 +122,23 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
 
     private void startStressTest() {
         stopStressTest();
-
-        requestNumberField.setReadOnly(true);
-        startButton.setVisible(false);
-        stopButton.setVisible(true);
-
-        completedText.setValue("");
-        failedText.setValue("");
-        errorText.setValue("");
+        startStressTestUI();
 
         var numRequests = requestNumberField.getValue().intValue();
+        var threadPoolSize = threadPoolSizeField.getValue().intValue();
         var url = urlText.getValue();
         var method = methodCombo.getValue();
         var headers = collectMap(headersLayout);
         var uriVariables = collectMap(uriVariablesLayout);
         var queryParams = collectMap(queryParamsLayout);
 
-        stressService.sendRequests(
-                numRequests,
-                url,
-                method,
-                headers,
-                uriVariables,
-                queryParams,
-                result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
-        );
+        stressService.startStressTest(
+                new StressRequest(
+                        threadPoolSize, numRequests,
+                        url, method,
+                        headers, uriVariables, queryParams,
+                        result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
+                ));
     }
 
     private void stopStressTest() {
@@ -135,11 +146,23 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
 
         completedRequests = 0;
         failedRequests = 0;
+        errorMessages.clear();
 
         requestNumberField.setReadOnly(false);
+        threadPoolSizeField.setReadOnly(false);
         startButton.setVisible(true);
         stopButton.setVisible(false);
-        errorMessages.clear();
+    }
+
+    private void startStressTestUI() {
+        requestNumberField.setReadOnly(true);
+        threadPoolSizeField.setReadOnly(true);
+        startButton.setVisible(false);
+        stopButton.setVisible(true);
+
+        completedText.setValue("");
+        failedText.setValue("");
+        errorText.setValue("");
     }
 
     private void applyResponse(ApiResponse response) {
@@ -166,7 +189,7 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
         var keyField = new TextField();
         var valueField = new TextField();
         var removeButton = new Button();
-        var headerRow = new HorizontalLayout(keyField, valueField, removeButton);
+        var row = new HorizontalLayout(keyField, valueField, removeButton);
 
         keyField.setPlaceholder("Key");
         keyField.addValueChangeListener(changeEvent -> {
@@ -180,12 +203,12 @@ public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
         removeButton.setIcon(TRASH.create());
         removeButton.addClickListener(event -> {
             if (target.getChildren().count() > 1) {
-                target.remove(headerRow);
+                target.remove(row);
             }
         });
 
-        headerRow.setVerticalComponentAlignment(END, removeButton);
-        target.add(headerRow);
+        row.setVerticalComponentAlignment(END, removeButton);
+        target.add(row);
     }
 
     private boolean thereIsAnEmptyHeader(VerticalLayout parent) {
