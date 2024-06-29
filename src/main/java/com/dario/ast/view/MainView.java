@@ -1,58 +1,221 @@
 package com.dario.ast.view;
 
-import com.dario.ast.core.domain.IndexedHttpStatus;
 import com.dario.ast.core.service.StressService;
+import com.dario.ast.proxy.ApiResponse;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
+import static java.util.stream.Collectors.joining;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.values;
+import static org.springframework.util.StringUtils.hasText;
 
 @Route
+@Slf4j
 @RequiredArgsConstructor
-public class MainView extends VerticalLayout {
+@PageTitle("API Stress Test")
+public class MainView extends VerticalLayout { // TODO can this shit be cleaned?
 
     private final StressService stressService;
 
-    private final NumberField requestField = new NumberField("Number of requests");
-    private final ListDataProvider<IndexedHttpStatus> resultDataProvider = new ListDataProvider<>(new ArrayList<>());
-    private final ResultGrid resultGrid = new ResultGrid(resultDataProvider);
+    private final TextField urlText = new TextField("API endpoint");
+    private final ComboBox<HttpMethod> methodCombo = new ComboBox<>("Method", values());
+    private final VerticalLayout headersLayout = new VerticalLayout();
+    private final VerticalLayout uriVariablesLayout = new VerticalLayout();
+    private final VerticalLayout queryParamsLayout = new VerticalLayout();
+    private final NumberField requestNumberField = new NumberField("Number of requests");
+    private final TextField completedText = new TextField("Completed");
+    private final TextField failedText = new TextField("Failed");
+    private final TextField errorText = new TextField("Errors");
+    private final Button startButton = new Button("Start stress test");
+    private final Button stopButton = new Button("Stop stress test");
+
+    private long completedRequests = 0, failedRequests = 0;
+    private final Set<String> errorMessages = new HashSet<>();
 
     @PostConstruct
     public void init() {
-        setSizeFull();
-        setAlignItems(Alignment.CENTER);
+        urlText.setValue("https://www.bing.com");
+        urlText.setWidthFull();
 
-        requestField.setMin(1);
-        requestField.setValue(10d);
+        methodCombo.setValue(GET);
+        methodCombo.setWidth("8em");
 
-        var sendButton = new Button("Send Requests");
-        sendButton.addClickListener(event -> sendRequests());
+        var urlLayout = new HorizontalLayout(urlText, methodCombo);
+        urlLayout.setWidthFull();
 
-        var stopButton = new Button("Stop Requests");
-        stopButton.addClickListener(event -> stressService.cancelAllRequests());
+        headersLayout.setPadding(false);
+        addKeyValueRow(headersLayout);
 
-        add(requestField, sendButton, stopButton, resultGrid);
+        uriVariablesLayout.setPadding(false);
+        addKeyValueRow(uriVariablesLayout);
+
+        queryParamsLayout.setPadding(false);
+        addKeyValueRow(queryParamsLayout);
+
+        requestNumberField.setMin(1);
+        requestNumberField.setValue(10d);
+
+        startButton.addClickListener(event -> startStressTest());
+
+        stopButton.addClickListener(event -> stopStressTest());
+        stopButton.setVisible(false);
+
+        completedText.setReadOnly(true);
+        failedText.setReadOnly(true);
+        errorText.setReadOnly(true);
+        errorText.setWidthFull();
+
+        var container = new VerticalLayout(new H1("API Stress Test"),
+                urlLayout,
+                new H2("Headers"), headersLayout,
+                new H2("URI Variables"), uriVariablesLayout,
+                new H2("Query Parameters"), queryParamsLayout,
+                new H2("Iterations"), requestNumberField,
+                startButton, stopButton,
+                completedText, failedText, errorText);
+        container.setMaxWidth("1000px");
+
+        add(container);
+        setAlignItems(CENTER);
+        setPadding(false);
     }
 
-    private void sendRequests() {
-        int numRequests = requestField.getValue().intValue();
-        resultDataProvider.getItems().clear();
-        resultDataProvider.refreshAll();
+    private void startStressTest() {
+        stopStressTest();
 
-        stressService.sendRequests(numRequests, result -> getUI().ifPresent(ui ->
-                ui.access(() -> {
-                    var currentItems = resultDataProvider.getItems();
-                    var indexedResult = new IndexedHttpStatus(currentItems.size() + 1, result);
-                    currentItems.add(indexedResult);
+        requestNumberField.setReadOnly(true);
+        startButton.setVisible(false);
+        stopButton.setVisible(true);
 
-                    resultDataProvider.refreshAll();
-                    resultGrid.scrollToEnd();
-                })
-        ));
+        completedText.setValue("");
+        failedText.setValue("");
+        errorText.setValue("");
+
+        var numRequests = requestNumberField.getValue().intValue();
+        var url = urlText.getValue();
+        var method = methodCombo.getValue();
+        var headers = collectMap(headersLayout);
+        var uriVariables = collectMap(uriVariablesLayout);
+        var queryParams = collectMap(queryParamsLayout);
+
+        stressService.sendRequests(
+                numRequests,
+                url,
+                method,
+                headers,
+                uriVariables,
+                queryParams,
+                result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
+        );
+    }
+
+    private void stopStressTest() {
+        stressService.cancelAllRequests();
+
+        completedRequests = 0;
+        failedRequests = 0;
+
+        requestNumberField.setReadOnly(false);
+        startButton.setVisible(true);
+        stopButton.setVisible(false);
+        errorMessages.clear();
+    }
+
+    private void applyResponse(ApiResponse response) {
+        if (response.statusCode().is2xxSuccessful()) {
+            completedRequests++;
+            completedText.setValue(String.valueOf(completedRequests));
+        } else {
+            failedRequests++;
+            failedText.setValue(String.valueOf(failedRequests));
+
+            errorMessages.add(response.errorMessage());
+            errorText.setValue(errorMessages.stream()
+                    .map(status -> response.statusCode().value() + " - " + response.errorMessage())
+                    .collect(joining(", ")));
+        }
+
+        // when stress test is completed, update UI to reflect it
+        if (completedRequests + failedRequests == requestNumberField.getValue().intValue()) {
+            stopStressTest();
+        }
+    }
+
+    private void addKeyValueRow(VerticalLayout target) {
+        var keyField = new TextField();
+        var valueField = new TextField();
+        var removeButton = new Button();
+        var headerRow = new HorizontalLayout(keyField, valueField, removeButton);
+
+        keyField.setPlaceholder("Key");
+        keyField.addValueChangeListener(changeEvent -> {
+            if (hasText(changeEvent.getValue()) && !thereIsAnEmptyHeader(target)) {
+                addKeyValueRow(target);
+            }
+        });
+
+        valueField.setPlaceholder("Value");
+
+        removeButton.setIcon(TRASH.create());
+        removeButton.addClickListener(event -> {
+            if (target.getChildren().count() > 1) {
+                target.remove(headerRow);
+            }
+        });
+
+        headerRow.setVerticalComponentAlignment(END, removeButton);
+        target.add(headerRow);
+    }
+
+    private boolean thereIsAnEmptyHeader(VerticalLayout parent) {
+        return parent.getChildren().anyMatch(component -> {
+            var layout = (HorizontalLayout) component;
+            var keyField = (TextField) layout.getComponentAt(0);
+            var valueField = (TextField) layout.getComponentAt(1);
+
+            var key = keyField.getValue();
+            var value = valueField.getValue();
+
+            return key.isEmpty() && value.isEmpty();
+        });
+    }
+
+    private Map<String, String> collectMap(VerticalLayout parent) {
+        var map = new HashMap<String, String>();
+
+        parent.getChildren().forEach(component -> {
+            var layout = (HorizontalLayout) component;
+            var keyField = (TextField) layout.getComponentAt(0);
+            var valueField = (TextField) layout.getComponentAt(1);
+
+            var key = keyField.getValue();
+            var value = valueField.getValue();
+            if (!key.isEmpty() && !value.isEmpty()) {
+                map.put(key, value);
+            }
+        });
+
+        return map;
     }
 }

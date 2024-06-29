@@ -11,6 +11,6 @@ public class ExecutorConfig {
 
     @Bean
     public ExecutorService executor() {
-        return Executors.newFixedThreadPool(12);
+        return Executors.newFixedThreadPool(12); // TODO make configurable, property or GUI?
     }
 }
