@@ -1,0 +1,15 @@
+**/target/
+**/*.iml
+.idea/
+.classpath
+.project
+.settings
+.env
+node_modules/
+frontend/generated/
+frontend/index.html
+
+/package-lock.json
+/webpack.config.js
+/webpack.generated.js
+vite.generated.ts

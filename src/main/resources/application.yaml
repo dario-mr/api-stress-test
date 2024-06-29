@@ -1,0 +1,5 @@
+server.port: ${PORT:8083}
+
+spring:
+  application.name: api-stress-test
+  config.import: optional:file:.env[.properties] # enable scanning of .env file
