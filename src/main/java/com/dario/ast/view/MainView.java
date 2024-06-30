@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
+import static com.vaadin.flow.component.icon.VaadinIcon.*;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static org.springframework.http.HttpMethod.GET;
@@ -53,8 +53,8 @@ public class MainView extends VerticalLayout {
     private final TextField completedText = new TextField("Completed");
     private final TextField failedText = new TextField("Failed");
     private final TextField errorText = new TextField("Errors");
-    private final Button startButton = new Button("START");
-    private final Button stopButton = new Button("STOP");
+    private final Button startButton = new Button();
+    private final Button stopButton = new Button();
     private final Checkbox stopOnError = new Checkbox("Stop on error");
 
     private long completedRequests = 0, failedRequests = 0;
@@ -85,6 +85,7 @@ public class MainView extends VerticalLayout {
         requestBody.setPadding(false);
         requestBody.add(requestBodyText);
 
+        requestNumberField.setWidthFull();
         requestNumberField.setMin(1);
         requestNumberField.setValue(10);
         requestNumberField.addValueChangeListener(event -> {
@@ -96,6 +97,7 @@ public class MainView extends VerticalLayout {
             }
         });
 
+        threadPoolSizeField.setWidthFull();
         threadPoolSizeField.setMin(1);
         threadPoolSizeField.setValue(12);
         threadPoolSizeField.addValueChangeListener(event -> {
@@ -108,8 +110,16 @@ public class MainView extends VerticalLayout {
         });
 
         startButton.addClickListener(event -> startStressTest());
+        startButton.setIcon(PLAY.create());
+        startButton.setWidth("8em");
+        startButton.setHeight("3em");
+
         stopButton.addClickListener(event -> stopStressTest());
         stopButton.setVisible(false);
+        stopButton.setIcon(STOP.create());
+        stopButton.setWidth("8em");
+        stopButton.setHeight("3em");
+
         stopOnError.setValue(true);
 
         completedText.setReadOnly(true);
@@ -119,19 +129,21 @@ public class MainView extends VerticalLayout {
         errorText.setWidthFull();
         errorText.setVisible(false);
 
-        var runContent = new HorizontalLayout(requestNumberField, threadPoolSizeField, stopOnError, startButton, stopButton);
-        runContent.setVerticalComponentAlignment(END, stopOnError, startButton, stopButton);
+        var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
+        requestThreadLayout.setWidthFull();
 
-        var runLayout = new VerticalLayout(new H3("Run"), runContent);
+        var resultsLayout = new HorizontalLayout(completedText, failedText, errorText);
+        resultsLayout.setWidthFull();
+
+        var runLayout = new VerticalLayout(
+                new H3("Run"),
+                requestThreadLayout,
+                stopOnError,
+                startButton, stopButton,
+                resultsLayout);
+        runLayout.setHorizontalComponentAlignment(CENTER, startButton, stopButton);
         runLayout.setPadding(false);
-        runLayout.setSpacing(false);
-        runLayout.getStyle().set("margin-bottom", "1em");
-
-        var resultsContent = new HorizontalLayout(completedText, failedText, errorText);
-        resultsContent.setWidthFull();
-        var resultsLayout = new VerticalLayout(new H3("Results"), resultsContent);
-        resultsLayout.setPadding(false);
-        resultsLayout.setSpacing(false);
+        runLayout.setMaxWidth("60%");
 
         var container = new VerticalLayout(
                 new Headline(),
@@ -140,8 +152,7 @@ public class MainView extends VerticalLayout {
                 new ToggleLayout("URI Variables", uriVariablesLayout),
                 new ToggleLayout("Query Parameters", queryParamsLayout),
                 new ToggleLayout("Request Body", requestBody),
-                runLayout,
-                resultsLayout);
+                runLayout);
         container.setMaxWidth("1000px");
 
         add(container);
