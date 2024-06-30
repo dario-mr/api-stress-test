@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
 
-import static com.dario.ast.util.MapConverter.convert;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 @Service
@@ -21,10 +20,8 @@ public class StressService {
         this.executor = executor;
 
         for (int i = 0; i < request.numRequests(); i++) {
-            supplyAsync(
-                    () -> apiProxy.makeRequest(request.url(), request.method(), convert(request.headers()), request.uriVariables(), convert(request.queryParams())),
-                    executor
-            ).thenAccept(request.resultConsumer());
+            supplyAsync(() -> apiProxy.makeRequest(request.toApiRequest()), executor)
+                    .thenAccept(request.resultConsumer());
         }
     }
 

@@ -9,7 +9,7 @@ import java.util.Map;
 @UtilityClass
 public class MapConverter {
 
-    public static MultiValueMap<String, String> convert(Map<String, String> map) {
+    public static MultiValueMap<String, String> convertToMultiValueMap(Map<String, String> map) {
         var multiValueMap = new LinkedMultiValueMap<String, String>();
         map.forEach(multiValueMap::add);
 

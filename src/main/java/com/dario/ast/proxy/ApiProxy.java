@@ -3,15 +3,11 @@ package com.dario.ast.proxy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -22,21 +18,16 @@ public class ApiProxy {
 
     private final RestTemplate restTemplate;
 
-    // TODO add support for request body
-    public ApiResponse makeRequest(String uri,
-                                   HttpMethod httpMethod,
-                                   MultiValueMap<String, String> headers,
-                                   Map<String, String> uriVariables,
-                                   MultiValueMap<String, String> queryParams) {
+    public ApiResponse makeRequest(ApiRequest request) {
         try {
-            var uriBuilder = UriComponentsBuilder.fromUriString(uri)
-                    .queryParams(queryParams)
-                    .buildAndExpand(uriVariables);
+            var uriBuilder = UriComponentsBuilder.fromUriString(request.uri())
+                    .queryParams(request.queryParams())
+                    .buildAndExpand(request.uriVariables());
 
             var response = restTemplate.exchange(
                     uriBuilder.toUriString(),
-                    httpMethod,
-                    new HttpEntity<>(headers),
+                    request.httpMethod(),
+                    new HttpEntity<>(request.requestBody(), request.headers()),
                     String.class);
             var statusCode = (HttpStatus) response.getStatusCode();
             log.info("URI: {}, response: {}", uriBuilder.toUriString(), statusCode); // TODO remove

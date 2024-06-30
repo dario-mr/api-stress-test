@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -38,6 +39,8 @@ public class MainView extends VerticalLayout {
     // TODO can this class be cleaned?
     // TODO save parameters for re-use
     // TODO add validation
+    // TODO try to place sections side by side
+    // TODO only show errorText in case of errors
 
     private final StressService stressService;
 
@@ -46,6 +49,8 @@ public class MainView extends VerticalLayout {
     private final VerticalLayout headersLayout = new VerticalLayout();
     private final VerticalLayout uriVariablesLayout = new VerticalLayout();
     private final VerticalLayout queryParamsLayout = new VerticalLayout();
+    private final VerticalLayout requestBody = new VerticalLayout();
+    private final TextArea requestBodyText = new TextArea();
     private final NumberField requestNumberField = new NumberField("Requests");
     private final NumberField threadPoolSizeField = new NumberField("Threads");
     private final TextField completedText = new TextField("Completed");
@@ -76,6 +81,11 @@ public class MainView extends VerticalLayout {
 
         queryParamsLayout.setPadding(false);
         addKeyValueRow(queryParamsLayout);
+
+        requestBodyText.setPlaceholder("Request Body");
+        requestBodyText.setWidth("60%");
+        requestBody.setPadding(false);
+        requestBody.add(requestBodyText);
 
         requestNumberField.setMin(1);
         requestNumberField.setValue(10d);
@@ -110,7 +120,8 @@ public class MainView extends VerticalLayout {
                 urlLayout,
                 new ToggleLayout("Headers", headersLayout),
                 new ToggleLayout("URI Variables", uriVariablesLayout),
-                new ToggleLayout("Query Parameters", queryParamsLayout), new Hr(),
+                new ToggleLayout("Query Parameters", queryParamsLayout),
+                new ToggleLayout("Request Body", requestBody), new Hr(),
                 runLayout, new Hr(),
                 resultsLayout);
         container.setMaxWidth("1000px");
@@ -131,12 +142,14 @@ public class MainView extends VerticalLayout {
         var headers = collectMap(headersLayout);
         var uriVariables = collectMap(uriVariablesLayout);
         var queryParams = collectMap(queryParamsLayout);
+        var requestBody = requestBodyText.getValue();
 
         stressService.startStressTest(
                 new StressRequest(
                         numRequests,
                         url, method,
                         headers, uriVariables, queryParams,
+                        requestBody,
                         result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
                 ), Executors.newFixedThreadPool(threadPoolSize));
     }
