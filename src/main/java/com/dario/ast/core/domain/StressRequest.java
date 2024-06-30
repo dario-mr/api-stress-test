@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public record StressRequest(
-        int threadPoolSize,
         int numRequests,
         String url,
         HttpMethod method,

@@ -5,10 +5,7 @@ import com.dario.ast.proxy.ApiProxy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
 
 import static com.dario.ast.util.MapConverter.convert;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -18,23 +15,22 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 public class StressService {
 
     private final ApiProxy apiProxy;
-    private final List<Future<?>> futureRequests = new ArrayList<>();
+    private ExecutorService executor;
 
-    public void startStressTest(StressRequest request) {
+    public void startStressTest(StressRequest request, ExecutorService executor) {
+        this.executor = executor;
+
         for (int i = 0; i < request.numRequests(); i++) {
-            var futureRequest = supplyAsync(
+            supplyAsync(
                     () -> apiProxy.makeRequest(request.url(), request.method(), convert(request.headers()), request.uriVariables(), convert(request.queryParams())),
-                    Executors.newFixedThreadPool(request.threadPoolSize())
+                    executor
             ).thenAccept(request.resultConsumer());
-
-            futureRequests.add(futureRequest);
         }
     }
 
-    public void cancelAllRequests() {
-        for (Future<?> future : futureRequests) {
-            future.cancel(true);
+    public void cancelStressTest() {
+        if (executor != null) {
+            executor.shutdownNow();
         }
-        futureRequests.clear();
     }
 }

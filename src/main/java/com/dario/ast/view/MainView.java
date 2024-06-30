@@ -6,6 +6,7 @@ import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.Headline;
 import com.dario.ast.view.component.ToggleLayout;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
@@ -20,14 +21,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Executors;
 
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
-import static java.util.stream.Collectors.joining;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
@@ -36,7 +35,7 @@ import static org.springframework.util.StringUtils.hasText;
 @RequiredArgsConstructor
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
-    // TODO can this shit be cleaned?
+    // TODO can this class be cleaned?
     // TODO save parameters for re-use
     // TODO add validation
 
@@ -47,16 +46,16 @@ public class MainView extends VerticalLayout {
     private final VerticalLayout headersLayout = new VerticalLayout();
     private final VerticalLayout uriVariablesLayout = new VerticalLayout();
     private final VerticalLayout queryParamsLayout = new VerticalLayout();
-    private final NumberField requestNumberField = new NumberField("Number of requests");
+    private final NumberField requestNumberField = new NumberField("Requests");
     private final NumberField threadPoolSizeField = new NumberField("Threads");
     private final TextField completedText = new TextField("Completed");
     private final TextField failedText = new TextField("Failed");
     private final TextField errorText = new TextField("Errors");
     private final Button startButton = new Button("START");
     private final Button stopButton = new Button("STOP");
+    private final Checkbox stopOnError = new Checkbox("Stop on error");
 
     private long completedRequests = 0, failedRequests = 0;
-    private final Set<String> errorMessages = new HashSet<>();
 
     @PostConstruct
     public void init() {
@@ -87,14 +86,15 @@ public class MainView extends VerticalLayout {
         startButton.addClickListener(event -> startStressTest());
         stopButton.addClickListener(event -> stopStressTest());
         stopButton.setVisible(false);
+        stopOnError.setValue(true);
 
         completedText.setReadOnly(true);
         failedText.setReadOnly(true);
         errorText.setReadOnly(true);
         errorText.setWidthFull();
 
-        var runContent = new HorizontalLayout(requestNumberField, threadPoolSizeField, startButton, stopButton);
-        runContent.setVerticalComponentAlignment(END, startButton, stopButton);
+        var runContent = new HorizontalLayout(requestNumberField, threadPoolSizeField, stopOnError, startButton, stopButton);
+        runContent.setVerticalComponentAlignment(END, stopOnError, startButton, stopButton);
         var runLayout = new VerticalLayout(new H3("Run"), runContent);
         runLayout.setPadding(false);
         runLayout.setSpacing(false);
@@ -134,29 +134,30 @@ public class MainView extends VerticalLayout {
 
         stressService.startStressTest(
                 new StressRequest(
-                        threadPoolSize, numRequests,
+                        numRequests,
                         url, method,
                         headers, uriVariables, queryParams,
                         result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
-                ));
+                ), Executors.newFixedThreadPool(threadPoolSize));
     }
 
     private void stopStressTest() {
-        stressService.cancelAllRequests();
+        stressService.cancelStressTest();
 
         completedRequests = 0;
         failedRequests = 0;
-        errorMessages.clear();
 
-        requestNumberField.setReadOnly(false);
-        threadPoolSizeField.setReadOnly(false);
+        requestNumberField.setEnabled(true);
+        threadPoolSizeField.setEnabled(true);
+        stopOnError.setEnabled(true);
         startButton.setVisible(true);
         stopButton.setVisible(false);
     }
 
     private void startStressTestUI() {
-        requestNumberField.setReadOnly(true);
-        threadPoolSizeField.setReadOnly(true);
+        requestNumberField.setEnabled(false);
+        threadPoolSizeField.setEnabled(false);
+        stopOnError.setEnabled(false);
         startButton.setVisible(false);
         stopButton.setVisible(true);
 
@@ -172,11 +173,11 @@ public class MainView extends VerticalLayout {
         } else {
             failedRequests++;
             failedText.setValue(String.valueOf(failedRequests));
+            errorText.setValue(response.statusCode().value() + " - " + response.errorMessage());
 
-            errorMessages.add(response.errorMessage());
-            errorText.setValue(errorMessages.stream()
-                    .map(status -> response.statusCode().value() + " - " + response.errorMessage())
-                    .collect(joining(", ")));
+            if (stopOnError.getValue()) {
+                stopStressTest();
+            }
         }
 
         // when stress test is completed, update UI to reflect it
