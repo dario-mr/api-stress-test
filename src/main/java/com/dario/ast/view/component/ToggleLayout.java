@@ -21,11 +21,16 @@ public class ToggleLayout extends VerticalLayout {
         expandIcon = VaadinIcon.ANGLE_DOWN.create();
         collapseIcon = VaadinIcon.ANGLE_RIGHT.create();
 
-        var titleText = new H3(title);
         toggleButton = new Button(collapseIcon);
+        toggleButton.getStyle().set("background", "none");
+        toggleButton.getStyle().set("margin", "0");
+        toggleButton.getStyle().set("padding-left", "0");
         toggleButton.addClickListener(event -> toggleContentVisibility());
+
+        var titleText = new H3(title);
         var titleLayout = new HorizontalLayout(toggleButton, titleText);
         titleLayout.setVerticalComponentAlignment(CENTER, titleText);
+        titleLayout.setSpacing(false);
 
         contentLayout = new VerticalLayout(components);
         contentLayout.setPadding(false);
@@ -33,6 +38,7 @@ public class ToggleLayout extends VerticalLayout {
 
         add(titleLayout, contentLayout);
         setPadding(false);
+        getStyle().set("margin-bottom", "1em");
     }
 
     private void toggleContentVisibility() {

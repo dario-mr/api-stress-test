@@ -9,10 +9,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
@@ -38,9 +37,7 @@ import static org.springframework.util.StringUtils.hasText;
 public class MainView extends VerticalLayout {
     // TODO can this class be cleaned?
     // TODO save parameters for re-use
-    // TODO add validation
-    // TODO try to place sections side by side
-    // TODO only show errorText in case of errors
+    // TODO request preview (curl format?)
 
     private final StressService stressService;
 
@@ -51,8 +48,8 @@ public class MainView extends VerticalLayout {
     private final VerticalLayout queryParamsLayout = new VerticalLayout();
     private final VerticalLayout requestBody = new VerticalLayout();
     private final TextArea requestBodyText = new TextArea();
-    private final NumberField requestNumberField = new NumberField("Requests");
-    private final NumberField threadPoolSizeField = new NumberField("Threads");
+    private final IntegerField requestNumberField = new IntegerField("Requests");
+    private final IntegerField threadPoolSizeField = new IntegerField("Threads");
     private final TextField completedText = new TextField("Completed");
     private final TextField failedText = new TextField("Failed");
     private final TextField errorText = new TextField("Errors");
@@ -72,6 +69,7 @@ public class MainView extends VerticalLayout {
 
         var urlLayout = new HorizontalLayout(urlText, methodCombo);
         urlLayout.setWidthFull();
+        urlLayout.getStyle().set("margin-bottom", "1em");
 
         headersLayout.setPadding(false);
         addKeyValueRow(headersLayout);
@@ -88,10 +86,26 @@ public class MainView extends VerticalLayout {
         requestBody.add(requestBodyText);
 
         requestNumberField.setMin(1);
-        requestNumberField.setValue(10d);
+        requestNumberField.setValue(10);
+        requestNumberField.addValueChangeListener(event -> {
+            if (event.getValue() == null) {
+                requestNumberField.setValue(event.getOldValue());
+            }
+            if (event.getValue() < 1) {
+                requestNumberField.setValue(1);
+            }
+        });
 
         threadPoolSizeField.setMin(1);
-        threadPoolSizeField.setValue(12d);
+        threadPoolSizeField.setValue(12);
+        threadPoolSizeField.addValueChangeListener(event -> {
+            if (event.getValue() == null) {
+                threadPoolSizeField.setValue(event.getOldValue());
+            }
+            if (event.getValue() < 1) {
+                threadPoolSizeField.setValue(1);
+            }
+        });
 
         startButton.addClickListener(event -> startStressTest());
         stopButton.addClickListener(event -> stopStressTest());
@@ -100,14 +114,18 @@ public class MainView extends VerticalLayout {
 
         completedText.setReadOnly(true);
         failedText.setReadOnly(true);
+        failedText.setVisible(false);
         errorText.setReadOnly(true);
         errorText.setWidthFull();
+        errorText.setVisible(false);
 
         var runContent = new HorizontalLayout(requestNumberField, threadPoolSizeField, stopOnError, startButton, stopButton);
         runContent.setVerticalComponentAlignment(END, stopOnError, startButton, stopButton);
+
         var runLayout = new VerticalLayout(new H3("Run"), runContent);
         runLayout.setPadding(false);
         runLayout.setSpacing(false);
+        runLayout.getStyle().set("margin-bottom", "1em");
 
         var resultsContent = new HorizontalLayout(completedText, failedText, errorText);
         resultsContent.setWidthFull();
@@ -121,8 +139,8 @@ public class MainView extends VerticalLayout {
                 new ToggleLayout("Headers", headersLayout),
                 new ToggleLayout("URI Variables", uriVariablesLayout),
                 new ToggleLayout("Query Parameters", queryParamsLayout),
-                new ToggleLayout("Request Body", requestBody), new Hr(),
-                runLayout, new Hr(),
+                new ToggleLayout("Request Body", requestBody),
+                runLayout,
                 resultsLayout);
         container.setMaxWidth("1000px");
 
@@ -135,8 +153,8 @@ public class MainView extends VerticalLayout {
         stopStressTest();
         startStressTestUI();
 
-        var numRequests = requestNumberField.getValue().intValue();
-        var threadPoolSize = threadPoolSizeField.getValue().intValue();
+        var numRequests = requestNumberField.getValue();
+        var threadPoolSize = threadPoolSizeField.getValue();
         var url = urlText.getValue();
         var method = methodCombo.getValue();
         var headers = collectMap(headersLayout);
@@ -176,7 +194,9 @@ public class MainView extends VerticalLayout {
 
         completedText.setValue("");
         failedText.setValue("");
+        failedText.setVisible(false);
         errorText.setValue("");
+        errorText.setVisible(false);
     }
 
     private void applyResponse(ApiResponse response) {
@@ -187,6 +207,8 @@ public class MainView extends VerticalLayout {
             failedRequests++;
             failedText.setValue(String.valueOf(failedRequests));
             errorText.setValue(response.statusCode().value() + " - " + response.errorMessage());
+            failedText.setVisible(true);
+            errorText.setVisible(true);
 
             if (stopOnError.getValue()) {
                 stopStressTest();
@@ -194,7 +216,7 @@ public class MainView extends VerticalLayout {
         }
 
         // when stress test is completed, update UI to reflect it
-        if (completedRequests + failedRequests == requestNumberField.getValue().intValue()) {
+        if (completedRequests + failedRequests == requestNumberField.getValue()) {
             stopStressTest();
         }
     }

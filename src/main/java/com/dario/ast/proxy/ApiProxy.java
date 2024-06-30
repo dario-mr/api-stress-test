@@ -1,7 +1,6 @@
 package com.dario.ast.proxy;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class ApiProxy {
 
@@ -30,7 +28,6 @@ public class ApiProxy {
                     new HttpEntity<>(request.requestBody(), request.headers()),
                     String.class);
             var statusCode = (HttpStatus) response.getStatusCode();
-            log.info("URI: {}, response: {}", uriBuilder.toUriString(), statusCode); // TODO remove
 
             return new ApiResponse(statusCode, statusCode.getReasonPhrase());
         } catch (HttpStatusCodeException e) {
