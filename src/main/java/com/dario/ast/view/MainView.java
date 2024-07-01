@@ -20,16 +20,15 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executors;
-
-import static com.vaadin.flow.component.icon.VaadinIcon.*;
+import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
+import static com.dario.ast.util.EntryUtil.addEntry;
+import static com.dario.ast.util.EntryUtil.collectMap;
+import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
+import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.values;
-import static org.springframework.util.StringUtils.hasText;
 
 @Route
 @RequiredArgsConstructor
@@ -38,6 +37,7 @@ public class MainView extends VerticalLayout {
     // TODO can this class be cleaned?
     // TODO save parameters for re-use
     // TODO request preview (curl format?)
+    // TODO enclose Run layout in card layout?
 
     private final StressService stressService;
 
@@ -72,13 +72,13 @@ public class MainView extends VerticalLayout {
         urlLayout.getStyle().set("margin-bottom", "1em");
 
         headersLayout.setPadding(false);
-        addKeyValueRow(headersLayout);
+        addEntry(headersLayout);
 
         uriVariablesLayout.setPadding(false);
-        addKeyValueRow(uriVariablesLayout);
+        addEntry(uriVariablesLayout);
 
         queryParamsLayout.setPadding(false);
-        addKeyValueRow(queryParamsLayout);
+        addEntry(queryParamsLayout);
 
         requestBodyText.setPlaceholder("Request Body");
         requestBodyText.setWidth("60%");
@@ -88,46 +88,34 @@ public class MainView extends VerticalLayout {
         requestNumberField.setWidthFull();
         requestNumberField.setMin(1);
         requestNumberField.setValue(10);
-        requestNumberField.addValueChangeListener(event -> {
-            if (event.getValue() == null) {
-                requestNumberField.setValue(event.getOldValue());
-            }
-            if (event.getValue() < 1) {
-                requestNumberField.setValue(1);
-            }
-        });
+        requestNumberField.addValueChangeListener(integerValidationListener(requestNumberField, 1));
 
         threadPoolSizeField.setWidthFull();
         threadPoolSizeField.setMin(1);
         threadPoolSizeField.setValue(12);
-        threadPoolSizeField.addValueChangeListener(event -> {
-            if (event.getValue() == null) {
-                threadPoolSizeField.setValue(event.getOldValue());
-            }
-            if (event.getValue() < 1) {
-                threadPoolSizeField.setValue(1);
-            }
-        });
+        threadPoolSizeField.addValueChangeListener(integerValidationListener(threadPoolSizeField, 1));
 
         startButton.addClickListener(event -> startStressTest());
         startButton.setIcon(PLAY.create());
-        startButton.setWidth("8em");
-        startButton.setHeight("3em");
+        startButton.setWidth("18em");
+        startButton.setHeight("2.5em");
 
         stopButton.addClickListener(event -> stopStressTest());
         stopButton.setVisible(false);
         stopButton.setIcon(STOP.create());
-        stopButton.setWidth("8em");
-        stopButton.setHeight("3em");
+        stopButton.setWidth("18em");
+        stopButton.setHeight("2.5em");
 
         stopOnError.setValue(true);
 
         completedText.setReadOnly(true);
+        completedText.setWidth("8em");
+
         failedText.setReadOnly(true);
-        failedText.setVisible(false);
+        failedText.setWidth("8em");
+
         errorText.setReadOnly(true);
         errorText.setWidthFull();
-        errorText.setVisible(false);
 
         var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
         requestThreadLayout.setWidthFull();
@@ -177,10 +165,9 @@ public class MainView extends VerticalLayout {
                 new StressRequest(
                         numRequests,
                         url, method,
-                        headers, uriVariables, queryParams,
-                        requestBody,
+                        headers, uriVariables, queryParams, requestBody,
                         result -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(result)))
-                ), Executors.newFixedThreadPool(threadPoolSize));
+                ), newFixedThreadPool(threadPoolSize));
     }
 
     private void stopStressTest() {
@@ -205,9 +192,7 @@ public class MainView extends VerticalLayout {
 
         completedText.setValue("");
         failedText.setValue("");
-        failedText.setVisible(false);
         errorText.setValue("");
-        errorText.setVisible(false);
     }
 
     private void applyResponse(ApiResponse response) {
@@ -218,8 +203,6 @@ public class MainView extends VerticalLayout {
             failedRequests++;
             failedText.setValue(String.valueOf(failedRequests));
             errorText.setValue(response.statusCode().value() + " - " + response.errorMessage());
-            failedText.setVisible(true);
-            errorText.setVisible(true);
 
             if (stopOnError.getValue()) {
                 stopStressTest();
@@ -230,62 +213,5 @@ public class MainView extends VerticalLayout {
         if (completedRequests + failedRequests == requestNumberField.getValue()) {
             stopStressTest();
         }
-    }
-
-    private void addKeyValueRow(VerticalLayout target) {
-        var keyField = new TextField();
-        var valueField = new TextField();
-        var removeButton = new Button();
-        var row = new HorizontalLayout(keyField, valueField, removeButton);
-
-        keyField.setPlaceholder("Key");
-        keyField.addValueChangeListener(changeEvent -> {
-            if (hasText(changeEvent.getValue()) && !thereIsAnEmptyHeader(target)) {
-                addKeyValueRow(target);
-            }
-        });
-
-        valueField.setPlaceholder("Value");
-
-        removeButton.setIcon(TRASH.create());
-        removeButton.addClickListener(event -> {
-            if (target.getChildren().count() > 1) {
-                target.remove(row);
-            }
-        });
-
-        row.setVerticalComponentAlignment(END, removeButton);
-        target.add(row);
-    }
-
-    private boolean thereIsAnEmptyHeader(VerticalLayout parent) {
-        return parent.getChildren().anyMatch(component -> {
-            var layout = (HorizontalLayout) component;
-            var keyField = (TextField) layout.getComponentAt(0);
-            var valueField = (TextField) layout.getComponentAt(1);
-
-            var key = keyField.getValue();
-            var value = valueField.getValue();
-
-            return key.isEmpty() && value.isEmpty();
-        });
-    }
-
-    private Map<String, String> collectMap(VerticalLayout parent) {
-        var map = new HashMap<String, String>();
-
-        parent.getChildren().forEach(component -> {
-            var layout = (HorizontalLayout) component;
-            var keyField = (TextField) layout.getComponentAt(0);
-            var valueField = (TextField) layout.getComponentAt(1);
-
-            var key = keyField.getValue();
-            var value = valueField.getValue();
-            if (!key.isEmpty() && !value.isEmpty()) {
-                map.put(key, value);
-            }
-        });
-
-        return map;
     }
 }
