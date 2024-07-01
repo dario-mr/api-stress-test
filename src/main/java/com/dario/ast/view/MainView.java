@@ -20,9 +20,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 
-import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.EntryUtil.addEntry;
 import static com.dario.ast.util.EntryUtil.collectMap;
+import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
@@ -37,7 +37,9 @@ public class MainView extends VerticalLayout {
     // TODO can this class be cleaned?
     // TODO save parameters for re-use
     // TODO request preview (curl format?)
-    // TODO enclose Run layout in card layout?
+    // TODO result history?
+
+    private final static String MAX_WINDOW_WIDTH = "1000px";
 
     private final StressService stressService;
 
@@ -80,8 +82,7 @@ public class MainView extends VerticalLayout {
         queryParamsLayout.setPadding(false);
         addEntry(queryParamsLayout);
 
-        requestBodyText.setPlaceholder("Request Body");
-        requestBodyText.setWidth("60%");
+        requestBodyText.setWidthFull();
         requestBody.setPadding(false);
         requestBody.add(requestBodyText);
 
@@ -97,14 +98,12 @@ public class MainView extends VerticalLayout {
 
         startButton.addClickListener(event -> startStressTest());
         startButton.setIcon(PLAY.create());
-        startButton.setWidth("18em");
-        startButton.setHeight("2.5em");
+        startButton.addClassName("start-stop-button");
 
         stopButton.addClickListener(event -> stopStressTest());
-        stopButton.setVisible(false);
         stopButton.setIcon(STOP.create());
-        stopButton.setWidth("18em");
-        stopButton.setHeight("2.5em");
+        stopButton.setVisible(false);
+        stopButton.addClassName("start-stop-button");
 
         stopOnError.setValue(true);
 
@@ -116,6 +115,7 @@ public class MainView extends VerticalLayout {
 
         errorText.setReadOnly(true);
         errorText.setWidthFull();
+        errorText.setMinWidth("0px");
 
         var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
         requestThreadLayout.setWidthFull();
@@ -130,8 +130,8 @@ public class MainView extends VerticalLayout {
                 startButton, stopButton,
                 resultsLayout);
         runLayout.setHorizontalComponentAlignment(CENTER, startButton, stopButton);
-        runLayout.setPadding(false);
-        runLayout.setMaxWidth("60%");
+        runLayout.addClassName("card-layout");
+        runLayout.setWidthFull();
 
         var container = new VerticalLayout(
                 new Headline(),
@@ -141,7 +141,7 @@ public class MainView extends VerticalLayout {
                 new ToggleLayout("Query Parameters", queryParamsLayout),
                 new ToggleLayout("Request Body", requestBody),
                 runLayout);
-        container.setMaxWidth("1000px");
+        container.setMaxWidth(MAX_WINDOW_WIDTH);
 
         add(container);
         setAlignItems(CENTER);

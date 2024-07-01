@@ -6,3 +6,24 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+.card-layout {
+    background: darkslateblue;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+}
+
+.card-layout:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.start-stop-button {
+    width: 18em;
+    height: 2.5em;
+    background-color: darkcyan;
+}
+
+.start-stop-button > vaadin-icon {
+    color: ghostwhite;
+}
