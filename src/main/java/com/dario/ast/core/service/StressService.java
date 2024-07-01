@@ -1,11 +1,13 @@
 package com.dario.ast.core.service;
 
-import com.dario.ast.core.domain.StressRequest;
+import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.proxy.ApiProxy;
+import com.dario.ast.proxy.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -16,12 +18,12 @@ public class StressService {
     private final ApiProxy apiProxy;
     private ExecutorService executor;
 
-    public void startStressTest(StressRequest request, ExecutorService executor) {
+    public void startStressTest(StressTestParams stressTestParams, Consumer<ApiResponse> responseConsumer, ExecutorService executor) {
         this.executor = executor;
 
-        for (int i = 0; i < request.numRequests(); i++) {
-            supplyAsync(() -> apiProxy.makeRequest(request.toApiRequest()), executor)
-                    .thenAccept(request.resultConsumer());
+        for (int i = 0; i < stressTestParams.getNumRequests(); i++) {
+            supplyAsync(() -> apiProxy.makeRequest(stressTestParams.toApiRequest()), executor)
+                    .thenAccept(responseConsumer);
         }
     }
 

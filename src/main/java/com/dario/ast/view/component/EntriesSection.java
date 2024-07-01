@@ -1,0 +1,76 @@
+package com.dario.ast.view.component;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import lombok.Getter;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
+import static org.springframework.util.StringUtils.hasText;
+
+@Getter
+public class EntriesSection extends VerticalLayout {
+
+    private final Map<String, String> entries = new HashMap<>();
+
+    public EntriesSection() {
+        setPadding(false);
+    }
+
+    public void addEntry(String key, String value) {
+        entries.put(key, value);
+
+        // add entry to the UI
+        var keyField = new TextField();
+        keyField.setValue(key);
+        keyField.setPlaceholder("Key");
+
+        var valueField = new TextField();
+        valueField.setValue(value);
+        valueField.setPlaceholder("Value");
+
+        var removeButton = new Button();
+        removeButton.setIcon(TRASH.create());
+
+        var entryLayout = new HorizontalLayout(keyField, valueField, removeButton);
+        entryLayout.setVerticalComponentAlignment(END, removeButton);
+        add(entryLayout);
+
+        // handle UI actions
+        keyField.addValueChangeListener(changeEvent -> {
+            entries.remove(changeEvent.getOldValue());
+            entries.put(changeEvent.getValue(), valueField.getValue());
+
+            if (hasText(changeEvent.getValue()) && !isThereAnEmptyEntry()) {
+                addEntry("", "");
+            }
+        });
+
+        valueField.addValueChangeListener(changeEvent -> entries.put(keyField.getValue(), changeEvent.getValue()));
+
+        removeButton.addClickListener(event -> {
+            if (entries.size() > 1) {
+                entries.remove(keyField.getValue());
+                remove(entryLayout);
+            }
+        });
+    }
+
+    public void addEntries(Map<String, String> entries) {
+        if (entries == null) {
+            return;
+        }
+
+        entries.forEach(this::addEntry);
+    }
+
+    private boolean isThereAnEmptyEntry() {
+        return entries.entrySet().stream()
+                .anyMatch(entry -> entry.getKey().isEmpty() && entry.getValue().isEmpty());
+    }
+}
