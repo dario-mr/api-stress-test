@@ -26,18 +26,14 @@ public class EntriesSection extends VerticalLayout {
         entries.put(key, value);
 
         // add entry to the UI
-        var keyField = new TextField();
-        keyField.setValue(key);
-        keyField.setPlaceholder("Key");
-
-        var valueField = new TextField();
-        valueField.setValue(value);
-        valueField.setPlaceholder("Value");
+        var keyField = createEntryField("Key", key);
+        var valueField = createEntryField("Value", value);
 
         var removeButton = new Button();
         removeButton.setIcon(TRASH.create());
 
         var entryLayout = new HorizontalLayout(keyField, valueField, removeButton);
+        entryLayout.setWidthFull();
         entryLayout.setVerticalComponentAlignment(END, removeButton);
         add(entryLayout);
 
@@ -72,5 +68,16 @@ public class EntriesSection extends VerticalLayout {
     private boolean isThereAnEmptyEntry() {
         return entries.entrySet().stream()
                 .anyMatch(entry -> entry.getKey().isEmpty() && entry.getValue().isEmpty());
+    }
+
+    private static TextField createEntryField(String placeHolder, String value) {
+        var entryField = new TextField();
+        entryField.setPlaceholder(placeHolder);
+        entryField.setValue(value);
+        entryField.setWidthFull();
+        entryField.setMaxWidth("15em");
+        entryField.setMinWidth("0");
+
+        return entryField;
     }
 }

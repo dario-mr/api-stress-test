@@ -19,7 +19,8 @@
 }
 
 .start-stop-button {
-    width: 18em;
+    width: 100%;
+    max-width: 15em;
     height: 2.5em;
     background-color: darkcyan;
 }

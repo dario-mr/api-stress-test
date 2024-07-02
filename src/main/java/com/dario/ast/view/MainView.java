@@ -13,6 +13,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.WebStorage;
@@ -34,6 +35,7 @@ import static com.vaadin.flow.component.notification.Notification.Position.TOP_C
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN;
+import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.springframework.http.HttpMethod.values;
 
@@ -43,10 +45,11 @@ import static org.springframework.http.HttpMethod.values;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-    // TODO can this class be cleaned?
+    // TODO clean up this class?
     // TODO validation when clicking start
     // TODO request preview (curl format?)
     // TODO results history?
+    // TODO save parameters in db?
 
     private final static String MAX_WINDOW_WIDTH = "1000px";
 
@@ -63,7 +66,7 @@ public class MainView extends VerticalLayout {
     private final IntegerField threadPoolSizeField = new IntegerField("Threads");
     private final TextField completedText = new TextField("Completed");
     private final TextField failedText = new TextField("Failed");
-    private final TextField errorText = new TextField("Errors");
+    private final TextField errorText = new TextField("Error message");
     private final Button startButton = new Button();
     private final Button stopButton = new Button();
     private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
@@ -79,22 +82,31 @@ public class MainView extends VerticalLayout {
         headlineLayout.setAlignItems(CENTER);
         headlineLayout.setJustifyContentMode(BETWEEN);
 
-        urlText.setWidthFull();
-        methodCombo.setWidth("8em");
+        urlText.setWidth("20em");
+        methodCombo.setMaxWidth("7.5em");
 
-        var urlLayout = new HorizontalLayout(urlText, methodCombo);
+        var urlLayout = new FlexLayout(urlText, methodCombo);
         urlLayout.setWidthFull();
-        urlLayout.getStyle().set("margin-bottom", "1em");
+        urlLayout.setFlexWrap(WRAP);
+        urlLayout.setFlexGrow(1, urlText, methodCombo);
+        urlLayout.getStyle()
+                .set("margin-bottom", "1em")
+                .set("gap", "var(--lumo-space-m)");
 
         requestBodyText.setWidthFull();
 
         requestNumberField.setWidthFull();
+        requestNumberField.setMinWidth("5em");
         requestNumberField.setMin(1);
         requestNumberField.addValueChangeListener(integerValidationListener(requestNumberField, 1));
 
         threadPoolSizeField.setWidthFull();
+        threadPoolSizeField.setMinWidth("5em");
         threadPoolSizeField.setMin(1);
         threadPoolSizeField.addValueChangeListener(integerValidationListener(threadPoolSizeField, 1));
+
+        var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
+        requestThreadLayout.setWidthFull();
 
         startButton.addClickListener(event -> startStressTest());
         startButton.setIcon(PLAY.create());
@@ -112,14 +124,14 @@ public class MainView extends VerticalLayout {
         failedText.setWidth("8em");
 
         errorText.setReadOnly(true);
-        errorText.setWidthFull();
-        errorText.setMinWidth("0px");
+        errorText.setWidth("20em");
 
-        var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
-        requestThreadLayout.setWidthFull();
-
-        var resultsLayout = new HorizontalLayout(completedText, failedText, errorText);
+        var resultsLayout = new FlexLayout(completedText, failedText, errorText);
         resultsLayout.setWidthFull();
+        resultsLayout.setFlexWrap(WRAP);
+        resultsLayout.setFlexGrow(1, completedText, failedText);
+        resultsLayout.setFlexGrow(1, errorText);
+        resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
         var runLayout = new VerticalLayout(
                 new H3("Run"),
