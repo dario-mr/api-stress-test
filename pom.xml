@@ -20,6 +20,7 @@
         <java.version>17</java.version>
 
         <vaadin.version>24.3.12</vaadin.version>
+        <clipboard-helper.version>2.0.0</clipboard-helper.version>
     </properties>
 
     <dependencies>
@@ -53,6 +54,11 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.vaadin.olli</groupId>
+            <artifactId>clipboardhelper</artifactId>
+            <version>${clipboard-helper.version}</version>
         </dependency>
 
         <!-- test -->

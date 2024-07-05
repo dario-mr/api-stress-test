@@ -9,6 +9,7 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.dario.ast.util.EventUtil.refreshPreview;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static org.springframework.util.StringUtils.hasText;
@@ -41,18 +42,23 @@ public class EntriesSection extends VerticalLayout {
         keyField.addValueChangeListener(changeEvent -> {
             entries.remove(changeEvent.getOldValue());
             entries.put(changeEvent.getValue(), valueField.getValue());
+            refreshPreview();
 
             if (hasText(changeEvent.getValue()) && !isThereAnEmptyEntry()) {
                 addEntry("", "");
             }
         });
 
-        valueField.addValueChangeListener(changeEvent -> entries.put(keyField.getValue(), changeEvent.getValue()));
+        valueField.addValueChangeListener(changeEvent -> {
+            entries.put(keyField.getValue(), changeEvent.getValue());
+            refreshPreview();
+        });
 
         removeButton.addClickListener(event -> {
             if (entries.size() > 1) {
                 entries.remove(keyField.getValue());
                 remove(entryLayout);
+                refreshPreview();
             }
         });
     }

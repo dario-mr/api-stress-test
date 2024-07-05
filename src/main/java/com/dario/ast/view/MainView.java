@@ -3,11 +3,14 @@ package com.dario.ast.view;
 import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.ParamService;
 import com.dario.ast.core.service.StressService;
+import com.dario.ast.event.RefreshPreviewEvent;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.EntriesSection;
 import com.dario.ast.view.component.Headline;
 import com.dario.ast.view.component.SaveButton;
 import com.dario.ast.view.component.ToggleLayout;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -16,7 +19,6 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.WebStorage;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -26,13 +28,16 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
+import org.vaadin.olli.ClipboardHelper;
 
+import static com.dario.ast.util.EventUtil.refreshPreview;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
+import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
@@ -47,9 +52,8 @@ public class MainView extends VerticalLayout {
 
     // TODO clean up this class?
     // TODO validation when clicking start
-    // TODO request preview (curl format?)
     // TODO results history?
-    // TODO save parameters in db?
+    // TODO persist parameters to db?
 
     private final static String MAX_WINDOW_WIDTH = "1000px";
 
@@ -62,6 +66,8 @@ public class MainView extends VerticalLayout {
     private final EntriesSection uriVariablesSection = new EntriesSection();
     private final EntriesSection queryParamsSection = new EntriesSection();
     private final TextArea requestBodyText = new TextArea();
+    private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
+    private final TextArea previewText = new TextArea("Preview");
     private final IntegerField requestNumberField = new IntegerField("Requests");
     private final IntegerField threadPoolSizeField = new IntegerField("Threads");
     private final TextField completedText = new TextField("Completed");
@@ -75,13 +81,15 @@ public class MainView extends VerticalLayout {
 
     @PostConstruct
     public void init() {
+        // headline
         var headlineLayout = new HorizontalLayout(
                 new Headline(),
-                new SaveButton(paramService, empty -> buildStressTestParams()));
+                new SaveButton(paramService, empty -> getStressTestParams()));
         headlineLayout.setWidthFull();
         headlineLayout.setAlignItems(CENTER);
         headlineLayout.setJustifyContentMode(BETWEEN);
 
+        // url + http method
         urlText.setWidth("20em");
         methodCombo.setMaxWidth("7.5em");
 
@@ -93,13 +101,16 @@ public class MainView extends VerticalLayout {
                 .set("margin-bottom", "1em")
                 .set("gap", "var(--lumo-space-m)");
 
+        // request body
         requestBodyText.setWidthFull();
 
+        // requests number
         requestNumberField.setWidthFull();
         requestNumberField.setMinWidth("5em");
         requestNumberField.setMin(1);
         requestNumberField.addValueChangeListener(integerValidationListener(requestNumberField, 1));
 
+        // thread pool size
         threadPoolSizeField.setWidthFull();
         threadPoolSizeField.setMinWidth("5em");
         threadPoolSizeField.setMin(1);
@@ -108,6 +119,7 @@ public class MainView extends VerticalLayout {
         var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
         requestThreadLayout.setWidthFull();
 
+        // start / stop button
         startButton.addClickListener(event -> startStressTest());
         startButton.setIcon(PLAY.create());
         startButton.addClassName("start-stop-button");
@@ -117,6 +129,7 @@ public class MainView extends VerticalLayout {
         stopButton.setVisible(false);
         stopButton.addClassName("start-stop-button");
 
+        // result layout (completed, failed, errors)
         completedText.setReadOnly(true);
         completedText.setWidth("8em");
 
@@ -133,6 +146,17 @@ public class MainView extends VerticalLayout {
         resultsLayout.setFlexGrow(1, errorText);
         resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
+        // preview
+        previewTextClipboard.wrap(previewText);
+        previewTextClipboard.getStyle().set("width", "100%");
+
+        previewText.setWidthFull();
+        previewText.getStyle().set("padding", "0");
+        previewText.getStyle().set("font-family", "monospace");
+        previewText.setReadOnly(true);
+        previewText.getElement().addEventListener("click", e -> Notification.show("Copied!", 2_000, TOP_CENTER).addThemeVariants(LUMO_SUCCESS));
+
+        // run layout
         var runLayout = new VerticalLayout(
                 new H3("Run"),
                 requestThreadLayout,
@@ -143,10 +167,7 @@ public class MainView extends VerticalLayout {
         runLayout.addClassName("card-layout");
         runLayout.setWidthFull();
 
-        // TODO remove
-        var clearLocalStorage = new Button("Clear local storage");
-        clearLocalStorage.addClickListener(event -> WebStorage.clear());
-
+        // container with everything
         var container = new VerticalLayout(
                 headlineLayout,
                 urlLayout,
@@ -154,8 +175,8 @@ public class MainView extends VerticalLayout {
                 new ToggleLayout("URI Variables", uriVariablesSection),
                 new ToggleLayout("Query Parameters", queryParamsSection),
                 new ToggleLayout("Request Body", requestBodyText),
-                runLayout,
-                clearLocalStorage);
+                previewTextClipboard,
+                runLayout);
         container.setMaxWidth(MAX_WINDOW_WIDTH);
 
         add(container);
@@ -173,7 +194,63 @@ public class MainView extends VerticalLayout {
                     log.error("Error loading parameters: {}", ex.getMessage());
 
                     return null;
-                });
+                })
+                .thenAccept(unused -> generatePreview())
+                .thenAccept(unused -> addValueChangeListeners());
+    }
+
+    private void generatePreview() {
+        var params = getStressTestParams();
+
+        // start with "curl -X"
+        var curlPreviewBuilder = new StringBuilder("curl -X");
+
+        // replace uri variables in uri
+        var uri = params.getUri();
+        for (var uriVar : params.getUriVariables().entrySet()) {
+            uri = uri.replace("{" + uriVar.getKey() + "}", uriVar.getValue());
+        }
+
+        // append http method
+        curlPreviewBuilder.append(" ").append(params.getMethod().name());
+
+        // append uri
+        curlPreviewBuilder.append(" '").append(uri);
+
+        // append query parameters
+        boolean isFirstQueryParam = true;
+        for (var queryParam : params.getQueryParams().entrySet()) {
+            if (isFirstQueryParam) {
+                curlPreviewBuilder.append("?");
+                isFirstQueryParam = false;
+            } else {
+                curlPreviewBuilder.append("&");
+            }
+            curlPreviewBuilder.append(queryParam.getKey()).append("=").append(queryParam.getValue());
+        }
+        curlPreviewBuilder.append("' \\\n");
+
+        // append headers
+        for (var header : params.getHeaders().entrySet()) {
+            curlPreviewBuilder.append(" -H '")
+                    .append(header.getKey()).append(": ").append(header.getValue())
+                    .append("' \\\n");
+        }
+
+        // append request body
+        curlPreviewBuilder.append(" -d '").append(params.getRequestBody()).append("'");
+
+        var curlPreview = curlPreviewBuilder.toString();
+        previewText.setValue(curlPreview);
+
+        // prepare curl preview to be copied to user's clipboard
+        previewTextClipboard.setContent(curlPreview);
+    }
+
+    private void addValueChangeListeners() {
+        urlText.addValueChangeListener(event -> refreshPreview());
+        methodCombo.addValueChangeListener(event -> refreshPreview());
+        requestBodyText.addValueChangeListener(event -> refreshPreview());
     }
 
     private void applyParams(StressTestParams params) {
@@ -197,7 +274,7 @@ public class MainView extends VerticalLayout {
         stopOnErrorCheckbox.setValue(params.isStopOnError());
     }
 
-    private StressTestParams buildStressTestParams() {
+    private StressTestParams getStressTestParams() {
         var numRequests = requestNumberField.getValue();
         var threadPoolSize = threadPoolSizeField.getValue();
         var url = urlText.getValue();
@@ -222,7 +299,7 @@ public class MainView extends VerticalLayout {
         var threadPoolSize = threadPoolSizeField.getValue();
 
         stressService.startStressTest(
-                buildStressTestParams(),
+                getStressTestParams(),
                 response -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );
@@ -271,5 +348,17 @@ public class MainView extends VerticalLayout {
         if (completedRequests + failedRequests == requestNumberField.getValue()) {
             stopStressTest();
         }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        // Listen for events that should trigger preview refresh
+        ComponentUtil.addListener(
+                attachEvent.getUI(),
+                RefreshPreviewEvent.class,
+                event -> generatePreview()
+        );
     }
 }
