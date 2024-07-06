@@ -40,10 +40,21 @@ public class EntriesSection extends VerticalLayout {
 
         // handle UI actions
         keyField.addValueChangeListener(changeEvent -> {
+            // if key became empty, remove entry
+            if (hasText(changeEvent.getOldValue()) && !hasText(changeEvent.getValue()) && entries.size() > 1) {
+                entries.remove(changeEvent.getOldValue());
+                remove(entryLayout);
+                refreshPreview();
+
+                return;
+            }
+
+            // if key changed, update its entry (remove it and re-add it)
             entries.remove(changeEvent.getOldValue());
             entries.put(changeEvent.getValue(), valueField.getValue());
             refreshPreview();
 
+            // if there are no empty entries, add one
             if (hasText(changeEvent.getValue()) && !isThereAnEmptyEntry()) {
                 addEntry("", "");
             }

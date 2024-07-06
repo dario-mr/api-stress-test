@@ -5,10 +5,7 @@ import com.dario.ast.core.service.ParamService;
 import com.dario.ast.core.service.StressService;
 import com.dario.ast.event.RefreshPreviewEvent;
 import com.dario.ast.proxy.ApiResponse;
-import com.dario.ast.view.component.EntriesSection;
-import com.dario.ast.view.component.Headline;
-import com.dario.ast.view.component.SaveButton;
-import com.dario.ast.view.component.ToggleLayout;
+import com.dario.ast.view.component.*;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -37,7 +34,6 @@ import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
-import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode.BETWEEN;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
@@ -50,7 +46,6 @@ import static org.springframework.http.HttpMethod.values;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-    // TODO clean up this class?
     // TODO validation when clicking start
     // TODO results history?
     // TODO persist parameters to db?
@@ -67,7 +62,7 @@ public class MainView extends VerticalLayout {
     private final EntriesSection queryParamsSection = new EntriesSection();
     private final TextArea requestBodyText = new TextArea();
     private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
-    private final TextArea previewText = new TextArea("Preview");
+    private final TextArea previewText = new PreviewTextArea();
     private final IntegerField requestNumberField = new IntegerField("Requests");
     private final IntegerField threadPoolSizeField = new IntegerField("Threads");
     private final TextField completedText = new TextField("Completed");
@@ -150,12 +145,6 @@ public class MainView extends VerticalLayout {
         previewTextClipboard.wrap(previewText);
         previewTextClipboard.getStyle().set("width", "100%");
 
-        previewText.setWidthFull();
-        previewText.getStyle().set("padding", "0");
-        previewText.getStyle().set("font-family", "monospace");
-        previewText.setReadOnly(true);
-        previewText.getElement().addEventListener("click", e -> Notification.show("Copied!", 2_000, TOP_CENTER).addThemeVariants(LUMO_SUCCESS));
-
         // run layout
         var runLayout = new VerticalLayout(
                 new H3("Run"),
@@ -195,11 +184,11 @@ public class MainView extends VerticalLayout {
 
                     return null;
                 })
-                .thenAccept(unused -> generatePreview())
+                .thenAccept(unused -> generateCurlPreview())
                 .thenAccept(unused -> addValueChangeListeners());
     }
 
-    private void generatePreview() {
+    private void generateCurlPreview() {
         var params = getStressTestParams();
 
         // start with "curl -X"
@@ -238,7 +227,9 @@ public class MainView extends VerticalLayout {
         }
 
         // append request body
-        curlPreviewBuilder.append(" -d '").append(params.getRequestBody()).append("'");
+        if (!params.getRequestBody().isEmpty()) {
+            curlPreviewBuilder.append(" -d '").append(params.getRequestBody()).append("'");
+        }
 
         var curlPreview = curlPreviewBuilder.toString();
         previewText.setValue(curlPreview);
@@ -358,7 +349,7 @@ public class MainView extends VerticalLayout {
         ComponentUtil.addListener(
                 attachEvent.getUI(),
                 RefreshPreviewEvent.class,
-                event -> generatePreview()
+                event -> generateCurlPreview()
         );
     }
 }
