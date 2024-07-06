@@ -1,6 +1,6 @@
 # API Stress Test
 
-User-friendly interface to perform stress test of APIs.
+User-friendly app to perform stress test of your APIs.
 
 ## Environment variables
 
