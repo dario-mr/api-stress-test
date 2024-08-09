@@ -30,6 +30,7 @@ import org.vaadin.olli.ClipboardHelper;
 import static com.dario.ast.util.EventUtil.refreshPreview;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
+import static com.dario.ast.util.PreviewUtil.buildCurlPreview;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
@@ -190,48 +191,8 @@ public class MainView extends VerticalLayout {
 
     private void generateCurlPreview() {
         var params = getStressTestParams();
+        var curlPreview = buildCurlPreview(params);
 
-        // start with "curl -X"
-        var curlPreviewBuilder = new StringBuilder("curl -X");
-
-        // replace uri variables in uri
-        var uri = params.getUri();
-        for (var uriVar : params.getUriVariables().entrySet()) {
-            uri = uri.replace("{" + uriVar.getKey() + "}", uriVar.getValue());
-        }
-
-        // append http method
-        curlPreviewBuilder.append(" ").append(params.getMethod().name());
-
-        // append uri
-        curlPreviewBuilder.append(" '").append(uri);
-
-        // append query parameters
-        boolean isFirstQueryParam = true;
-        for (var queryParam : params.getQueryParams().entrySet()) {
-            if (isFirstQueryParam) {
-                curlPreviewBuilder.append("?");
-                isFirstQueryParam = false;
-            } else {
-                curlPreviewBuilder.append("&");
-            }
-            curlPreviewBuilder.append(queryParam.getKey()).append("=").append(queryParam.getValue());
-        }
-        curlPreviewBuilder.append("' \\\n");
-
-        // append headers
-        for (var header : params.getHeaders().entrySet()) {
-            curlPreviewBuilder.append(" -H '")
-                    .append(header.getKey()).append(": ").append(header.getValue())
-                    .append("' \\\n");
-        }
-
-        // append request body
-        if (!params.getRequestBody().isEmpty()) {
-            curlPreviewBuilder.append(" -d '").append(params.getRequestBody()).append("'");
-        }
-
-        var curlPreview = curlPreviewBuilder.toString();
         previewText.setValue(curlPreview);
 
         // prepare curl preview to be copied to user's clipboard

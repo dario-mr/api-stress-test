@@ -6,6 +6,7 @@ import com.dario.ast.proxy.ApiRequest;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpMethod;
@@ -15,8 +16,9 @@ import java.util.Map;
 import static com.dario.ast.util.MapUtil.convertToMultiValueMap;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public final class StressTestParams {
 
     private int numRequests;
