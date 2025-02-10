@@ -3,7 +3,7 @@ package com.dario.ast.view;
 import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.ParamService;
 import com.dario.ast.core.service.StressService;
-import com.dario.ast.event.RefreshPreviewEvent;
+import com.dario.ast.event.RefreshCurlPreviewEvent;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.*;
 import com.vaadin.flow.component.AttachEvent;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
 
-import static com.dario.ast.util.EventUtil.refreshPreview;
+import static com.dario.ast.util.EventUtil.refreshCurlPreview;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.dario.ast.util.PreviewUtil.buildCurlPreview;
@@ -180,9 +180,8 @@ public class MainView extends VerticalLayout {
         paramService.getParams()
                 .thenAccept(this::applyParams)
                 .exceptionally(ex -> {
-                    Notification.show("Error loading parameters", 2_000, TOP_CENTER).addThemeVariants(LUMO_ERROR);
+                    Notification.show("Error loading parameters", 3_000, TOP_CENTER).addThemeVariants(LUMO_ERROR);
                     log.error("Error loading parameters: {}", ex.getMessage());
-
                     return null;
                 })
                 .thenAccept(unused -> generateCurlPreview())
@@ -200,9 +199,9 @@ public class MainView extends VerticalLayout {
     }
 
     private void addValueChangeListeners() {
-        urlText.addValueChangeListener(event -> refreshPreview());
-        methodCombo.addValueChangeListener(event -> refreshPreview());
-        requestBodyText.addValueChangeListener(event -> refreshPreview());
+        urlText.addValueChangeListener(event -> refreshCurlPreview());
+        methodCombo.addValueChangeListener(event -> refreshCurlPreview());
+        requestBodyText.addValueChangeListener(event -> refreshCurlPreview());
     }
 
     private void applyParams(StressTestParams params) {
@@ -252,7 +251,7 @@ public class MainView extends VerticalLayout {
 
         stressService.startStressTest(
                 getStressTestParams(),
-                response -> getUI().ifPresent(ui -> ui.access(() -> applyResponse(response))),
+                response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );
     }
@@ -282,7 +281,7 @@ public class MainView extends VerticalLayout {
         errorText.clear();
     }
 
-    private void applyResponse(ApiResponse response) {
+    private void applyApiResponse(ApiResponse response) {
         if (response.statusCode().is2xxSuccessful()) {
             completedRequests++;
             completedText.setValue(String.valueOf(completedRequests));
@@ -306,10 +305,10 @@ public class MainView extends VerticalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        // Listen for events that should trigger preview refresh
+        // Listen for events that should trigger curl preview refresh
         ComponentUtil.addListener(
                 attachEvent.getUI(),
-                RefreshPreviewEvent.class,
+                RefreshCurlPreviewEvent.class,
                 event -> generateCurlPreview()
         );
     }
