@@ -1,6 +1,6 @@
 package com.dario.ast.util;
 
-import com.dario.ast.core.domain.StressTestParams;
+import com.dario.ast.core.domain.ConfigParams;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -10,17 +10,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.dario.ast.util.PreviewUtil.buildCurlPreview;
+import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.of;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
-public class PreviewUtilTest {
+public class CurlPreviewUtilTest {
 
     @MethodSource("getBuildCurlPreviewParams")
     @ParameterizedTest
-    void buildCurlPreview_whenParamsArePassed_shouldConvertToCurlPreview(StressTestParams params, String expectedPreview) {
+    void buildCurlPreview_whenParamsArePassed_shouldConvertToCurlPreview(ConfigParams params, String expectedPreview) {
         // when
         var actualPreview = buildCurlPreview(params);
 
@@ -45,22 +45,22 @@ public class PreviewUtilTest {
         var requestBody = "{ \"requestBody\": \"requestBodyValue\" }";
 
         return Stream.of(
-                of(StressTestParams.builder().build(), ""),
+                of(ConfigParams.builder().build(), ""),
                 of(null, ""),
-                of(buildStressTestParams(uri, POST, null, null, null, null), "curl -X POST 'https://www.api.com'"),
-                of(buildStressTestParams(uri, POST, null, null, null, requestBody),
+                of(buildConfigParams(uri, POST, null, null, null, null), "curl -X POST 'https://www.api.com'"),
+                of(buildConfigParams(uri, POST, null, null, null, requestBody),
                         """
                                 curl -X POST 'https://www.api.com' \\
                                  -d '{ "requestBody": "requestBodyValue" }'"""),
-                of(buildStressTestParams(uri, POST, null, null, queryParams, requestBody),
+                of(buildConfigParams(uri, POST, null, null, queryParams, requestBody),
                         """
                                 curl -X POST 'https://www.api.com?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
                                  -d '{ "requestBody": "requestBodyValue" }'"""),
-                of(buildStressTestParams(uriWithVar, GET, null, uriVariables, queryParams, requestBody),
+                of(buildConfigParams(uriWithVar, GET, null, uriVariables, queryParams, requestBody),
                         """
                                 curl -X GET 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
                                  -d '{ "requestBody": "requestBodyValue" }'"""),
-                of(buildStressTestParams(uriWithVar, POST, headers, uriVariables, queryParams, requestBody),
+                of(buildConfigParams(uriWithVar, POST, headers, uriVariables, queryParams, requestBody),
                         """
                                 curl -X POST 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
                                  -H 'header1: headerValue1' \\
@@ -69,9 +69,9 @@ public class PreviewUtilTest {
         );
     }
 
-    private static StressTestParams buildStressTestParams(String uri, HttpMethod method, Map<String, String> headers,
-                                                          Map<String, String> uriVariables, Map<String, String> queryParams, String requestBody) {
-        return StressTestParams.builder()
+    private static ConfigParams buildConfigParams(String uri, HttpMethod method, Map<String, String> headers,
+                                                  Map<String, String> uriVariables, Map<String, String> queryParams, String requestBody) {
+        return ConfigParams.builder()
                 .uri(uri)
                 .method(method)
                 .headers(headers)

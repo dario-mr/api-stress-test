@@ -21,8 +21,8 @@ public class StressService {
     public void startStressTest(StressTestParams stressTestParams, Consumer<ApiResponse> responseConsumer, ExecutorService executor) {
         this.executor = executor;
 
-        for (int i = 0; i < stressTestParams.getNumRequests(); i++) {
-            supplyAsync(() -> apiProxy.makeRequest(stressTestParams.toApiRequest()), executor)
+        for (int i = 0; i < stressTestParams.getRunParams().getNumRequests(); i++) {
+            supplyAsync(() -> apiProxy.makeRequest(stressTestParams.getConfigParams().toApiRequest()), executor)
                     .thenAccept(responseConsumer);
         }
     }
