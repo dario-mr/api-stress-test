@@ -1,14 +1,14 @@
 package com.dario.ast.util;
 
-import com.dario.ast.core.domain.StressTestParams;
+import com.dario.ast.core.domain.ConfigParams;
 import lombok.experimental.UtilityClass;
 
 import static java.lang.String.format;
 
 @UtilityClass
-public class PreviewUtil {
+public class CurlPreviewUtil {
 
-    public static String buildCurlPreview(StressTestParams params) {
+    public static String buildCurlPreview(ConfigParams params) {
         if (params == null) {
             return "";
         }

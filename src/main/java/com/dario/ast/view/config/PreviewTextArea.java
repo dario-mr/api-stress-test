@@ -1,4 +1,4 @@
-package com.dario.ast.view.component;
+package com.dario.ast.view.config;
 
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;

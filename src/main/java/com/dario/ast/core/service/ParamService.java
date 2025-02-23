@@ -1,5 +1,7 @@
 package com.dario.ast.core.service;
 
+import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.domain.StressTestParams;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,29 +49,41 @@ public class ParamService {
     }
 
     private static void applyDefaultValues(StressTestParams params) {
-        if (params.getUri() == null) {
-            params.setUri("");
+        var configParams = params.getConfigParams();
+        var runParams = params.getRunParams();
+
+        if (configParams == null) {
+            configParams = new ConfigParams();
         }
-        if (params.getMethod() == null) {
-            params.setMethod(GET);
+        if (configParams.getUri() == null) {
+            configParams.setUri("");
         }
-        if (params.getHeaders() == null) {
-            params.setHeaders(new HashMap<>());
+        if (configParams.getMethod() == null) {
+            configParams.setMethod(GET);
         }
-        if (params.getUriVariables() == null) {
-            params.setUriVariables(new HashMap<>());
+        if (configParams.getHeaders() == null) {
+            configParams.setHeaders(new HashMap<>());
         }
-        if (params.getQueryParams() == null) {
-            params.setQueryParams(new HashMap<>());
+        if (configParams.getUriVariables() == null) {
+            configParams.setUriVariables(new HashMap<>());
         }
-        if (params.getRequestBody() == null) {
-            params.setRequestBody("");
+        if (configParams.getQueryParams() == null) {
+            configParams.setQueryParams(new HashMap<>());
         }
-        if (params.getNumRequests() == 0) {
-            params.setNumRequests(10);
+        if (configParams.getRequestBody() == null) {
+            configParams.setRequestBody("");
         }
-        if (params.getThreadPoolSize() == 0) {
-            params.setThreadPoolSize(4);
+        params.setConfigParams(configParams);
+
+        if (runParams == null) {
+            runParams = new RunParams();
         }
+        if (runParams.getNumRequests() == 0) {
+            runParams.setNumRequests(10);
+        }
+        if (runParams.getThreadPoolSize() == 0) {
+            runParams.setThreadPoolSize(4);
+        }
+        params.setRunParams(runParams);
     }
 }

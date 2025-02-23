@@ -1,8 +1,8 @@
-package com.dario.ast.view.component;
+package com.dario.ast.view.config;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -27,7 +27,7 @@ public class ToggleLayout extends VerticalLayout {
         toggleButton.getStyle().set("padding-left", "0");
         toggleButton.addClickListener(event -> toggleContentVisibility());
 
-        var titleText = new H3(title);
+        var titleText = new H4(title);
         var titleLayout = new HorizontalLayout(toggleButton, titleText);
         titleLayout.setVerticalComponentAlignment(CENTER, titleText);
         titleLayout.setSpacing(false);

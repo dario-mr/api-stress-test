@@ -8,7 +8,6 @@ import java.util.Map;
 
 import static java.util.Map.Entry;
 import static java.util.stream.Collectors.toMap;
-import static org.springframework.util.StringUtils.hasText;
 
 @UtilityClass
 public class MapUtil {
@@ -19,7 +18,7 @@ public class MapUtil {
         }
 
         return map.entrySet().stream()
-                .filter(entry -> hasText(entry.getKey()) && hasText(entry.getValue()))
+                .filter(entry -> !entry.getKey().isBlank() && !entry.getValue().isBlank())
                 .collect(toMap(Entry::getKey, Entry::getValue));
     }
 

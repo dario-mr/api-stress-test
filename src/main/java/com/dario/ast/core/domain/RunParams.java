@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class StressTestParams {
+public final class RunParams {
 
-    private ConfigParams configParams;
-    private RunParams runParams;
+    private int numRequests;
+    private int threadPoolSize;
+    private boolean stopOnError;
 }
