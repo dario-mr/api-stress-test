@@ -9,7 +9,7 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.dario.ast.util.EventUtil.refreshCurlPreview;
+import static com.dario.ast.util.EventUtil.configEntriesUpdated;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static org.springframework.util.StringUtils.hasText;
@@ -44,7 +44,7 @@ public class EntriesSection extends VerticalLayout {
             if (hasText(changeEvent.getOldValue()) && !hasText(changeEvent.getValue()) && entries.size() > 1) {
                 entries.remove(changeEvent.getOldValue());
                 remove(entryLayout);
-                refreshCurlPreview();
+                notifyChanges();
 
                 return;
             }
@@ -52,7 +52,7 @@ public class EntriesSection extends VerticalLayout {
             // if key changed, update its entry (remove it and re-add it)
             entries.remove(changeEvent.getOldValue());
             entries.put(changeEvent.getValue(), valueField.getValue());
-            refreshCurlPreview();
+            notifyChanges();
 
             // if there are no empty entries, add one
             if (hasText(changeEvent.getValue()) && !isThereAnEmptyEntry()) {
@@ -62,14 +62,14 @@ public class EntriesSection extends VerticalLayout {
 
         valueField.addValueChangeListener(changeEvent -> {
             entries.put(keyField.getValue(), changeEvent.getValue());
-            refreshCurlPreview();
+            notifyChanges();
         });
 
         removeButton.addClickListener(event -> {
             if (entries.size() > 1) {
                 entries.remove(keyField.getValue());
                 remove(entryLayout);
-                refreshCurlPreview();
+                notifyChanges();
             }
         });
     }
@@ -85,6 +85,10 @@ public class EntriesSection extends VerticalLayout {
     private boolean isThereAnEmptyEntry() {
         return entries.entrySet().stream()
                 .anyMatch(entry -> entry.getKey().isEmpty() && entry.getValue().isEmpty());
+    }
+
+    private void notifyChanges() {
+        configEntriesUpdated();
     }
 
     private static TextField createEntryField(String placeHolder, String value) {

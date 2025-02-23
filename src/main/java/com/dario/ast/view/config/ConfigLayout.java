@@ -3,7 +3,8 @@ package com.dario.ast.view.config;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.event.AddConfigChangeListenerEvent;
 import com.dario.ast.event.ApplyConfigParamsEvent;
-import com.dario.ast.event.RefreshCurlPreviewEvent;
+import com.dario.ast.event.ConfigEntriesUpdatedEvent;
+import com.dario.ast.event.ConfigParamsUpdatedEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -132,13 +133,6 @@ public class ConfigLayout extends VerticalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        // Listen for events that should trigger curl preview refresh
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                RefreshCurlPreviewEvent.class,
-                event -> generateCurlPreview()
-        );
-
         // Listen for events that should trigger adding the config change listeners
         ComponentUtil.addListener(
                 attachEvent.getUI(),
@@ -146,11 +140,28 @@ public class ConfigLayout extends VerticalLayout {
                 event -> addValueChangeListeners()
         );
 
-        // Listen for events that should trigger applying the config params
+        // Listen for events that should trigger applying the config params in the UI
         ComponentUtil.addListener(
                 attachEvent.getUI(),
                 ApplyConfigParamsEvent.class,
                 event -> applyParams(event.getConfigParams())
+        );
+
+        // Listen for "config params updated" events
+        ComponentUtil.addListener(
+                attachEvent.getUI(),
+                ConfigParamsUpdatedEvent.class,
+                event -> generateCurlPreview()
+        );
+
+        // Listen for events indicating that config entries (EntriesSection class) were updated
+        ComponentUtil.addListener(
+                attachEvent.getUI(),
+                ConfigEntriesUpdatedEvent.class,
+                event -> {
+                    generateCurlPreview();
+                    notifyConfigParamsChanged();
+                }
         );
     }
 

@@ -200,7 +200,7 @@ public class RunLayout extends VerticalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        // Listen for events that should trigger applying the run params
+        // Listen for events that should trigger applying the run params in the UI
         ComponentUtil.addListener(
                 attachEvent.getUI(),
                 ApplyRunParamsEvent.class,
