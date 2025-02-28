@@ -11,15 +11,19 @@ import static com.vaadin.flow.component.ComponentUtil.fireEvent;
 @UtilityClass
 public class EventUtil {
 
-    public static void requestStressTestParams() {
-        fireEvent(UI.getCurrent(), new StressTestParamsRequestEvent());
+    public static void requestConfigParams() {
+        fireEvent(UI.getCurrent(), new ConfigParamsRequestEvent());
     }
 
-    public static void configParamsResponse(ConfigParams configParams) {
+    public static void requestRunParams() {
+        fireEvent(UI.getCurrent(), new RunParamsRequestEvent());
+    }
+
+    public static void returnConfigParamsResponse(ConfigParams configParams) {
         fireEvent(UI.getCurrent(), new ConfigParamsResponseEvent(configParams));
     }
 
-    public static void runParamsResponse(RunParams runParams) {
+    public static void returnRunParamsResponse(RunParams runParams) {
         fireEvent(UI.getCurrent(), new RunParamsResponseEvent(runParams));
     }
 
@@ -29,10 +33,6 @@ public class EventUtil {
 
     public static void applyRunParams(RunParams runParams) {
         fireEvent(UI.getCurrent(), new ApplyRunParamsEvent(runParams));
-    }
-
-    public static void configParamsUpdated(ConfigParams configParams) {
-        fireEvent(UI.getCurrent(), new ConfigParamsUpdatedEvent(configParams));
     }
 
     public static void configEntriesUpdated() {

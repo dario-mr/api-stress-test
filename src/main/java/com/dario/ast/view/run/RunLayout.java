@@ -5,24 +5,30 @@ import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.StressService;
 import com.dario.ast.event.ApplyRunParamsEvent;
-import com.dario.ast.event.ConfigParamsUpdatedEvent;
-import com.dario.ast.event.StressTestParamsRequestEvent;
+import com.dario.ast.event.ConfigParamsResponseEvent;
+import com.dario.ast.event.RunParamsRequestEvent;
 import com.dario.ast.proxy.ApiResponse;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
-import static com.dario.ast.util.EventUtil.runParamsResponse;
+import java.util.concurrent.CompletableFuture;
+
+import static com.dario.ast.util.EventUtil.requestConfigParams;
+import static com.dario.ast.util.EventUtil.returnRunParamsResponse;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
+import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
+import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -41,7 +47,7 @@ public class RunLayout extends VerticalLayout {
     private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
 
     private long completedRequests = 0, failedRequests = 0;
-    private ConfigParams currentConfigParams;
+    private CompletableFuture<ConfigParams> configParamsResponse = new CompletableFuture<>();
 
     public RunLayout(StressService stressService) {
         this.stressService = stressService;
@@ -107,6 +113,18 @@ public class RunLayout extends VerticalLayout {
         stopOnErrorCheckbox.setValue(params.isStopOnError());
     }
 
+    private ConfigParams getConfigParams() {
+        configParamsResponse = new CompletableFuture<>();
+        requestConfigParams();
+
+        try {
+            return configParamsResponse.get();
+        } catch (Exception e) {
+            Notification.show("Error reading Configure parameters", 2_000, TOP_CENTER).addThemeVariants(LUMO_ERROR);
+            throw new RuntimeException(e);
+        }
+    }
+
     private RunParams getRunParams() {
         var numRequests = requestNumberField.getValue();
         var threadPoolSize = threadPoolSizeField.getValue();
@@ -124,9 +142,10 @@ public class RunLayout extends VerticalLayout {
         startStressTestUI();
 
         var threadPoolSize = threadPoolSizeField.getValue();
+        var stressTestParams = new StressTestParams(getConfigParams(), getRunParams());
 
         stressService.startStressTest(
-                new StressTestParams(currentConfigParams, getRunParams()),
+                stressTestParams,
                 response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );
@@ -187,16 +206,16 @@ public class RunLayout extends VerticalLayout {
                 event -> applyParams(event.getRunParams())
         );
 
-        // Listen for "config params updated" events
+        // Listen for Run Params request
         ComponentUtil.addListener(attachEvent.getUI(),
-                ConfigParamsUpdatedEvent.class, // TODO change to pull logic when clicking start?
-                event -> this.currentConfigParams = event.getConfigParams()
+                RunParamsRequestEvent.class,
+                event -> returnRunParamsResponse(getRunParams())
         );
 
-        // Listen for stress test params request
+        // Listen for Config Params response
         ComponentUtil.addListener(attachEvent.getUI(),
-                StressTestParamsRequestEvent.class,
-                event -> runParamsResponse(getRunParams())
+                ConfigParamsResponseEvent.class,
+                event -> configParamsResponse.complete(event.getConfigParams())
         );
     }
 }
