@@ -3,7 +3,7 @@ package com.dario.ast.view.config;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.StressTestParamsRequestEvent;
+import com.dario.ast.event.ConfigParamsRequestEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -16,8 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
 
 import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
-import static com.dario.ast.util.EventUtil.configParamsResponse;
-import static com.dario.ast.util.EventUtil.configParamsUpdated;
+import static com.dario.ast.util.EventUtil.returnConfigParamsResponse;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
@@ -39,54 +38,36 @@ public class ConfigLayout extends VerticalLayout {
 
         // url + http method
         urlText.setWidth("20em");
+        urlText.addValueChangeListener(event -> generateCurlPreview());
         methodCombo.setMaxWidth("7.5em");
-        var urlLayout = new FlexLayout(urlText, methodCombo);
-        urlLayout.setWidthFull();
-        urlLayout.setFlexWrap(WRAP);
-        urlLayout.setFlexGrow(1, urlText, methodCombo);
-        urlLayout.getStyle()
+        methodCombo.addValueChangeListener(event -> generateCurlPreview());
+
+        var urlMethodLayout = new FlexLayout(urlText, methodCombo);
+        urlMethodLayout.setWidthFull();
+        urlMethodLayout.setFlexWrap(WRAP);
+        urlMethodLayout.setFlexGrow(1, urlText, methodCombo);
+        urlMethodLayout.getStyle()
                 .set("margin-bottom", "1em")
                 .set("gap", "var(--lumo-space-m)");
 
         // request body
         requestBodyText.setWidthFull();
+        requestBodyText.addValueChangeListener(event -> generateCurlPreview());
 
         // curl preview
         previewTextClipboard.wrap(previewText);
         previewTextClipboard.getStyle().set("width", "100%");
 
-        addValueChangeListeners();
-
         // add all components
         add(
                 new H3("Configure"),
-                urlLayout,
+                urlMethodLayout,
                 new ToggleLayout("Headers", headerSection),
                 new ToggleLayout("URI Variables", uriVariablesSection),
                 new ToggleLayout("Query Parameters", queryParamsSection),
                 new ToggleLayout("Request Body", requestBodyText),
                 previewTextClipboard
         );
-    }
-
-    private void addValueChangeListeners() {
-        urlText.addValueChangeListener(event -> {
-            generateCurlPreview();
-            notifyConfigParamsChanged();
-        });
-        methodCombo.addValueChangeListener(event -> {
-            generateCurlPreview();
-            notifyConfigParamsChanged();
-        });
-        requestBodyText.addValueChangeListener(event -> {
-            generateCurlPreview();
-            notifyConfigParamsChanged();
-        });
-    }
-
-    private void notifyConfigParamsChanged() {
-        var configParams = getConfigParams();
-        configParamsUpdated(configParams); // notify other components that the config params have changed
     }
 
     private void generateCurlPreview() {
@@ -144,16 +125,13 @@ public class ConfigLayout extends VerticalLayout {
         // Listen for events indicating that config entries (EntriesSection class) were updated
         ComponentUtil.addListener(attachEvent.getUI(),
                 ConfigEntriesUpdatedEvent.class,
-                event -> {
-                    generateCurlPreview();
-                    notifyConfigParamsChanged();
-                }
+                event -> generateCurlPreview()
         );
 
-        // Listen for stress test params request
+        // Listen for Config Params request
         ComponentUtil.addListener(attachEvent.getUI(),
-                StressTestParamsRequestEvent.class,
-                event -> configParamsResponse(getConfigParams())
+                ConfigParamsRequestEvent.class,
+                event -> returnConfigParamsResponse(getConfigParams())
         );
     }
 }

@@ -14,7 +14,8 @@ import com.vaadin.flow.component.notification.Notification;
 
 import java.util.concurrent.CompletableFuture;
 
-import static com.dario.ast.util.EventUtil.requestStressTestParams;
+import static com.dario.ast.util.EventUtil.requestConfigParams;
+import static com.dario.ast.util.EventUtil.requestRunParams;
 import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
 import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
@@ -38,7 +39,8 @@ public class SaveButton extends Button {
         configParamsResponse = new CompletableFuture<>();
         runParamsResponse = new CompletableFuture<>();
 
-        requestStressTestParams();
+        requestConfigParams();
+        requestRunParams();
 
         // Wait for both responses, then save
         CompletableFuture.allOf(configParamsResponse, runParamsResponse).thenRun(() -> {
