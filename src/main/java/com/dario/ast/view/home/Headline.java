@@ -1,4 +1,4 @@
-package com.dario.ast.view.component;
+package com.dario.ast.view.home;
 
 import com.vaadin.flow.component.html.H2;
 

@@ -4,10 +4,9 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.StressService;
-import com.dario.ast.event.AddRunChangeListenerEvent;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.event.ConfigParamsUpdatedEvent;
-import com.dario.ast.event.RunParamsUpdatedEvent;
+import com.dario.ast.event.StressTestParamsRequestEvent;
 import com.dario.ast.proxy.ApiResponse;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
@@ -20,7 +19,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
-import static com.dario.ast.util.EventUtil.runParamsUpdated;
+import static com.dario.ast.util.EventUtil.runParamsResponse;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
@@ -42,7 +41,6 @@ public class RunLayout extends VerticalLayout {
     private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
 
     private long completedRequests = 0, failedRequests = 0;
-    private RunParams currentRunParams;
     private ConfigParams currentConfigParams;
 
     public RunLayout(StressService stressService) {
@@ -51,20 +49,21 @@ public class RunLayout extends VerticalLayout {
         setWidthFull();
         addClassNames("card-layout", "run-layout");
 
-        // requests number
+        // requests + thread pool
         requestNumberField.setWidthFull();
         requestNumberField.setMinWidth("5em");
         requestNumberField.setMin(1);
+        requestNumberField.addValueChangeListener(integerValidationListener(requestNumberField, 1));
 
-        // thread pool size
         threadPoolSizeField.setWidthFull();
         threadPoolSizeField.setMinWidth("5em");
         threadPoolSizeField.setMin(1);
+        threadPoolSizeField.addValueChangeListener(integerValidationListener(threadPoolSizeField, 1));
 
         var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
         requestThreadLayout.setWidthFull();
 
-        // start / stop button
+        // start + stop buttons
         startButton.addClickListener(event -> startStressTest());
         startButton.setIcon(PLAY.create());
         startButton.addClassName("start-stop-button");
@@ -97,27 +96,9 @@ public class RunLayout extends VerticalLayout {
                 requestThreadLayout,
                 stopOnErrorCheckbox,
                 startButton, stopButton,
-                resultsLayout);
+                resultsLayout
+        );
         setHorizontalComponentAlignment(CENTER, startButton, stopButton);
-    }
-
-    private void addValueChangeListeners() {
-        requestNumberField.addValueChangeListener(event -> {
-            integerValidationListener(requestNumberField, 1);
-            notifyRunParamsChanged();
-        });
-
-        threadPoolSizeField.addValueChangeListener(event -> {
-            integerValidationListener(threadPoolSizeField, 1);
-            notifyRunParamsChanged();
-        });
-
-        stopOnErrorCheckbox.addValueChangeListener(event -> notifyRunParamsChanged());
-    }
-
-    private void notifyRunParamsChanged() {
-        var runParams = getRunParams();
-        runParamsUpdated(runParams); // notify other components that the run params have changed
     }
 
     private void applyParams(RunParams params) {
@@ -126,7 +107,7 @@ public class RunLayout extends VerticalLayout {
         stopOnErrorCheckbox.setValue(params.isStopOnError());
     }
 
-    public RunParams getRunParams() {
+    private RunParams getRunParams() {
         var numRequests = requestNumberField.getValue();
         var threadPoolSize = threadPoolSizeField.getValue();
         var stopOnError = stopOnErrorCheckbox.getValue();
@@ -145,7 +126,7 @@ public class RunLayout extends VerticalLayout {
         var threadPoolSize = threadPoolSizeField.getValue();
 
         stressService.startStressTest(
-                new StressTestParams(currentConfigParams, currentRunParams),
+                new StressTestParams(currentConfigParams, getRunParams()),
                 response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );
@@ -201,32 +182,21 @@ public class RunLayout extends VerticalLayout {
         super.onAttach(attachEvent);
 
         // Listen for events that should trigger applying the run params in the UI
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
+        ComponentUtil.addListener(attachEvent.getUI(),
                 ApplyRunParamsEvent.class,
                 event -> applyParams(event.getRunParams())
         );
 
-        // Listen for events that should trigger adding the run change listeners
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                AddRunChangeListenerEvent.class,
-                event -> addValueChangeListeners()
-        );
-
         // Listen for "config params updated" events
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                ConfigParamsUpdatedEvent.class,
+        ComponentUtil.addListener(attachEvent.getUI(),
+                ConfigParamsUpdatedEvent.class, // TODO change to pull logic when clicking start?
                 event -> this.currentConfigParams = event.getConfigParams()
         );
 
-        // Listen for "run params updated" events
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                RunParamsUpdatedEvent.class,
-                event -> this.currentRunParams = event.getRunParams()
+        // Listen for stress test params request
+        ComponentUtil.addListener(attachEvent.getUI(),
+                StressTestParamsRequestEvent.class,
+                event -> runParamsResponse(getRunParams())
         );
     }
-
 }

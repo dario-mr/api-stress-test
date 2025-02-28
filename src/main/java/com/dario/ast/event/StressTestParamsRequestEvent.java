@@ -4,9 +4,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.button.Button;
 
-public class AddRunChangeListenerEvent extends ComponentEvent<Component> {
+public class StressTestParamsRequestEvent extends ComponentEvent<Component> {
 
-    public AddRunChangeListenerEvent() {
+    public StressTestParamsRequestEvent() {
         super(new Button(), false);
     }
 }
