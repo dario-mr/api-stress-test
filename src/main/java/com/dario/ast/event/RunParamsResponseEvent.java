@@ -7,11 +7,11 @@ import com.vaadin.flow.component.button.Button;
 import lombok.Getter;
 
 @Getter
-public class RunParamsUpdatedEvent extends ComponentEvent<Component> {
+public class RunParamsResponseEvent extends ComponentEvent<Component> {
 
     private final RunParams runParams;
 
-    public RunParamsUpdatedEvent(RunParams runParams) {
+    public RunParamsResponseEvent(RunParams runParams) {
         super(new Button(), false);
         this.runParams = runParams;
     }

@@ -1,10 +1,9 @@
 package com.dario.ast.view.config;
 
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.event.AddConfigChangeListenerEvent;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.ConfigParamsUpdatedEvent;
+import com.dario.ast.event.StressTestParamsRequestEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -17,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
 
 import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
+import static com.dario.ast.util.EventUtil.configParamsResponse;
 import static com.dario.ast.util.EventUtil.configParamsUpdated;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
@@ -54,6 +54,8 @@ public class ConfigLayout extends VerticalLayout {
         // curl preview
         previewTextClipboard.wrap(previewText);
         previewTextClipboard.getStyle().set("width", "100%");
+
+        addValueChangeListeners();
 
         // add all components
         add(
@@ -133,36 +135,25 @@ public class ConfigLayout extends VerticalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        // Listen for events that should trigger adding the config change listeners
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                AddConfigChangeListenerEvent.class,
-                event -> addValueChangeListeners()
-        );
-
         // Listen for events that should trigger applying the config params in the UI
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
+        ComponentUtil.addListener(attachEvent.getUI(),
                 ApplyConfigParamsEvent.class,
                 event -> applyParams(event.getConfigParams())
         );
 
-        // Listen for "config params updated" events
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
-                ConfigParamsUpdatedEvent.class,
-                event -> generateCurlPreview()
-        );
-
         // Listen for events indicating that config entries (EntriesSection class) were updated
-        ComponentUtil.addListener(
-                attachEvent.getUI(),
+        ComponentUtil.addListener(attachEvent.getUI(),
                 ConfigEntriesUpdatedEvent.class,
                 event -> {
                     generateCurlPreview();
                     notifyConfigParamsChanged();
                 }
         );
-    }
 
+        // Listen for stress test params request
+        ComponentUtil.addListener(attachEvent.getUI(),
+                StressTestParamsRequestEvent.class,
+                event -> configParamsResponse(getConfigParams())
+        );
+    }
 }
