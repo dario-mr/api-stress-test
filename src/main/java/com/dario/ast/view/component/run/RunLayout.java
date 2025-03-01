@@ -5,10 +5,8 @@ import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.StressService;
 import com.dario.ast.event.ApplyRunParamsEvent;
-import com.dario.ast.event.ConfigParamsResponseEvent;
-import com.dario.ast.event.RunParamsRequestEvent;
 import com.dario.ast.proxy.ApiResponse;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.notification.WarnNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -20,20 +18,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
-import static com.dario.ast.util.EventUtil.requestConfigParams;
-import static com.dario.ast.util.EventUtil.returnRunParamsResponse;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.springframework.util.StringUtils.hasText;
 
 public class RunLayout extends VerticalLayout {
 
     private final StressService stressService;
+    private final Supplier<ConfigParams> configParamsSupplier;
 
     private final IntegerField requestNumberField = new IntegerField("Requests");
     private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -45,10 +43,10 @@ public class RunLayout extends VerticalLayout {
     private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
 
     private long completedRequests = 0, failedRequests = 0;
-    private CompletableFuture<ConfigParams> configParamsResponse = new CompletableFuture<>();
 
-    public RunLayout(StressService stressService) {
+    public RunLayout(StressService stressService, Supplier<ConfigParams> configParamsSupplier) {
         this.stressService = stressService;
+        this.configParamsSupplier = configParamsSupplier;
 
         setWidthFull();
         addClassNames("card-layout", "run-layout");
@@ -105,25 +103,7 @@ public class RunLayout extends VerticalLayout {
         setHorizontalComponentAlignment(CENTER, startButton, stopButton);
     }
 
-    private void applyParams(RunParams params) {
-        requestNumberField.setValue(params.getNumRequests());
-        threadPoolSizeField.setValue(params.getThreadPoolSize());
-        stopOnErrorCheckbox.setValue(params.isStopOnError());
-    }
-
-    private ConfigParams getConfigParams() {
-        configParamsResponse = new CompletableFuture<>();
-        requestConfigParams();
-
-        try {
-            return configParamsResponse.get();
-        } catch (Exception e) {
-            ErrorNotification.show("Error reading Configure parameters");
-            throw new RuntimeException(e);
-        }
-    }
-
-    private RunParams getRunParams() {
+    public RunParams getRunParams() {
         var numRequests = requestNumberField.getValue();
         var threadPoolSize = threadPoolSizeField.getValue();
         var stopOnError = stopOnErrorCheckbox.getValue();
@@ -135,12 +115,26 @@ public class RunLayout extends VerticalLayout {
                 .build();
     }
 
+    private void applyParams(RunParams params) {
+        requestNumberField.setValue(params.getNumRequests());
+        threadPoolSizeField.setValue(params.getThreadPoolSize());
+        stopOnErrorCheckbox.setValue(params.isStopOnError());
+    }
+
     private void startStressTest() {
+        // validate parameters
+        var configParams = configParamsSupplier.get();
+        if (!hasText(configParams.getUri())) {
+            WarnNotification.show("Please provide a valid URI");
+            return;
+        }
+
         stopStressTest();
         startStressTestUI();
 
+        var runParams = getRunParams();
+        var stressTestParams = new StressTestParams(configParams, runParams);
         var threadPoolSize = threadPoolSizeField.getValue();
-        var stressTestParams = new StressTestParams(getConfigParams(), getRunParams());
 
         stressService.startStressTest(
                 stressTestParams,
@@ -202,18 +196,6 @@ public class RunLayout extends VerticalLayout {
         ComponentUtil.addListener(attachEvent.getUI(),
                 ApplyRunParamsEvent.class,
                 event -> applyParams(event.getRunParams())
-        );
-
-        // Listen for Run Params request
-        ComponentUtil.addListener(attachEvent.getUI(),
-                RunParamsRequestEvent.class,
-                event -> returnRunParamsResponse(getRunParams())
-        );
-
-        // Listen for Config Params response
-        ComponentUtil.addListener(attachEvent.getUI(),
-                ConfigParamsResponseEvent.class,
-                event -> configParamsResponse.complete(event.getConfigParams())
         );
     }
 }
