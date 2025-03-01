@@ -1,5 +1,7 @@
 package com.dario.ast.view.route;
 
+import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.ParamService;
 import com.dario.ast.core.service.StressService;
 import com.dario.ast.view.component.config.ConfigLayout;
@@ -13,6 +15,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.function.Supplier;
+
 import static com.dario.ast.util.EventUtil.applyConfigParams;
 import static com.dario.ast.util.EventUtil.applyRunParams;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
@@ -23,9 +27,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CE
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-    // TODO validation when clicking start
-    // TODO persist parameters to db
-    // TODO save configs in a list in the sidebar
+    // TODO save multiple configs to db and show them in a list in the sidebar
 
     private final static String MAX_WINDOW_WIDTH = "1000px";
 
@@ -37,10 +39,16 @@ public class MainView extends VerticalLayout {
         setAlignItems(CENTER);
         setPadding(false);
 
+        var configLayout = new ConfigLayout();
+        var configParamsSupplier = (Supplier<ConfigParams>) configLayout::getConfigParams;
+
+        var runLayout = new RunLayout(stressService, configParamsSupplier);
+        var runParamsSupplier = (Supplier<RunParams>) runLayout::getRunParams;
+
         var container = new VerticalLayout(
-                new HeadlineLayout(paramService),
-                new ConfigLayout(),
-                new RunLayout(stressService)
+                new HeadlineLayout(paramService, configParamsSupplier, runParamsSupplier),
+                configLayout,
+                runLayout
         );
         container.setMaxWidth(MAX_WINDOW_WIDTH);
         add(container);

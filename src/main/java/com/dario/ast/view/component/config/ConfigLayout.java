@@ -3,7 +3,6 @@ package com.dario.ast.view.component.config;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.ConfigParamsRequestEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
 
 import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
-import static com.dario.ast.util.EventUtil.returnConfigParamsResponse;
 import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
@@ -71,15 +69,7 @@ public class ConfigLayout extends VerticalLayout {
         );
     }
 
-    private void generateCurlPreview() {
-        var configParams = getConfigParams();
-        var curlPreview = buildCurlPreview(configParams);
-
-        previewText.setValue(curlPreview);
-        previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
-    }
-
-    private ConfigParams getConfigParams() {
+    public ConfigParams getConfigParams() {
         var url = urlText.getValue();
         var method = methodCombo.getValue();
         var headers = removeEmptyEntries(headerSection.getEntries());
@@ -95,6 +85,14 @@ public class ConfigLayout extends VerticalLayout {
                 .queryParams(queryParams)
                 .requestBody(requestBody)
                 .build();
+    }
+
+    private void generateCurlPreview() {
+        var configParams = getConfigParams();
+        var curlPreview = buildCurlPreview(configParams);
+
+        previewText.setValue(curlPreview);
+        previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
     }
 
     private void applyParams(ConfigParams params) {
@@ -127,12 +125,6 @@ public class ConfigLayout extends VerticalLayout {
         ComponentUtil.addListener(attachEvent.getUI(),
                 ConfigEntriesUpdatedEvent.class,
                 event -> generateCurlPreview()
-        );
-
-        // Listen for Config Params request
-        ComponentUtil.addListener(attachEvent.getUI(),
-                ConfigParamsRequestEvent.class,
-                event -> returnConfigParamsResponse(getConfigParams())
         );
     }
 }
