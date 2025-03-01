@@ -1,4 +1,4 @@
-package com.dario.ast.view.save;
+package com.dario.ast.view.component.save;
 
 import com.vaadin.flow.component.icon.Icon;
 

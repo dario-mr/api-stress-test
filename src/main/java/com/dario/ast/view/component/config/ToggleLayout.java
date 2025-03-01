@@ -1,4 +1,4 @@
-package com.dario.ast.view.config;
+package com.dario.ast.view.component.config;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
