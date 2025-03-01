@@ -1,4 +1,4 @@
-package com.dario.ast.view.config;
+package com.dario.ast.view.component.config;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.event.ApplyConfigParamsEvent;
@@ -52,6 +52,7 @@ public class ConfigLayout extends VerticalLayout {
 
         // request body
         requestBodyText.setWidthFull();
+        requestBodyText.getStyle().set("font-family", "monospace");
         requestBodyText.addValueChangeListener(event -> generateCurlPreview());
 
         // curl preview

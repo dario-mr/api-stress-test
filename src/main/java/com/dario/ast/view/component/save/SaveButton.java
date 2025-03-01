@@ -1,4 +1,4 @@
-package com.dario.ast.view.save;
+package com.dario.ast.view.component.save;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
@@ -6,19 +6,17 @@ import com.dario.ast.core.domain.StressTestParams;
 import com.dario.ast.core.service.ParamService;
 import com.dario.ast.event.ConfigParamsResponseEvent;
 import com.dario.ast.event.RunParamsResponseEvent;
+import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.notification.SuccessNotification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
 
 import java.util.concurrent.CompletableFuture;
 
 import static com.dario.ast.util.EventUtil.requestConfigParams;
 import static com.dario.ast.util.EventUtil.requestRunParams;
-import static com.vaadin.flow.component.notification.Notification.Position.TOP_CENTER;
-import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_ERROR;
-import static com.vaadin.flow.component.notification.NotificationVariant.LUMO_SUCCESS;
 
 public class SaveButton extends Button {
 
@@ -47,7 +45,7 @@ public class SaveButton extends Button {
             try {
                 save(configParamsResponse.get(), runParamsResponse.get());
             } catch (Exception e) {
-                Notification.show("Error processing responses", 2_000, TOP_CENTER).addThemeVariants(LUMO_ERROR);
+                ErrorNotification.show("Error processing responses");
                 throw new RuntimeException(e);
             }
         });
@@ -56,9 +54,9 @@ public class SaveButton extends Button {
     private void save(ConfigParams configParams, RunParams runParams) {
         try {
             paramService.saveParams(new StressTestParams(configParams, runParams));
-            Notification.show("Parameters saved", 2_000, TOP_CENTER).addThemeVariants(LUMO_SUCCESS);
+            SuccessNotification.show("Parameters saved");
         } catch (JsonProcessingException e) {
-            Notification.show("Error saving parameters", 2_000, TOP_CENTER).addThemeVariants(LUMO_ERROR);
+            ErrorNotification.show("Error saving parameters");
             throw new RuntimeException(e);
         }
     }
