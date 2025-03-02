@@ -22,9 +22,9 @@ public class HeadlineLayout extends HorizontalLayout {
         setAlignItems(CENTER);
         setJustifyContentMode(BETWEEN);
 
-        add(
-                new Headline(),
-                new SaveButton(astStorageService, configParamsSupplier, runParamsSupplier)
-        );
+        var headline = new Headline();
+        var saveButton = new SaveButton(astStorageService, configParamsSupplier, runParamsSupplier);
+
+        add(headline, saveButton);
     }
 }

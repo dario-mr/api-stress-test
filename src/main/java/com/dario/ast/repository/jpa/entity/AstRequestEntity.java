@@ -63,7 +63,6 @@ public class AstRequestEntity {
     @Column(name = "param_value")
     private Map<String, String> queryParams;
 
-    @Lob
     @Column(name = "request_body", columnDefinition = "TEXT")
     private String requestBody;
 

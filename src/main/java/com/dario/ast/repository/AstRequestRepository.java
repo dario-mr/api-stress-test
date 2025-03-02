@@ -33,8 +33,10 @@ public class AstRequestRepository {
 
     // TODO add "New request" button
     public void create(AstRequest astRequest) {
-        var entity = mapToEntity(astRequest);
         var now = Instant.now();
+
+        var entity = mapToEntity(astRequest);
+        entity.setId(null);
         entity.setCreatedOn(now);
         entity.setModifiedOn(now);
 
