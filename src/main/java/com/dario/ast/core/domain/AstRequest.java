@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public final class AstRequest {
 
+    private Long id;
+    private String name;
     private ConfigParams configParams;
     private RunParams runParams;
 }

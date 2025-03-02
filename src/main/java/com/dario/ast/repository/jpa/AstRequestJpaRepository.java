@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface AstRequestJpaRepository extends JpaRepository<AstRequestEntity, Long> {
 
-    List<AstRequestEntity> findByUser_Email(String userEmail);
+    List<AstRequestEntity> findByUser_EmailOrderByCreatedOn(String userEmail);
 }

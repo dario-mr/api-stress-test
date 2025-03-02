@@ -16,7 +16,7 @@ import static org.springframework.http.HttpMethod.GET;
 
 @Service
 @RequiredArgsConstructor
-public class AstStorageService {
+public class AstStorageService { // TODO refactor to access DB
 
     private static final String STRESS_TEST_PARAMS_KEY = "stressTestParams";
 
