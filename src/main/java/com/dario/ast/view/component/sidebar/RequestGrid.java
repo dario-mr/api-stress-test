@@ -61,8 +61,8 @@ public class RequestGrid extends Grid<AstRequest> {
         try {
             astRequests = new ArrayList<>(astStorageService.getAstRequestsByEmail(currentUser)); // mutable list
         } catch (Exception ex) {
-            log.error("Error loading user's {} requests", currentUser, ex);
-            ErrorNotification.show("Error loading your requests");
+            log.error("Error fetching [{}] requests", currentUser, ex);
+            ErrorNotification.show("Error fetching requests");
         }
 
         dataProvider = new ListDataProvider<>(astRequests);

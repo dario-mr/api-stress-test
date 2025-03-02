@@ -16,4 +16,4 @@ User-friendly app to perform stress test of your APIs.
 mvn clean package -Pproduction
 ```
 
-Then, start the app normally.
+Then, start the app with `prod` spring profile.
