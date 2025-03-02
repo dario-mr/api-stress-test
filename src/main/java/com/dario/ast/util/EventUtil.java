@@ -1,11 +1,12 @@
 package com.dario.ast.util;
 
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.UpdateRequestNameEvent;
+import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -26,7 +27,7 @@ public class EventUtil {
         fireEvent(UI.getCurrent(), new ConfigEntriesUpdatedEvent());
     }
 
-    public static void updateRequestName(String requestName) {
-        fireEvent(UI.getCurrent(), new UpdateRequestNameEvent(requestName));
+    public static void asrRequestUpdated(AstRequest astRequest) {
+        fireEvent(UI.getCurrent(), new AsrRequestUpdatedEvent(astRequest));
     }
 }
