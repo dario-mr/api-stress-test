@@ -2,7 +2,7 @@ package com.dario.ast.view.component.sidebar;
 
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.service.AstStorageService;
-import com.dario.ast.event.UpdateRequestNameEvent;
+import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
@@ -47,10 +47,10 @@ public class RequestGrid extends Grid<AstRequest> {
         // Ensure the event is fired only after the UI is fully initialized
         getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
-        // Listen for events indicating that the request name was updated
+        // Listen for events indicating that the "api stress test request" was updated
         ComponentUtil.addListener(attachEvent.getUI(),
-                UpdateRequestNameEvent.class,
-                event -> updateRequestName(event.getRequestName())
+                AsrRequestUpdatedEvent.class,
+                event -> updateAsrRequest(event.getAstRequest())
         );
     }
 
@@ -71,25 +71,27 @@ public class RequestGrid extends Grid<AstRequest> {
 
     private void selectFirstItem() {
         var astRequests = (List<AstRequest>) dataProvider.getItems();
-        if (!astRequests.isEmpty()) {
-            var firstRequest = astRequests.getFirst();
-
-            applyConfigParams(firstRequest.getConfigParams());
-            applyRunParams(firstRequest.getRunParams());
-            getSelectionModel().select(firstRequest); // highlight item in the grid
-
-        }
-    }
-
-    private void updateRequestName(String newRequestName) {
-        var optionalSelectedAstRequest = getSelectionModel().getFirstSelectedItem();
-        if (optionalSelectedAstRequest.isEmpty()) {
+        if (astRequests.isEmpty()) {
             return;
         }
 
-        var selectedAstRequest = optionalSelectedAstRequest.get();
-        selectedAstRequest.getConfigParams().setRequestName(newRequestName);
+        var firstRequest = astRequests.getFirst();
 
-        dataProvider.refreshItem(selectedAstRequest);
+        applyConfigParams(firstRequest.getConfigParams());
+        applyRunParams(firstRequest.getRunParams());
+        getSelectionModel().select(firstRequest); // highlight item in the grid
+    }
+
+    private void updateAsrRequest(AstRequest updatedRequest) {
+        var optionalSelectedRequest = getSelectionModel().getFirstSelectedItem();
+        if (optionalSelectedRequest.isEmpty()) {
+            return;
+        }
+
+        var selectedRequest = optionalSelectedRequest.get();
+        selectedRequest.setConfigParams(updatedRequest.getConfigParams());
+        selectedRequest.setRunParams(updatedRequest.getRunParams());
+
+        dataProvider.refreshItem(selectedRequest);
     }
 }

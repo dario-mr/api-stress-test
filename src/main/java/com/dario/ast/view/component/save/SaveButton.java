@@ -10,7 +10,7 @@ import com.vaadin.flow.component.button.Button;
 
 import java.util.function.Supplier;
 
-import static com.dario.ast.util.EventUtil.updateRequestName;
+import static com.dario.ast.util.EventUtil.asrRequestUpdated;
 
 public class SaveButton extends Button {
 
@@ -33,9 +33,10 @@ public class SaveButton extends Button {
         try {
             var configParams = configParamsSupplier.get();
             var runParams = runParamsSupplier.get();
+            var asrRequest = new AstRequest(configParams, runParams);
 
-            astStorageService.updateAstRequest(new AstRequest(configParams, runParams));
-            updateRequestName(configParams.getRequestName());
+            astStorageService.updateAstRequest(asrRequest);
+            asrRequestUpdated(asrRequest);
 
             SuccessNotification.show("Parameters saved");
         } catch (Exception e) {
