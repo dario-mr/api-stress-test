@@ -9,7 +9,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -40,6 +40,7 @@ public class ConfigLayout extends VerticalLayout {
 
     public ConfigLayout() {
         setWidthFull();
+        setSpacing(false);
         addClassNames("card-layout", "config-layout");
 
         // name
@@ -72,7 +73,7 @@ public class ConfigLayout extends VerticalLayout {
 
         // add all components
         add(
-                new H3("Configure"),
+                new H4("Configure"),
                 nameText,
                 urlMethodLayout,
                 new ToggleLayout("Headers", headerSection),

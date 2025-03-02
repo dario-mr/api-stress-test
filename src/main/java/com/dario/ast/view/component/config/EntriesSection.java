@@ -21,6 +21,7 @@ public class EntriesSection extends VerticalLayout {
 
     public EntriesSection() {
         setPadding(false);
+        setSpacing(false);
     }
 
     public void addEntry(String key, String value) {
