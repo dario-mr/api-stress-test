@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,8 +32,12 @@ public class AstRequestRepository {
                 .toList();
     }
 
-    // TODO add "New request" button
-    public void create(AstRequest astRequest) {
+    public Optional<AstRequest> findById(Long id) {
+        return jpaRepository.findById(id)
+                .map(this::mapToDomain);
+    }
+
+    public Long create(AstRequest astRequest) {
         var now = Instant.now();
 
         var entity = mapToEntity(astRequest);
@@ -40,7 +45,7 @@ public class AstRequestRepository {
         entity.setCreatedOn(now);
         entity.setModifiedOn(now);
 
-        jpaRepository.save(entity);
+        return jpaRepository.save(entity).getId();
     }
 
     public void update(AstRequest astRequest) {
@@ -76,8 +81,7 @@ public class AstRequestRepository {
     private AstRequest mapToDomain(AstRequestEntity entity) {
         return new AstRequest(
                 mapToConfigParams(entity),
-                mapToRunParams(entity)
-        );
+                mapToRunParams(entity));
     }
 
     private ConfigParams mapToConfigParams(AstRequestEntity astRequestEntity) {

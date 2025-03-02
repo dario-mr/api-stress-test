@@ -1,3 +1,4 @@
+/* Sidebar */
 .sidebar-layout {
     background: darkgreen;
 }
@@ -19,4 +20,11 @@
 
 .requests-grid::part(selected-row) {
     background-color: darkolivegreen;
+}
+
+/* Create button */
+.create-button {
+    margin: 0;
+    color: white;
+    border-radius: 0 12px 0 0;
 }
