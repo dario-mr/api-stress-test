@@ -1,9 +1,9 @@
 package com.dario.ast.view.component.run;
 
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.domain.StressTestParams;
-import com.dario.ast.core.service.StressService;
+import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.notification.WarnNotification;
@@ -30,7 +30,7 @@ import static org.springframework.util.StringUtils.hasText;
 
 public class RunLayout extends VerticalLayout {
 
-    private final StressService stressService;
+    private final StressTestService stressTestService;
     private final Supplier<ConfigParams> configParamsSupplier;
 
     private final IntegerField requestNumberField = new IntegerField("Requests");
@@ -44,8 +44,8 @@ public class RunLayout extends VerticalLayout {
 
     private long completedRequests = 0, failedRequests = 0;
 
-    public RunLayout(StressService stressService, Supplier<ConfigParams> configParamsSupplier) {
-        this.stressService = stressService;
+    public RunLayout(StressTestService stressTestService, Supplier<ConfigParams> configParamsSupplier) {
+        this.stressTestService = stressTestService;
         this.configParamsSupplier = configParamsSupplier;
 
         setWidthFull();
@@ -133,18 +133,18 @@ public class RunLayout extends VerticalLayout {
         startStressTestUI();
 
         var runParams = getRunParams();
-        var stressTestParams = new StressTestParams(configParams, runParams);
+        var astRequest = new AstRequest(configParams, runParams);
         var threadPoolSize = threadPoolSizeField.getValue();
 
-        stressService.startStressTest(
-                stressTestParams,
+        stressTestService.startStressTest(
+                astRequest,
                 response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );
     }
 
     private void stopStressTest() {
-        stressService.cancelStressTest();
+        stressTestService.cancelStressTest();
 
         completedRequests = 0;
         failedRequests = 0;

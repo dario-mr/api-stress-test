@@ -2,8 +2,9 @@ package com.dario.ast.view.route;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.ParamService;
-import com.dario.ast.core.service.StressService;
+import com.dario.ast.core.service.AstStorageService;
+import com.dario.ast.core.service.StressTestService;
+import com.dario.ast.repository.AstRequestRepository;
 import com.dario.ast.view.component.config.ConfigLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
 import com.dario.ast.view.component.notification.ErrorNotification;
@@ -31,8 +32,9 @@ public class MainView extends VerticalLayout {
 
     private final static String MAX_WINDOW_WIDTH = "1000px";
 
-    private final StressService stressService;
-    private final ParamService paramService;
+    private final StressTestService stressTestService;
+    private final AstStorageService astStorageService;
+    private final AstRequestRepository astRequestRepository;
 
     @PostConstruct
     public void init() {
@@ -42,11 +44,11 @@ public class MainView extends VerticalLayout {
         var configLayout = new ConfigLayout();
         var configParamsSupplier = (Supplier<ConfigParams>) configLayout::getConfigParams;
 
-        var runLayout = new RunLayout(stressService, configParamsSupplier);
+        var runLayout = new RunLayout(stressTestService, configParamsSupplier);
         var runParamsSupplier = (Supplier<RunParams>) runLayout::getRunParams;
 
         var container = new VerticalLayout(
-                new HeadlineLayout(paramService, configParamsSupplier, runParamsSupplier),
+                new HeadlineLayout(astStorageService, configParamsSupplier, runParamsSupplier),
                 configLayout,
                 runLayout
         );
@@ -54,13 +56,17 @@ public class MainView extends VerticalLayout {
         add(container);
 
         getAndApplyParams();
+
+        // TODO remove
+        var requests = astRequestRepository.findByUserEmail("user1@example.com");
+        log.info("Configured requests: {}", requests);
     }
 
     private void getAndApplyParams() {
-        paramService.getParams()
-                .thenAccept(params -> {
-                    applyConfigParams(params.getConfigParams());
-                    applyRunParams(params.getRunParams());
+        astStorageService.getAstRequest()
+                .thenAccept(astRequest -> {
+                    applyConfigParams(astRequest.getConfigParams());
+                    applyRunParams(astRequest.getRunParams());
                 })
                 .exceptionally(ex -> {
                     ErrorNotification.show("Error loading parameters");
