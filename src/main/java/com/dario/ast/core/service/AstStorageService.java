@@ -3,6 +3,7 @@ package com.dario.ast.core.service;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
+import com.dario.ast.repository.AstRequestRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.page.WebStorage;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.springframework.http.HttpMethod.GET;
@@ -21,6 +23,11 @@ public class AstStorageService { // TODO refactor to access DB
     private static final String STRESS_TEST_PARAMS_KEY = "stressTestParams";
 
     private final ObjectMapper objectMapper;
+    private final AstRequestRepository astRequestRepository;
+
+    public List<AstRequest> getAstRequestsByEmail(String email) {
+        return astRequestRepository.findByUserEmail(email);
+    }
 
     public void saveAstRequest(AstRequest astRequest) throws JsonProcessingException {
         var encodedRequest = objectMapper.writeValueAsString(astRequest);

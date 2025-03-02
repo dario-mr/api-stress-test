@@ -10,6 +10,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -27,6 +28,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.springframework.util.StringUtils.hasText;
 
+@CssImport(value = "./styles/run-layout.css")
 public class RunLayout extends VerticalLayout {
 
     private final StressTestService stressTestService;
