@@ -2,17 +2,22 @@ package com.dario.ast.view.component.sidebar;
 
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.service.AstStorageService;
+import com.dario.ast.event.UpdateRequestNameEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import static com.dario.ast.util.EventUtil.applyConfigParams;
+import static com.dario.ast.util.EventUtil.applyRunParams;
 
 @Slf4j
 public class RequestGrid extends Grid<AstRequest> {
-
-    // TODO add click listener to load selected request into UI
 
     private final AstStorageService astStorageService;
 
@@ -22,10 +27,31 @@ public class RequestGrid extends Grid<AstRequest> {
         this.astStorageService = astStorageService;
         addClassName("requests-grid");
 
-        // add columns
-        addColumn(AstRequest::getName).setAutoWidth(true);
+        // name column
+        addColumn(astRequest -> astRequest.getConfigParams().getRequestName()).setAutoWidth(true);
+
+        // click listener
+        addItemClickListener(event -> {
+            var astRequest = event.getItem();
+            applyConfigParams(astRequest.getConfigParams());
+            applyRunParams(astRequest.getRunParams());
+        });
 
         loadRequests();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        // Ensure the event is fired only after the UI is fully initialized
+        getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
+
+        // Listen for events indicating that the request name was updated
+        ComponentUtil.addListener(attachEvent.getUI(),
+                UpdateRequestNameEvent.class,
+                event -> updateRequestName(event.getRequestName())
+        );
     }
 
     private void loadRequests() {
@@ -41,5 +67,29 @@ public class RequestGrid extends Grid<AstRequest> {
 
         dataProvider = new ListDataProvider<>(astRequests);
         setDataProvider(dataProvider);
+    }
+
+    private void selectFirstItem() {
+        var astRequests = (List<AstRequest>) dataProvider.getItems();
+        if (!astRequests.isEmpty()) {
+            var firstRequest = astRequests.getFirst();
+
+            applyConfigParams(firstRequest.getConfigParams());
+            applyRunParams(firstRequest.getRunParams());
+            getSelectionModel().select(firstRequest); // highlight item in the grid
+
+        }
+    }
+
+    private void updateRequestName(String newRequestName) {
+        var optionalSelectedAstRequest = getSelectionModel().getFirstSelectedItem();
+        if (optionalSelectedAstRequest.isEmpty()) {
+            return;
+        }
+
+        var selectedAstRequest = optionalSelectedAstRequest.get();
+        selectedAstRequest.getConfigParams().setRequestName(newRequestName);
+
+        dataProvider.refreshItem(selectedAstRequest);
     }
 }

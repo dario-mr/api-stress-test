@@ -82,6 +82,11 @@ public class EntriesSection extends VerticalLayout {
         entries.forEach(this::addEntry);
     }
 
+    public void clearEntries() {
+        entries.clear();
+        removeAll();
+    }
+
     private boolean isThereAnEmptyEntry() {
         return entries.entrySet().stream()
                 .anyMatch(entry -> entry.getKey().isEmpty() && entry.getValue().isEmpty());

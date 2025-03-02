@@ -6,10 +6,11 @@ import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstStorageService;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.dario.ast.view.component.notification.SuccessNotification;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.button.Button;
 
 import java.util.function.Supplier;
+
+import static com.dario.ast.util.EventUtil.updateRequestName;
 
 public class SaveButton extends Button {
 
@@ -32,11 +33,12 @@ public class SaveButton extends Button {
         try {
             var configParams = configParamsSupplier.get();
             var runParams = runParamsSupplier.get();
-            // TODO save request name
-            astStorageService.saveAstRequest(new AstRequest(null, "dummy name", configParams, runParams));
+
+            astStorageService.updateAstRequest(new AstRequest(configParams, runParams));
+            updateRequestName(configParams.getRequestName());
 
             SuccessNotification.show("Parameters saved");
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             ErrorNotification.show("Error saving parameters");
             throw new RuntimeException(e);
         }

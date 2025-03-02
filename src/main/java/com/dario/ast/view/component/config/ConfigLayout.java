@@ -1,6 +1,7 @@
 package com.dario.ast.view.component.config;
 
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.User;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.vaadin.flow.component.AttachEvent;
@@ -23,6 +24,7 @@ import static org.springframework.http.HttpMethod.values;
 @CssImport(value = "./styles/config-layout.css")
 public class ConfigLayout extends VerticalLayout {
 
+    private final TextField nameText = new TextField("Name");
     private final TextField urlText = new TextField("API endpoint");
     private final ComboBox<HttpMethod> methodCombo = new ComboBox<>("Method", values());
     private final EntriesSection headerSection = new EntriesSection();
@@ -32,9 +34,18 @@ public class ConfigLayout extends VerticalLayout {
     private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
     private final TextArea previewText = new PreviewTextArea();
 
+    private Long requestId;
+    private User user;
+
     public ConfigLayout() {
         setWidthFull();
         addClassNames("card-layout", "config-layout");
+
+        // name
+        nameText.setPlaceholder("Enter the request name");
+        nameText.setWidthFull();
+        nameText.setMaxWidth("30em");
+        nameText.setMinWidth("0");
 
         // url + http method
         urlText.setWidth("20em");
@@ -62,6 +73,7 @@ public class ConfigLayout extends VerticalLayout {
         // add all components
         add(
                 new H3("Configure"),
+                nameText,
                 urlMethodLayout,
                 new ToggleLayout("Headers", headerSection),
                 new ToggleLayout("URI Variables", uriVariablesSection),
@@ -80,6 +92,9 @@ public class ConfigLayout extends VerticalLayout {
         var requestBody = requestBodyText.getValue();
 
         return ConfigParams.builder()
+                .requestId(requestId)
+                .user(user)
+                .requestName(nameText.getValue())
                 .uri(url)
                 .method(method)
                 .headers(headers)
@@ -98,19 +113,28 @@ public class ConfigLayout extends VerticalLayout {
     }
 
     private void applyParams(ConfigParams params) {
+        this.requestId = params.getRequestId();
+        this.user = params.getUser();
+
+        nameText.setValue(params.getRequestName());
+
         urlText.setValue(params.getUri());
         methodCombo.setValue(params.getMethod());
 
+        headerSection.clearEntries();
         headerSection.addEntries(params.getHeaders());
         headerSection.addEntry("", "");
 
+        uriVariablesSection.clearEntries();
         uriVariablesSection.addEntries(params.getUriVariables());
         uriVariablesSection.addEntry("", "");
 
+        queryParamsSection.clearEntries();
         queryParamsSection.addEntries(params.getQueryParams());
         queryParamsSection.addEntry("", "");
 
-        requestBodyText.setValue(params.getRequestBody());
+        requestBodyText.setValue(params.getRequestBody() == null
+                ? "" : params.getRequestBody());
     }
 
     @Override
