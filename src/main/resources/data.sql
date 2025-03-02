@@ -41,3 +41,8 @@ VALUES (2, 'productId', '789');
 INSERT INTO my_schema.ast_request_query_params (ast_request_id, param_key, param_value)
 VALUES (2, 'page', '2'),
        (2, 'size', '20');
+
+
+-- Adjust the auto-increment value to avoid PK constraint violation
+ALTER TABLE my_schema.ast_user ALTER COLUMN id RESTART WITH 3;
+ALTER TABLE my_schema.ast_request ALTER COLUMN id RESTART WITH 4;

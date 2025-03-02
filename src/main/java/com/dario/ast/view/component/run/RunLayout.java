@@ -126,7 +126,7 @@ public class RunLayout extends VerticalLayout {
         // validate parameters
         var configParams = configParamsSupplier.get();
         if (!hasText(configParams.getUri())) {
-            WarnNotification.show("Please provide a valid URI");
+            WarnNotification.show("Please provide a valid URL");
             return;
         }
 

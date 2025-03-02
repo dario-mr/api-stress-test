@@ -4,6 +4,7 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.User;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
+import com.dario.ast.event.FocusRequestNameEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -24,8 +25,8 @@ import static org.springframework.http.HttpMethod.values;
 @CssImport(value = "./styles/config-layout.css")
 public class ConfigLayout extends VerticalLayout {
 
-    private final TextField nameText = new TextField("Name");
-    private final TextField urlText = new TextField("API endpoint");
+    private final TextField nameText = new TextField("Name", "Enter the request name");
+    private final TextField urlText = new TextField("URL", "Enter the URL");
     private final ComboBox<HttpMethod> methodCombo = new ComboBox<>("Method", values());
     private final EntriesSection headerSection = new EntriesSection();
     private final EntriesSection uriVariablesSection = new EntriesSection();
@@ -42,7 +43,6 @@ public class ConfigLayout extends VerticalLayout {
         addClassNames("card-layout", "config-layout");
 
         // name
-        nameText.setPlaceholder("Enter the request name");
         nameText.setWidthFull();
         nameText.setMaxWidth("30em");
         nameText.setMinWidth("0");
@@ -104,6 +104,29 @@ public class ConfigLayout extends VerticalLayout {
                 .build();
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        // Listen for events that should trigger applying the config params in the UI
+        ComponentUtil.addListener(attachEvent.getUI(),
+                ApplyConfigParamsEvent.class,
+                event -> applyParams(event.getConfigParams())
+        );
+
+        // Listen for events indicating that config entries (EntriesSection class) were updated
+        ComponentUtil.addListener(attachEvent.getUI(),
+                ConfigEntriesUpdatedEvent.class,
+                event -> generateCurlPreview()
+        );
+
+        // Listen for events indicating that the request name field should be focused
+        ComponentUtil.addListener(attachEvent.getUI(),
+                FocusRequestNameEvent.class,
+                event -> nameText.focus()
+        );
+    }
+
     private void generateCurlPreview() {
         var configParams = getConfigParams();
         var curlPreview = buildCurlPreview(configParams);
@@ -135,22 +158,5 @@ public class ConfigLayout extends VerticalLayout {
 
         requestBodyText.setValue(params.getRequestBody() == null
                 ? "" : params.getRequestBody());
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-
-        // Listen for events that should trigger applying the config params in the UI
-        ComponentUtil.addListener(attachEvent.getUI(),
-                ApplyConfigParamsEvent.class,
-                event -> applyParams(event.getConfigParams())
-        );
-
-        // Listen for events indicating that config entries (EntriesSection class) were updated
-        ComponentUtil.addListener(attachEvent.getUI(),
-                ConfigEntriesUpdatedEvent.class,
-                event -> generateCurlPreview()
-        );
     }
 }
