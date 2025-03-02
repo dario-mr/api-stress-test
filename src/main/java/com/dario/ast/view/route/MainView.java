@@ -4,11 +4,12 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstStorageService;
 import com.dario.ast.core.service.StressTestService;
-import com.dario.ast.repository.AstRequestRepository;
 import com.dario.ast.view.component.config.ConfigLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.dario.ast.view.component.run.RunLayout;
+import com.dario.ast.view.component.sidebar.Sidebar;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -20,7 +21,6 @@ import java.util.function.Supplier;
 
 import static com.dario.ast.util.EventUtil.applyConfigParams;
 import static com.dario.ast.util.EventUtil.applyRunParams;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 
 @Route
 @Slf4j
@@ -28,18 +28,14 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CE
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-    // TODO save multiple configs to db and show them in a list in the sidebar
-
-    private final static String MAX_WINDOW_WIDTH = "1000px";
+    // TODO add Google oauth
 
     private final StressTestService stressTestService;
     private final AstStorageService astStorageService;
-    private final AstRequestRepository astRequestRepository;
 
     @PostConstruct
     public void init() {
-        setAlignItems(CENTER);
-        setPadding(false);
+        setSizeFull();
 
         var configLayout = new ConfigLayout();
         var configParamsSupplier = (Supplier<ConfigParams>) configLayout::getConfigParams;
@@ -47,19 +43,20 @@ public class MainView extends VerticalLayout {
         var runLayout = new RunLayout(stressTestService, configParamsSupplier);
         var runParamsSupplier = (Supplier<RunParams>) runLayout::getRunParams;
 
-        var container = new VerticalLayout(
-                new HeadlineLayout(astStorageService, configParamsSupplier, runParamsSupplier),
-                configLayout,
-                runLayout
-        );
-        container.setMaxWidth(MAX_WINDOW_WIDTH);
-        add(container);
+        var requestLayout = new VerticalLayout(configLayout, runLayout);
+        requestLayout.setPadding(false);
+
+        var headline = new HeadlineLayout(astStorageService, configParamsSupplier, runParamsSupplier);
+
+        var sidebar = new Sidebar(astStorageService);
+
+        var mainContent = new HorizontalLayout(sidebar, requestLayout);
+        mainContent.setSizeFull();
+
+        // add all components
+        add(headline, mainContent);
 
         getAndApplyParams();
-
-        // TODO remove
-        var requests = astRequestRepository.findByUserEmail("user1@example.com");
-        log.info("Configured requests: {}", requests);
     }
 
     private void getAndApplyParams() {

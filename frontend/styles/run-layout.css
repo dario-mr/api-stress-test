@@ -1,0 +1,14 @@
+.run-layout {
+    background: darkslateblue;
+}
+
+.start-stop-button {
+    width: 100%;
+    max-width: 15em;
+    height: 2.5em;
+    background-color: darkcyan;
+}
+
+.start-stop-button > vaadin-icon {
+    color: ghostwhite;
+}

@@ -1,37 +1,9 @@
-.headline {
-    font-family: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    font-weight: 700;
-    background: -webkit-linear-gradient(120deg, #9affb0 30%, #41d1ff);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 .card-layout {
     border-radius: 12px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     transition: 0.3s;
 }
 
-.config-layout {
-    background: #344955;
-}
-
-.run-layout {
-    background: darkslateblue;
-}
-
 .card-layout:hover {
     box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-}
-
-.start-stop-button {
-    width: 100%;
-    max-width: 15em;
-    height: 2.5em;
-    background-color: darkcyan;
-}
-
-.start-stop-button > vaadin-icon {
-    color: ghostwhite;
 }

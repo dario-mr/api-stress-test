@@ -1,0 +1,22 @@
+.sidebar-layout {
+    background: darkolivegreen;
+}
+
+.sidebar-title {
+    padding: var(--lumo-space-m);
+}
+
+/* Requests Grid */
+.requests-grid {
+    background: transparent;
+    border: none;
+    --_lumo-grid-secondary-border-color: transparent;
+}
+
+.requests-grid::part(cell) {
+    background: transparent;
+}
+
+.requests-grid::part(selected-row) {
+    background-color: darkgreen;
+}

@@ -6,6 +6,7 @@ import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +20,7 @@ import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 
+@CssImport(value = "./styles/config-layout.css")
 public class ConfigLayout extends VerticalLayout {
 
     private final TextField urlText = new TextField("API endpoint");
