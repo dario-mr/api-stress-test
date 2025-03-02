@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AstStorageService {
+public class AstRequestService {
 
     private final AstRequestRepository astRequestRepository;
 

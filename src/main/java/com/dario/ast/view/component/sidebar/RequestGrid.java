@@ -1,7 +1,7 @@
 package com.dario.ast.view.component.sidebar;
 
 import com.dario.ast.core.domain.AstRequest;
-import com.dario.ast.core.service.AstStorageService;
+import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
@@ -19,12 +19,12 @@ import static com.dario.ast.util.EventUtil.applyRunParams;
 @Slf4j
 public class RequestGrid extends Grid<AstRequest> {
 
-    private final AstStorageService astStorageService;
+    private final AstRequestService astRequestService;
 
     private ListDataProvider<AstRequest> dataProvider;
 
-    public RequestGrid(AstStorageService astStorageService) {
-        this.astStorageService = astStorageService;
+    public RequestGrid(AstRequestService astRequestService) {
+        this.astRequestService = astRequestService;
         addClassName("requests-grid");
 
         // name column
@@ -59,7 +59,7 @@ public class RequestGrid extends Grid<AstRequest> {
         var currentUser = "user1@example.com"; // TODO use logged-in user
 
         try {
-            astRequests = new ArrayList<>(astStorageService.getAstRequestsByEmail(currentUser)); // mutable list
+            astRequests = new ArrayList<>(astRequestService.getAstRequestsByEmail(currentUser)); // mutable list
         } catch (Exception ex) {
             log.error("Error fetching [{}] requests", currentUser, ex);
             ErrorNotification.show("Error fetching requests");
