@@ -5,12 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class AstRequest {
+public final class User {
 
-    private ConfigParams configParams;
-    private RunParams runParams;
+    private Long id;
+    private String email;
+    private Instant createdOn;
+    private boolean active;
 }

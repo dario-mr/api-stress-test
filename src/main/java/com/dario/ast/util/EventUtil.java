@@ -5,6 +5,7 @@ import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
+import com.dario.ast.event.UpdateRequestNameEvent;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -23,5 +24,9 @@ public class EventUtil {
 
     public static void configEntriesUpdated() {
         fireEvent(UI.getCurrent(), new ConfigEntriesUpdatedEvent());
+    }
+
+    public static void updateRequestName(String requestName) {
+        fireEvent(UI.getCurrent(), new UpdateRequestNameEvent(requestName));
     }
 }

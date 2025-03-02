@@ -6,7 +6,6 @@ import com.dario.ast.core.service.AstStorageService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.view.component.config.ConfigLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
-import com.dario.ast.view.component.notification.ErrorNotification;
 import com.dario.ast.view.component.run.RunLayout;
 import com.dario.ast.view.component.sidebar.Sidebar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,9 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
-
-import static com.dario.ast.util.EventUtil.applyConfigParams;
-import static com.dario.ast.util.EventUtil.applyRunParams;
 
 @Route
 @Slf4j
@@ -55,20 +51,5 @@ public class MainView extends VerticalLayout {
 
         // add all components
         add(headline, mainContent);
-
-        getAndApplyParams();
-    }
-
-    private void getAndApplyParams() {
-        astStorageService.getAstRequest()
-                .thenAccept(astRequest -> {
-                    applyConfigParams(astRequest.getConfigParams());
-                    applyRunParams(astRequest.getRunParams());
-                })
-                .exceptionally(ex -> {
-                    ErrorNotification.show("Error loading parameters");
-                    log.error("Error loading parameters: {}", ex.getMessage());
-                    return null;
-                });
     }
 }
