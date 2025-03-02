@@ -1,6 +1,5 @@
 package com.dario.ast.view.component.run;
 
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.StressTestService;
@@ -133,11 +132,10 @@ public class RunLayout extends VerticalLayout {
         startStressTestUI();
 
         var runParams = getRunParams();
-        var astRequest = new AstRequest(configParams, runParams);
         var threadPoolSize = threadPoolSizeField.getValue();
 
         stressTestService.startStressTest(
-                astRequest,
+                configParams, runParams,
                 response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
                 newFixedThreadPool(threadPoolSize)
         );

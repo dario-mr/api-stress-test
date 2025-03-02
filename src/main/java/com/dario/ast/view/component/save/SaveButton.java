@@ -32,7 +32,8 @@ public class SaveButton extends Button {
         try {
             var configParams = configParamsSupplier.get();
             var runParams = runParamsSupplier.get();
-            astStorageService.saveAstRequest(new AstRequest(configParams, runParams));
+            // TODO save request name
+            astStorageService.saveAstRequest(new AstRequest(null, "dummy name", configParams, runParams));
 
             SuccessNotification.show("Parameters saved");
         } catch (JsonProcessingException e) {
