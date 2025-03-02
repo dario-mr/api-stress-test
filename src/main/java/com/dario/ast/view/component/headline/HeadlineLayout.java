@@ -2,7 +2,7 @@ package com.dario.ast.view.component.headline;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.ParamService;
+import com.dario.ast.core.service.AstStorageService;
 import com.dario.ast.view.component.save.SaveButton;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
@@ -13,7 +13,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyConte
 
 public class HeadlineLayout extends HorizontalLayout {
 
-    public HeadlineLayout(ParamService paramService,
+    public HeadlineLayout(AstStorageService astStorageService,
                           Supplier<ConfigParams> configParamsSupplier,
                           Supplier<RunParams> runParamsSupplier) {
         setWidthFull();
@@ -22,7 +22,7 @@ public class HeadlineLayout extends HorizontalLayout {
 
         add(
                 new Headline(),
-                new SaveButton(paramService, configParamsSupplier, runParamsSupplier)
+                new SaveButton(astStorageService, configParamsSupplier, runParamsSupplier)
         );
     }
 }

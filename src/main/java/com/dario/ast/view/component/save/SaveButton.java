@@ -1,9 +1,9 @@
 package com.dario.ast.view.component.save;
 
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.domain.StressTestParams;
-import com.dario.ast.core.service.ParamService;
+import com.dario.ast.core.service.AstStorageService;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.dario.ast.view.component.notification.SuccessNotification;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,14 +13,14 @@ import java.util.function.Supplier;
 
 public class SaveButton extends Button {
 
-    private final ParamService paramService;
+    private final AstStorageService astStorageService;
     private final Supplier<ConfigParams> configParamsSupplier;
     private final Supplier<RunParams> runParamsSupplier;
 
-    public SaveButton(ParamService paramService,
+    public SaveButton(AstStorageService astStorageService,
                       Supplier<ConfigParams> configParamsSupplier,
                       Supplier<RunParams> runParamsSupplier) {
-        this.paramService = paramService;
+        this.astStorageService = astStorageService;
         this.configParamsSupplier = configParamsSupplier;
         this.runParamsSupplier = runParamsSupplier;
 
@@ -32,7 +32,7 @@ public class SaveButton extends Button {
         try {
             var configParams = configParamsSupplier.get();
             var runParams = runParamsSupplier.get();
-            paramService.saveParams(new StressTestParams(configParams, runParams));
+            astStorageService.saveAstRequest(new AstRequest(configParams, runParams));
 
             SuccessNotification.show("Parameters saved");
         } catch (JsonProcessingException e) {

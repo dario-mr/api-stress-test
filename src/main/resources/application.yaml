@@ -4,14 +4,3 @@ spring:
   application.name: api-stress-test
   profiles.active: ${PROFILE:prod}
   config.import: optional:file:.env[.properties] # enable scanning of .env file
-
----
-spring:
-  config.activate.on-profile: dev
-
-vaadin.productionMode: false
----
-spring:
-  config.activate.on-profile: prod
-
-vaadin.productionMode: true

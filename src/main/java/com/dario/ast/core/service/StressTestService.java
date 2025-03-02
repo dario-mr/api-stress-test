@@ -1,6 +1,6 @@
 package com.dario.ast.core.service;
 
-import com.dario.ast.core.domain.StressTestParams;
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.proxy.ApiProxy;
 import com.dario.ast.proxy.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,16 +13,16 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 @Service
 @RequiredArgsConstructor
-public class StressService {
+public class StressTestService {
 
     private final ApiProxy apiProxy;
     private ExecutorService executor;
 
-    public void startStressTest(StressTestParams stressTestParams, Consumer<ApiResponse> responseConsumer, ExecutorService executor) {
+    public void startStressTest(AstRequest astRequest, Consumer<ApiResponse> responseConsumer, ExecutorService executor) {
         this.executor = executor;
 
-        for (int i = 0; i < stressTestParams.getRunParams().getNumRequests(); i++) {
-            supplyAsync(() -> apiProxy.makeRequest(stressTestParams.getConfigParams().toApiRequest()), executor)
+        for (int i = 0; i < astRequest.getRunParams().getNumRequests(); i++) {
+            supplyAsync(() -> apiProxy.makeRequest(astRequest.getConfigParams().toApiRequest()), executor)
                     .thenAccept(responseConsumer);
         }
     }

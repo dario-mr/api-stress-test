@@ -1,8 +1,8 @@
 package com.dario.ast.core.service;
 
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.domain.StressTestParams;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.page.WebStorage;
@@ -16,41 +16,41 @@ import static org.springframework.http.HttpMethod.GET;
 
 @Service
 @RequiredArgsConstructor
-public class ParamService {
+public class AstStorageService {
 
     private static final String STRESS_TEST_PARAMS_KEY = "stressTestParams";
 
     private final ObjectMapper objectMapper;
 
-    public void saveParams(StressTestParams params) throws JsonProcessingException {
-        var encodedRequest = objectMapper.writeValueAsString(params);
+    public void saveAstRequest(AstRequest astRequest) throws JsonProcessingException {
+        var encodedRequest = objectMapper.writeValueAsString(astRequest);
         WebStorage.setItem(STRESS_TEST_PARAMS_KEY, encodedRequest);
     }
 
-    public CompletableFuture<StressTestParams> getParams() {
-        var futureParams = new CompletableFuture<StressTestParams>();
+    public CompletableFuture<AstRequest> getAstRequest() {
+        var astRequestFuture = new CompletableFuture<AstRequest>();
 
         WebStorage.getItem(STRESS_TEST_PARAMS_KEY, jsonParams -> {
-            var params = new StressTestParams();
+            var astRequest = new AstRequest();
 
             if (jsonParams != null) {
                 try {
-                    params = objectMapper.readValue(jsonParams, StressTestParams.class);
+                    astRequest = objectMapper.readValue(jsonParams, AstRequest.class);
                 } catch (JsonProcessingException e) {
-                    futureParams.completeExceptionally(e);
+                    astRequestFuture.completeExceptionally(e);
                 }
             }
 
-            applyDefaultValues(params);
-            futureParams.complete(params);
+            applyDefaultValues(astRequest);
+            astRequestFuture.complete(astRequest);
         });
 
-        return futureParams;
+        return astRequestFuture;
     }
 
-    private static void applyDefaultValues(StressTestParams params) {
-        var configParams = params.getConfigParams();
-        var runParams = params.getRunParams();
+    private static void applyDefaultValues(AstRequest astRequest) {
+        var configParams = astRequest.getConfigParams();
+        var runParams = astRequest.getRunParams();
 
         if (configParams == null) {
             configParams = new ConfigParams();
@@ -73,7 +73,7 @@ public class ParamService {
         if (configParams.getRequestBody() == null) {
             configParams.setRequestBody("");
         }
-        params.setConfigParams(configParams);
+        astRequest.setConfigParams(configParams);
 
         if (runParams == null) {
             runParams = new RunParams();
@@ -84,6 +84,6 @@ public class ParamService {
         if (runParams.getThreadPoolSize() == 0) {
             runParams.setThreadPoolSize(4);
         }
-        params.setRunParams(runParams);
+        astRequest.setRunParams(runParams);
     }
 }

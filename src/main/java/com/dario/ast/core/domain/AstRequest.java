@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class StressTestParams {
+public final class AstRequest {
 
     private ConfigParams configParams;
     private RunParams runParams;
