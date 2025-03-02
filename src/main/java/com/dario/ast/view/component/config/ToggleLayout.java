@@ -2,7 +2,7 @@ package com.dario.ast.view.component.config;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.H5;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,6 +18,10 @@ public class ToggleLayout extends VerticalLayout {
     private final Icon collapseIcon;
 
     public ToggleLayout(String title, Component... components) {
+        setSpacing(false);
+        setPadding(false);
+        getStyle().set("margin-bottom", "1em");
+
         expandIcon = VaadinIcon.ANGLE_DOWN.create();
         collapseIcon = VaadinIcon.ANGLE_RIGHT.create();
 
@@ -27,7 +31,7 @@ public class ToggleLayout extends VerticalLayout {
         toggleButton.getStyle().set("padding-left", "0");
         toggleButton.addClickListener(event -> toggleContentVisibility());
 
-        var titleText = new H4(title);
+        var titleText = new H5(title);
         var titleLayout = new HorizontalLayout(toggleButton, titleText);
         titleLayout.setVerticalComponentAlignment(CENTER, titleText);
         titleLayout.setSpacing(false);
@@ -37,8 +41,6 @@ public class ToggleLayout extends VerticalLayout {
         contentLayout.setVisible(false);
 
         add(titleLayout, contentLayout);
-        setPadding(false);
-        getStyle().set("margin-bottom", "1em");
     }
 
     private void toggleContentVisibility() {

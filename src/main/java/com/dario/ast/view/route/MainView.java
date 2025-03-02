@@ -27,7 +27,8 @@ public class MainView extends VerticalLayout {
     // TODO check if anything can be turned into a record
     // TODO add Google oauth
     // TODO remove save button, save automatically on value change
-    // TODO delete button
+    // TODO add delete button
+    // TODO folders :')
 
     private final StressTestService stressTestService;
     private final AstRequestService astRequestService;

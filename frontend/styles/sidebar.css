@@ -3,8 +3,11 @@
     background: darkgreen;
 }
 
+/* Title */
 .sidebar-title {
     padding: var(--lumo-space-m);
+    /* TODO find good padding and apply to all titles (H4?) */
+    /*padding: var(--lumo-space-wide-m);*/
 }
 
 /* Requests Grid */
@@ -26,5 +29,5 @@
 .create-button {
     margin: 0;
     color: white;
-    border-radius: 0 12px 0 0;
+    border-radius: 0 var(--card-border-radius) 0 0;
 }

@@ -11,7 +11,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -50,6 +50,7 @@ public class RunLayout extends VerticalLayout {
         this.configParamsSupplier = configParamsSupplier;
 
         setWidthFull();
+        setSpacing(false);
         addClassNames("card-layout", "run-layout");
 
         // requests + thread pool
@@ -95,7 +96,7 @@ public class RunLayout extends VerticalLayout {
 
         // add all components
         add(
-                new H3("Run"),
+                new H4("Run"),
                 requestThreadLayout,
                 stopOnErrorCheckbox,
                 startButton, stopButton,
