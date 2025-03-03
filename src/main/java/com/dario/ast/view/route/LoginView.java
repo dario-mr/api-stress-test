@@ -9,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -21,7 +22,10 @@ public class LoginView extends VerticalLayout {
   public LoginView(@Value("${oath.url}") String oauthUrl) {
     setAlignItems(Alignment.CENTER);
 
-    var googleIcon = new Image("/images/google.png", "Google Logo");
+    // dynamically get the context path
+    var contextPath = VaadinServlet.getCurrent().getServletContext().getContextPath();
+
+    var googleIcon = new Image(contextPath + "/images/google.png", "Google Logo");
     googleIcon.setHeight("35px");
     googleIcon.setWidth("35px");
 
@@ -32,7 +36,7 @@ public class LoginView extends VerticalLayout {
     var loginButton = new Button(buttonContent);
     loginButton.addClassNames("google-login-button");
     loginButton.addClickListener(e -> getUI().ifPresent(ui ->
-        ui.getPage().executeJs("window.location.href = $0;", oauthUrl)));
+        ui.getPage().executeJs("window.location.href = $0;", contextPath + oauthUrl)));
 
     add(
         new Headline(),

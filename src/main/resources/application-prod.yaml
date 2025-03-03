@@ -5,3 +5,6 @@ spring:
     url: jdbc:postgresql://aws-0-eu-central-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
     username: postgres.rsuhstqfoaoabfzgezxr
     password: ${DB_PASSWORD}
+
+# this is necessary because on prod the app is deployed on https://xyz/api-stress-test/
+server.servlet.context-path: /api-stress-test/
