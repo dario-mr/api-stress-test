@@ -14,12 +14,10 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
 
 @Route
-@Slf4j
 @RequiredArgsConstructor
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
@@ -27,8 +25,7 @@ public class MainView extends VerticalLayout {
     // TODO check if anything can be turned into a record
     // TODO add Google oauth
     // TODO remove save button, save automatically on value change
-    // TODO add delete button
-    // TODO folders :')
+    // TODO folders...
 
     private final StressTestService stressTestService;
     private final AstRequestService astRequestService;

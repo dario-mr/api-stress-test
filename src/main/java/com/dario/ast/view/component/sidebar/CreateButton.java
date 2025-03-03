@@ -33,9 +33,8 @@ public class CreateButton extends Button {
         var astRequest = new AstRequest(configParams, runParams);
 
         try {
-            var astRequestId = astRequestService.createAstRequest(astRequest);
+            var astRequestId = astRequestService.create(astRequest);
             asrRequestCreated(astRequestId);
-            // TODO update sidebar and select newly created request, possibly pass entity ID in the event for a light query
         } catch (Exception ex) {
             log.error("Error creating new Request", ex);
             ErrorNotification.show("Error creating Request");

@@ -13,7 +13,6 @@ public class Sidebar extends VerticalLayout {
 
     public Sidebar(AstRequestService astRequestService) {
         setWidthFull();
-        setMinWidth("0");
         setPadding(false);
         setSpacing(false);
         setMaxWidth(MAX_SIDEBAR_WIDTH);

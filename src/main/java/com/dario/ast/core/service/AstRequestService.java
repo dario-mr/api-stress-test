@@ -14,20 +14,24 @@ public class AstRequestService {
 
     private final AstRequestRepository astRequestRepository;
 
-    public List<AstRequest> getAstRequestsByEmail(String email) {
+    public List<AstRequest> getByEmail(String email) {
         return astRequestRepository.findByUserEmail(email);
     }
 
-    public Optional<AstRequest> getAstRequestsById(Long id) {
+    public Optional<AstRequest> getById(Long id) {
         return astRequestRepository.findById(id);
     }
 
-    public void updateAstRequest(AstRequest astRequest) {
+    public void update(AstRequest astRequest) {
         astRequestRepository.update(astRequest);
     }
 
-    public Long createAstRequest(AstRequest astRequest) {
+    public Long create(AstRequest astRequest) {
         return astRequestRepository.create(astRequest);
+    }
+
+    public void delete(long id) {
+        astRequestRepository.delete(id);
     }
 
 }
