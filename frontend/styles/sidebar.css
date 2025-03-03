@@ -1,39 +1,40 @@
 /* Sidebar */
 .sidebar-layout {
-    background: darkgreen;
+  background: #2c4c3b;
 }
 
 /* Title */
 .sidebar-title {
-    padding: var(--lumo-space-m);
+  padding: var(--lumo-space-m);
 }
 
 /* Requests Grid */
 .requests-grid {
-    background: transparent;
-    border: none;
-    --_lumo-grid-secondary-border-color: transparent;
+  background: transparent;
+  border: none;
+  --_lumo-grid-secondary-border-color: transparent;
 }
 
 .requests-grid::part(cell) {
-    background: transparent;
+  background: transparent;
 }
 
 .requests-grid::part(selected-row) {
-    background-color: darkolivegreen;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Create button */
 .create-button {
-    margin: 0;
-    color: antiquewhite;
-    border-radius: 0 var(--card-border-radius) 0 0;
+  margin: 0;
+  color: antiquewhite;
+  background: transparent;
+  border-radius: 0 var(--card-border-radius) 0 0;
 }
 
 /* Delete button */
 .delete-button {
-    padding: 0;
-    margin: 0;
-    color: antiquewhite;
-    background: transparent;
+  padding: 0;
+  margin: 0;
+  color: antiquewhite;
+  background: transparent;
 }
