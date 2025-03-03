@@ -57,6 +57,10 @@ public class AstRequestRepository {
         jpaRepository.save(newEntity);
     }
 
+    public void delete(long id) {
+        jpaRepository.deleteById(id);
+    }
+
     private AstRequestEntity mapToEntity(AstRequest astRequest) {
         var configParams = astRequest.getConfigParams();
         var runParams = astRequest.getRunParams();

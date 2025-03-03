@@ -6,8 +6,6 @@
 /* Title */
 .sidebar-title {
     padding: var(--lumo-space-m);
-    /* TODO find good padding and apply to all titles (H4?) */
-    /*padding: var(--lumo-space-wide-m);*/
 }
 
 /* Requests Grid */
@@ -28,6 +26,14 @@
 /* Create button */
 .create-button {
     margin: 0;
-    color: white;
+    color: antiquewhite;
     border-radius: 0 var(--card-border-radius) 0 0;
+}
+
+/* Delete button */
+.delete-button {
+    padding: 0;
+    margin: 0;
+    color: antiquewhite;
+    background: transparent;
 }

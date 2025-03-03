@@ -49,7 +49,7 @@ public class SaveButton extends Button {
         }
 
         try {
-            astRequestService.updateAstRequest(asrRequest);
+            astRequestService.update(asrRequest);
         } catch (Exception ex) {
             log.error("Error saving parameters", ex);
             ErrorNotification.show("Error saving parameters");
