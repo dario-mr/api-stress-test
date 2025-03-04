@@ -19,11 +19,16 @@ import com.vaadin.flow.component.grid.Grid;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
+@UIScope
+@SpringComponent
 public class RequestGrid extends Grid<AstRequest> {
 
   private final AstRequestService astRequestService;
@@ -32,6 +37,7 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private ListDataProvider<AstRequest> dataProvider;
 
+  @Autowired
   public RequestGrid(AstRequestService astRequestService, UserSessionService userSessionService,
       AstUserService astUserService) {
     this.astRequestService = astRequestService;

@@ -9,13 +9,20 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
+import org.springframework.beans.factory.annotation.Autowired;
 
+@UIScope
+@SpringComponent
 public class UserAvatar extends Div {
 
   private final UserSessionService userSessionService;
 
+  @Autowired
   public UserAvatar(UserSessionService userSessionService) {
     this.userSessionService = userSessionService;
+
     setHeightFull();
     getStyle().set("display", "flex")
         .set("align-items", "center"); // center content vertically

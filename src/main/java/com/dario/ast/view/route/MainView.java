@@ -1,11 +1,5 @@
 package com.dario.ast.view.route;
 
-import com.dario.ast.core.domain.StressTestConfig;
-import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.core.service.AstUserService;
-import com.dario.ast.core.service.SaveActionService;
-import com.dario.ast.core.service.StressTestService;
-import com.dario.ast.core.service.UserSessionService;
 import com.dario.ast.view.component.config.ConfigLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
 import com.dario.ast.view.component.run.RunLayout;
@@ -28,31 +22,22 @@ public class MainView extends VerticalLayout {
   // TODO folders...
   // TODO fix /h2-console access
 
-  private final StressTestService stressTestService;
-  private final AstRequestService astRequestService;
-  private final UserSessionService userSessionService;
-  private final AstUserService astUserService;
-  private final SaveActionService saveActionService;
+  private final HeadlineLayout headlineLayout;
+  private final ConfigLayout configLayout;
+  private final RunLayout runLayout;
+  private final Sidebar sidebar;
 
   @PostConstruct
   public void init() {
     setSizeFull();
 
-    var stressTestConfig = new StressTestConfig(); // shared state object
-    var configLayout = new ConfigLayout(saveActionService, stressTestConfig);
-    var runLayout = new RunLayout(saveActionService, stressTestService, stressTestConfig);
-
     var requestLayout = new VerticalLayout(configLayout, runLayout);
     requestLayout.setPadding(false);
-
-    var headline = new HeadlineLayout(userSessionService);
-
-    var sidebar = new Sidebar(astRequestService, userSessionService, astUserService);
 
     var mainContent = new HorizontalLayout(sidebar, requestLayout);
     mainContent.setSizeFull();
 
     // add all components
-    add(headline, mainContent);
+    add(headlineLayout, mainContent);
   }
 }
