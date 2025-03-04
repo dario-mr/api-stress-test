@@ -8,10 +8,11 @@ User-friendly app to perform stress test of your APIs.
 - `PROFILE`: spring profile to apply (default: `prod`)
     - `dev`: in-memory DB is used
     - `prod`: prod DB is used
+- `DB_PASSWORD`: database password (default: `null`)
 - `OAUTH_CLIENT_ID`: OAuth client ID (default: `null`)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret (default: `null`)
 
-## Generate production build locally
+## Run production build locally
 
 ```shell
 mvn clean package -Pproduction

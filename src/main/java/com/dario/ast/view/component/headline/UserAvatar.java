@@ -21,7 +21,7 @@ public class UserAvatar extends Div {
         .set("align-items", "center"); // center content vertically
 
     var currentUser = userSessionService.getUser();
-    var avatar = new Avatar(currentUser.email(), currentUser.pictureUrl());
+    var avatar = new Avatar(currentUser.name(), currentUser.pictureUrl());
     avatar.getElement().getStyle().set("cursor", "pointer");
 
     var menu = createUserMenu(currentUser);
@@ -35,7 +35,7 @@ public class UserAvatar extends Div {
     var menu = new ContextMenu();
     menu.setOpenOnClick(true);
 
-    var avatar = new Avatar(currentUser.email(), currentUser.pictureUrl());
+    var avatar = new Avatar(currentUser.name(), currentUser.pictureUrl());
     avatar.getStyle()
         .set("width", "60px")
         .set("height", "60px");
