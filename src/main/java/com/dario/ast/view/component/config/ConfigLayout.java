@@ -19,13 +19,18 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 import org.vaadin.olli.ClipboardHelper;
 
 @Slf4j
+@UIScope
+@SpringComponent
 @CssImport(value = "./styles/config-layout.css")
 public class ConfigLayout extends VerticalLayout {
 
@@ -45,6 +50,7 @@ public class ConfigLayout extends VerticalLayout {
   private Long requestId;
   private User user;
 
+  @Autowired
   public ConfigLayout(SaveActionService saveActionService, StressTestConfig stressTestConfig) {
     this.saveActionService = saveActionService;
     this.stressTestConfig = stressTestConfig;

@@ -23,11 +23,16 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
+@UIScope
+@SpringComponent
 @CssImport(value = "./styles/run-layout.css")
 public class RunLayout extends VerticalLayout {
 
@@ -46,6 +51,7 @@ public class RunLayout extends VerticalLayout {
 
   private long completedRequests = 0, failedRequests = 0;
 
+  @Autowired
   public RunLayout(SaveActionService saveActionService,
       StressTestService stressTestService,
       StressTestConfig stressTestConfig) {

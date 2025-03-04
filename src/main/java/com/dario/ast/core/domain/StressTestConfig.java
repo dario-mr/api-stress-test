@@ -1,13 +1,15 @@
 package com.dario.ast.core.domain;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 /**
  * Shared state object to hold config and run params
  */
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
+@Component
 public class StressTestConfig {
 
   private ConfigParams configParams;

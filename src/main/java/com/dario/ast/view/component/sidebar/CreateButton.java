@@ -10,16 +10,22 @@ import com.dario.ast.core.service.UserSessionService;
 import static com.dario.ast.util.EventUtil.asrRequestCreated;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.http.HttpMethod.GET;
 
 @Slf4j
+@UIScope
+@SpringComponent
 public class CreateButton extends Button {
 
   private final AstRequestService astRequestService;
   private final UserSessionService userSessionService;
   private final AstUserService astUserService;
 
+  @Autowired
   public CreateButton(AstRequestService astRequestService, UserSessionService userSessionService,
       AstUserService astUserService) {
     this.astRequestService = astRequestService;
