@@ -1,5 +1,11 @@
 package com.dario.ast.view.component.config;
 
+import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
+import static com.dario.ast.util.MapUtil.removeEmptyEntries;
+import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
+import static org.springframework.http.HttpMethod.values;
+import static org.springframework.util.StringUtils.hasText;
+
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.StressTestConfig;
 import com.dario.ast.core.domain.User;
@@ -7,25 +13,23 @@ import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
-import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
-import static com.dario.ast.util.MapUtil.removeEmptyEntries;
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import static org.springframework.http.HttpMethod.values;
-import static org.springframework.util.StringUtils.hasText;
 import org.vaadin.olli.ClipboardHelper;
 
 @Slf4j
@@ -75,8 +79,14 @@ public class ConfigLayout extends VerticalLayout {
     urlMethodLayout.setFlexWrap(WRAP);
     urlMethodLayout.setFlexGrow(1, urlText, methodCombo);
     urlMethodLayout.getStyle()
-        .set("margin-bottom", "1em")
         .set("gap", "var(--lumo-space-m)");
+
+    // config tabs
+    var tabsMap = new LinkedHashMap<String, Component>();
+    tabsMap.put("Headers", headerSection);
+    tabsMap.put("URI Variables", uriVariablesSection);
+    tabsMap.put("Query Parameters", queryParamsSection);
+    tabsMap.put("Request Body", requestBodyText);
 
     // request body
     requestBodyText.setWidthFull();
@@ -95,10 +105,7 @@ public class ConfigLayout extends VerticalLayout {
         new H4("Configure"),
         nameText,
         urlMethodLayout,
-        new ToggleLayout("Headers", headerSection),
-        new ToggleLayout("URI Variables", uriVariablesSection),
-        new ToggleLayout("Query Parameters", queryParamsSection),
-        new ToggleLayout("Request Body", requestBodyText),
+        new ConfigTabs(tabsMap),
         previewTextClipboard
     );
   }
