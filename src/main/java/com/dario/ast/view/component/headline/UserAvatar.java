@@ -1,5 +1,7 @@
 package com.dario.ast.view.component.headline;
 
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+
 import com.dario.ast.core.domain.GoogleUser;
 import com.dario.ast.core.service.UserSessionService;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -7,7 +9,6 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -38,7 +39,6 @@ public class UserAvatar extends Div {
   }
 
   private ContextMenu createUserMenu(GoogleUser currentUser) {
-    // TODO remove focus on the first item when opening the menu, cannot figure out how
     var menu = new ContextMenu();
     menu.setOpenOnClick(true);
 
@@ -57,6 +57,7 @@ public class UserAvatar extends Div {
     userInfoLayout.setPadding(false);
     userInfoLayout.setAlignItems(CENTER);
 
+    // TODO remove focus on the first item when opening the menu, cannot figure out how
     menu.addItem(userInfoLayout);
     menu.add(new Hr()); // separator
     menu.addItem("Logout", e -> userSessionService.logout());
