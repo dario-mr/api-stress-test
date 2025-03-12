@@ -12,7 +12,8 @@ public class PreviewTextArea extends TextArea {
         setReadOnly(true);
         getStyle()
                 .set("padding", "0")
-                .set("font-family", "monospace");
+                .set("font-family", "monospace")
+                .set("font-size", "0.9em");
 
         getElement().addEventListener("click", e -> SuccessNotification.show("Copied to clipboard!"));
     }

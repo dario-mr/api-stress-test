@@ -26,7 +26,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -41,9 +40,9 @@ public class ConfigLayout extends VerticalLayout {
   private final SaveActionService saveActionService;
   private final StressTestConfig stressTestConfig;
 
-  private final TextField nameText = new TextField("Name", "Enter the request name");
-  private final TextField urlText = new TextField("URL", "Enter the URL");
-  private final ComboBox<HttpMethod> methodCombo = new ComboBox<>("Method", values());
+  private final TextField nameText = new TextField();
+  private final TextField urlText = new TextField();
+  private final ComboBox<HttpMethod> methodCombo = new ComboBox<>(null, values());
   private final EntriesSection headerSection = new EntriesSection();
   private final EntriesSection uriVariablesSection = new EntriesSection();
   private final EntriesSection queryParamsSection = new EntriesSection();
@@ -64,22 +63,24 @@ public class ConfigLayout extends VerticalLayout {
     addClassNames("card-layout", "config-layout");
 
     // name
+    nameText.setPlaceholder("Enter the request name");
     nameText.setWidthFull();
     nameText.setMaxWidth("30em");
     nameText.setMinWidth("0");
+    nameText.getStyle().set("padding-top", "var(--lumo-space-m)");
 
-    // url + http method
-    urlText.setWidth("20em");
-    urlText.addValueChangeListener(event -> generateCurlPreview());
+    // http method + url
     methodCombo.setMaxWidth("7.5em");
     methodCombo.addValueChangeListener(event -> generateCurlPreview());
+    urlText.setPlaceholder("Enter the URL");
+    urlText.addValueChangeListener(event -> generateCurlPreview());
 
-    var urlMethodLayout = new FlexLayout(urlText, methodCombo);
+    var urlMethodLayout = new FlexLayout(methodCombo, urlText);
     urlMethodLayout.setWidthFull();
     urlMethodLayout.setFlexWrap(WRAP);
     urlMethodLayout.setFlexGrow(1, urlText, methodCombo);
     urlMethodLayout.getStyle()
-        .set("gap", "var(--lumo-space-m)");
+        .set("gap", "var(--lumo-space-s)");
 
     // config tabs
     var tabsMap = new LinkedHashMap<String, Component>();
