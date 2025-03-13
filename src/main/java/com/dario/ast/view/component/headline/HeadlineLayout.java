@@ -1,5 +1,6 @@
 package com.dario.ast.view.component.headline;
 
+import com.dario.ast.view.component.environment.EnvironmentCombo;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
@@ -14,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HeadlineLayout extends HorizontalLayout {
 
   @Autowired
-  public HeadlineLayout(UserAvatar userAvatar) {
+  public HeadlineLayout(UserAvatar userAvatar, EnvironmentCombo environmentCombo) {
     setWidthFull();
     setAlignItems(CENTER);
 
@@ -25,6 +26,6 @@ public class HeadlineLayout extends HorizontalLayout {
     spacer.getStyle().set("flex-grow", "1");
 
     // add all components
-    add(headline, spacer, userAvatar);
+    add(headline, spacer,environmentCombo, userAvatar);
   }
 }

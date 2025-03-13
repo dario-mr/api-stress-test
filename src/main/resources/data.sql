@@ -42,7 +42,16 @@ INSERT INTO my_schema.ast_request_query_params (ast_request_id, param_key, param
 VALUES (2, 'page', '2'),
        (2, 'size', '20');
 
+-- ast_environment
+INSERT INTO my_schema.ast_environment (id, name, created_on, user_id)
+VALUES (1, 'LOCAL', '2025-03-02 12:00:00', 1),
+       (2, 'INT', '2025-03-02 14:00:00', 1),
+       (3, 'QA', '2025-03-02 15:30:00', 1);
 
 -- Adjust the auto-increment value to avoid PK constraint violation
-ALTER TABLE my_schema.ast_user ALTER COLUMN id RESTART WITH 3;
-ALTER TABLE my_schema.ast_request ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE my_schema.ast_user
+    ALTER COLUMN id RESTART WITH 3;
+ALTER TABLE my_schema.ast_request
+    ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE my_schema.ast_environment
+    ALTER COLUMN id RESTART WITH 4;

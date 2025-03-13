@@ -1,6 +1,6 @@
 CREATE TABLE my_schema.ast_user
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGSERIAL PRIMARY KEY,
     email      VARCHAR(255)             NOT NULL UNIQUE,
     created_on TIMESTAMP WITH TIME ZONE NOT NULL,
     active     BOOLEAN                  NOT NULL

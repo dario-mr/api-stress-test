@@ -7,7 +7,7 @@ import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.domain.StressTestConfig;
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.User;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
@@ -38,7 +38,7 @@ import org.vaadin.olli.ClipboardHelper;
 public class ConfigLayout extends VerticalLayout {
 
   private final SaveActionService saveActionService;
-  private final StressTestConfig stressTestConfig;
+  private final ApplicationState applicationState;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -54,9 +54,9 @@ public class ConfigLayout extends VerticalLayout {
   private User user;
 
   @Autowired
-  public ConfigLayout(SaveActionService saveActionService, StressTestConfig stressTestConfig) {
+  public ConfigLayout(SaveActionService saveActionService, ApplicationState applicationState) {
     this.saveActionService = saveActionService;
-    this.stressTestConfig = stressTestConfig;
+    this.applicationState = applicationState;
 
     setWidthFull();
     setSpacing(false);
@@ -161,7 +161,7 @@ public class ConfigLayout extends VerticalLayout {
   private void addBlurListeners() {
     // name
     nameText.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getConfigParams().getRequestName();
+      var currentValue = applicationState.getConfigParams().getRequestName();
       var newValue = nameText.getValue();
       if (hasText(newValue) && !newValue.equals(currentValue)) {
         saveParams();
@@ -170,7 +170,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // url
     urlText.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getConfigParams().getUri();
+      var currentValue = applicationState.getConfigParams().getUri();
       var newValue = urlText.getValue();
       if (hasText(newValue) && !newValue.equals(currentValue)) {
         saveParams();
@@ -179,7 +179,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // request body
     requestBodyText.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getConfigParams().getRequestBody();
+      var currentValue = applicationState.getConfigParams().getRequestBody();
       var newValue = requestBodyText.getValue();
       if (hasText(newValue) && !newValue.equals(currentValue)) {
         saveParams();
@@ -188,7 +188,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // method
     methodCombo.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getConfigParams().getMethod();
+      var currentValue = applicationState.getConfigParams().getMethod();
       var newValue = methodCombo.getValue();
       if (newValue != null && !newValue.equals(currentValue)) {
         saveParams();
@@ -198,9 +198,9 @@ public class ConfigLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var runParams = stressTestConfig.getRunParams();
+    var runParams = applicationState.getRunParams();
 
-    stressTestConfig.setConfigParams(configParams);
+    applicationState.setConfigParams(configParams);
     saveActionService.saveParams(configParams, runParams);
   }
 
@@ -213,7 +213,7 @@ public class ConfigLayout extends VerticalLayout {
   }
 
   private void applyParams(ConfigParams params) {
-    stressTestConfig.setConfigParams(params);
+    applicationState.setConfigParams(params);
 
     this.requestId = params.getRequestId();
     this.user = params.getUser();
