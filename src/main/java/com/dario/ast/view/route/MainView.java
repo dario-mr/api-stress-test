@@ -21,6 +21,8 @@ public class MainView extends VerticalLayout {
   // TODO check if anything can be turned into a record
   // TODO folders...
   // TODO fix /h2-console access
+  // TODO create other sidebar with Requests, Environments, which will load data in current sidebar (probably 2 sidebar components)
+  // TODO env variables
 
   private final HeadlineLayout headlineLayout;
   private final ConfigLayout configLayout;

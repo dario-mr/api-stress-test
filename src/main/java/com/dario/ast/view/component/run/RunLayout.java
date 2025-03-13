@@ -1,7 +1,7 @@
 package com.dario.ast.view.component.run;
 
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.domain.StressTestConfig;
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.event.ApplyRunParamsEvent;
@@ -38,7 +38,7 @@ public class RunLayout extends VerticalLayout {
 
   private final SaveActionService saveActionService;
   private final StressTestService stressTestService;
-  private final StressTestConfig stressTestConfig;
+  private final ApplicationState applicationState;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -54,10 +54,10 @@ public class RunLayout extends VerticalLayout {
   @Autowired
   public RunLayout(SaveActionService saveActionService,
       StressTestService stressTestService,
-      StressTestConfig stressTestConfig) {
+      ApplicationState applicationState) {
     this.saveActionService = saveActionService;
     this.stressTestService = stressTestService;
-    this.stressTestConfig = stressTestConfig;
+    this.applicationState = applicationState;
 
     setWidthFull();
     setSpacing(false);
@@ -144,7 +144,7 @@ public class RunLayout extends VerticalLayout {
   private void addBlurListeners() {
     // name
     requestNumberField.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getRunParams().getNumRequests();
+      var currentValue = applicationState.getRunParams().getNumRequests();
       var newValue = requestNumberField.getValue();
       if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
         saveParams();
@@ -153,7 +153,7 @@ public class RunLayout extends VerticalLayout {
 
     // url
     threadPoolSizeField.addBlurListener(event -> {
-      var currentValue = stressTestConfig.getRunParams().getThreadPoolSize();
+      var currentValue = applicationState.getRunParams().getThreadPoolSize();
       var newValue = threadPoolSizeField.getValue();
       if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
         saveParams();
@@ -162,7 +162,7 @@ public class RunLayout extends VerticalLayout {
 
     // request
     stopOnErrorCheckbox.addClickListener(event -> {
-      var currentValue = stressTestConfig.getRunParams().isStopOnError();
+      var currentValue = applicationState.getRunParams().isStopOnError();
       var newValue = stopOnErrorCheckbox.getValue();
       if (newValue != null && !newValue.equals(currentValue)) {
         saveParams();
@@ -171,15 +171,15 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void saveParams() {
-    var configParams = stressTestConfig.getConfigParams();
+    var configParams = applicationState.getConfigParams();
     var runParams = getRunParams();
 
-    stressTestConfig.setRunParams(runParams);
+    applicationState.setRunParams(runParams);
     saveActionService.saveParams(configParams, runParams);
   }
 
   private void applyParams(RunParams params) {
-    stressTestConfig.setRunParams(params);
+    applicationState.setRunParams(params);
 
     requestNumberField.setValue(params.getNumRequests());
     threadPoolSizeField.setValue(params.getThreadPoolSize());
@@ -188,7 +188,7 @@ public class RunLayout extends VerticalLayout {
 
   private void startStressTest() {
     // validate parameters
-    var configParams = stressTestConfig.getConfigParams();
+    var configParams = applicationState.getConfigParams();
     if (!hasText(configParams.getUri())) {
       WarnNotification.show("Please provide a valid URL");
       return;

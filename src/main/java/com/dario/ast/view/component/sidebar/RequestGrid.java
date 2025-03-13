@@ -1,22 +1,22 @@
 package com.dario.ast.view.component.sidebar;
 
-import com.dario.ast.core.domain.AstRequest;
-import com.dario.ast.core.domain.User;
-import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.core.service.AstUserService;
-import com.dario.ast.core.service.UserSessionService;
-import com.dario.ast.event.AsrRequestCreatedEvent;
-import com.dario.ast.event.AsrRequestUpdatedEvent;
 import static com.dario.ast.util.EventUtil.applyConfigParams;
 import static com.dario.ast.util.EventUtil.applyRunParams;
 import static com.dario.ast.util.EventUtil.focusRequestName;
+import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
+
+import com.dario.ast.core.domain.AstRequest;
+import com.dario.ast.core.domain.GoogleUser;
+import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.UserSessionService;
+import com.dario.ast.event.AsrRequestCreatedEvent;
+import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
-import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -33,16 +33,13 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private final AstRequestService astRequestService;
   private final UserSessionService userSessionService;
-  private final AstUserService astUserService;
 
   private ListDataProvider<AstRequest> dataProvider;
 
   @Autowired
-  public RequestGrid(AstRequestService astRequestService, UserSessionService userSessionService,
-      AstUserService astUserService) {
+  public RequestGrid(AstRequestService astRequestService, UserSessionService userSessionService) {
     this.astRequestService = astRequestService;
     this.userSessionService = userSessionService;
-    this.astUserService = astUserService;
 
     addClassName("requests-grid");
 
@@ -95,27 +92,16 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void loadRequests() {
-    var currentUser = getCurrentUser();
+    var currentUser = userSessionService.getUser();
     var userRequests = getUserRequests(currentUser);
 
     dataProvider = new ListDataProvider<>(userRequests);
     setDataProvider(dataProvider);
   }
 
-  private User getCurrentUser() {
-    var currentGoogleUser = userSessionService.getUser();
+  private ArrayList<AstRequest> getUserRequests(GoogleUser currentUser) {
     try {
-      return astUserService.getOrCreateUser(currentGoogleUser.email());
-    } catch (Exception ex) {
-      log.error("Error getting current user from DB", ex);
-      ErrorNotification.show(ex.getMessage());
-      throw new RuntimeException(ex);
-    }
-  }
-
-  private ArrayList<AstRequest> getUserRequests(User currentUser) {
-    try {
-      return new ArrayList<>(astRequestService.getByEmail(currentUser.getEmail())); // mutable list
+      return new ArrayList<>(astRequestService.getByEmail(currentUser.email())); // mutable list
     } catch (Exception ex) {
       log.error("Error fetching [{}] requests", currentUser, ex);
       ErrorNotification.show("Error fetching requests");
