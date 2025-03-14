@@ -56,4 +56,5 @@ public class MainView extends VerticalLayout {
     // add all components
     add(headlineLayout, mainContent);
   }
+
 }

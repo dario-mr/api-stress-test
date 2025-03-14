@@ -6,9 +6,9 @@ import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.event.AsrRequestCreatedEvent;
 import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
@@ -32,15 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RequestGrid extends Grid<AstRequest> {
 
   private final AstRequestService astRequestService;
-  private final AstUserService astUserService;
+  private final ApplicationState applicationState;
 
   private ListDataProvider<AstRequest> dataProvider;
   private AstRequest lastSelectedItem;
 
   @Autowired
-  public RequestGrid(AstRequestService astRequestService, AstUserService astUserService) {
+  public RequestGrid(AstRequestService astRequestService, ApplicationState applicationState) {
     this.astRequestService = astRequestService;
-    this.astUserService = astUserService;
+    this.applicationState = applicationState;
 
     addClassName("sidebar-grid");
 
@@ -106,8 +106,8 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void loadRequests() {
-    var currentUser = astUserService.getCurrentUser();
-    var userRequests = getUserRequests(currentUser.getId());
+    var currentUserId = applicationState.getCurrentUser().getId();
+    var userRequests = getUserRequests(currentUserId);
 
     dataProvider = new ListDataProvider<>(userRequests);
     setDataProvider(dataProvider);

@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 @Setter
 @Component
 public class ApplicationState {
-  // TODO move current user here? it requires to be populated ONCE at app start
 
   private ConfigParams configParams;
   private RunParams runParams;
   private Environment environment;
+  private User currentUser;
 }
