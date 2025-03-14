@@ -6,8 +6,8 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.User;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
@@ -111,27 +111,6 @@ public class ConfigLayout extends VerticalLayout {
     );
   }
 
-  public ConfigParams getConfigParams() {
-    var url = urlText.getValue();
-    var method = methodCombo.getValue();
-    var headers = removeEmptyEntries(headerSection.getEntries());
-    var uriVariables = removeEmptyEntries(uriVariablesSection.getEntries());
-    var queryParams = removeEmptyEntries(queryParamsSection.getEntries());
-    var requestBody = requestBodyText.getValue();
-
-    return ConfigParams.builder()
-        .requestId(requestId)
-        .user(user)
-        .requestName(nameText.getValue())
-        .uri(url)
-        .method(method)
-        .headers(headers)
-        .uriVariables(uriVariables)
-        .queryParams(queryParams)
-        .requestBody(requestBody)
-        .build();
-  }
-
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
@@ -156,6 +135,28 @@ public class ConfigLayout extends VerticalLayout {
         FocusRequestNameEvent.class,
         event -> nameText.focus()
     );
+  }
+
+  private ConfigParams getConfigParams() {
+    var name = nameText.getValue();
+    var url = urlText.getValue();
+    var method = methodCombo.getValue();
+    var headers = removeEmptyEntries(headerSection.getEntries());
+    var uriVariables = removeEmptyEntries(uriVariablesSection.getEntries());
+    var queryParams = removeEmptyEntries(queryParamsSection.getEntries());
+    var requestBody = requestBodyText.getValue();
+
+    return ConfigParams.builder()
+        .requestId(requestId)
+        .user(user)
+        .requestName(name)
+        .uri(url)
+        .method(method)
+        .headers(headers)
+        .uriVariables(uriVariables)
+        .queryParams(queryParams)
+        .requestBody(requestBody)
+        .build();
   }
 
   private void addBlurListeners() {

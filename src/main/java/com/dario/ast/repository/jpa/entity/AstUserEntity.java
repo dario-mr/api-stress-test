@@ -1,10 +1,12 @@
 package com.dario.ast.repository.jpa.entity;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
+import com.dario.ast.core.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -61,4 +63,14 @@ public class AstUserEntity {
   public int hashCode() {
     return id == null ? 0 : id.hashCode();
   }
+
+  public User mapToDomainUser() {
+    return User.builder()
+        .id(id)
+        .email(email)
+        .createdOn(createdOn)
+        .active(active)
+        .build();
+  }
+
 }

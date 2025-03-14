@@ -1,9 +1,13 @@
 package com.dario.ast.view.route;
 
+import static com.dario.ast.core.domain.SidebarSection.ENVIRONMENTS;
+import static com.dario.ast.core.domain.SidebarSection.REQUESTS;
+
 import com.dario.ast.view.component.config.ConfigLayout;
+import com.dario.ast.view.component.environment.EnvironmentLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
 import com.dario.ast.view.component.run.RunLayout;
-import com.dario.ast.view.component.sidebar.Sidebar;
+import com.dario.ast.view.component.sidebar.MainSidebar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -18,26 +22,36 @@ import lombok.RequiredArgsConstructor;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-  // TODO check if anything can be turned into a record
   // TODO folders...
   // TODO fix /h2-console access
-  // TODO create other sidebar with Requests, Environments, which will load data in current sidebar (probably 2 sidebar components)
-  // TODO env variables
 
   private final HeadlineLayout headlineLayout;
+  private final MainSidebar mainSidebar;
   private final ConfigLayout configLayout;
   private final RunLayout runLayout;
-  private final Sidebar sidebar;
+  private final EnvironmentLayout environmentLayout;
 
   @PostConstruct
   public void init() {
     setSizeFull();
 
     var requestLayout = new VerticalLayout(configLayout, runLayout);
+    requestLayout.getStyle().set("gap", "var(--lumo-space-s)");
     requestLayout.setPadding(false);
 
-    var mainContent = new HorizontalLayout(sidebar, requestLayout);
+    var mainContent = new HorizontalLayout(mainSidebar, requestLayout, environmentLayout);
+    mainContent.getStyle().set("gap", "var(--lumo-space-s)");
     mainContent.setSizeFull();
+
+    // initially show only requestLayout
+    requestLayout.setVisible(true);
+    environmentLayout.setVisible(false);
+
+    // set selection listener to show correct layout on tab click
+    mainSidebar.setSelectionListener(selectedSection -> {
+      requestLayout.setVisible(selectedSection == REQUESTS);
+      environmentLayout.setVisible(selectedSection == ENVIRONMENTS);
+    });
 
     // add all components
     add(headlineLayout, mainContent);

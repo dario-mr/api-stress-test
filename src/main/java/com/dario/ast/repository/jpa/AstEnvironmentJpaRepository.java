@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AstEnvironmentJpaRepository extends JpaRepository<AstEnvironmentEntity, Long> {
 
-  List<AstEnvironmentEntity> findByUser_EmailOrderByCreatedOn(String userEmail);
+  List<AstEnvironmentEntity> findByUserIdOrderByCreatedOn(long userId);
 }
