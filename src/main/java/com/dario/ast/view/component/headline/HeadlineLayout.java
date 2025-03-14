@@ -1,9 +1,10 @@
 package com.dario.ast.view.component.headline;
 
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+
 import com.dario.ast.view.component.environment.EnvironmentCombo;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -26,6 +27,6 @@ public class HeadlineLayout extends HorizontalLayout {
     spacer.getStyle().set("flex-grow", "1");
 
     // add all components
-    add(headline, spacer,environmentCombo, userAvatar);
+    add(headline, spacer, environmentCombo, userAvatar);
   }
 }

@@ -3,11 +3,11 @@ package com.dario.ast.view.component.sidebar.requests;
 import static com.dario.ast.util.EventUtil.asrRequestCreated;
 import static org.springframework.http.HttpMethod.GET;
 
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -21,12 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateRequestButton extends Button {
 
   private final AstRequestService astRequestService;
-  private final AstUserService astUserService;
+  private final ApplicationState applicationState;
 
   @Autowired
-  public CreateRequestButton(AstRequestService astRequestService, AstUserService astUserService) {
+  public CreateRequestButton(AstRequestService astRequestService, ApplicationState applicationState) {
     this.astRequestService = astRequestService;
-    this.astUserService = astUserService;
+    this.applicationState = applicationState;
 
     addClassName("create-button");
     setWidthFull();
@@ -36,8 +36,8 @@ public class CreateRequestButton extends Button {
   }
 
   private void createAsrRequest() {
-    var currentUser = astUserService.getCurrentUser();
-    var configParams = defaultConfigParams(currentUser.getId());
+    var currentUserId = applicationState.getCurrentUser().getId();
+    var configParams = defaultConfigParams(currentUserId);
     var runParams = defaultRunParams();
     var astRequest = new AstRequest(configParams, runParams);
 

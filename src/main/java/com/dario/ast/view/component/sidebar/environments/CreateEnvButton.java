@@ -2,9 +2,9 @@ package com.dario.ast.view.component.sidebar.environments;
 
 import static com.dario.ast.util.EventUtil.environmentCreated;
 
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
-import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -18,12 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateEnvButton extends Button {
 
   private final AstEnvironmentService astEnvironmentService;
-  private final AstUserService astUserService;
+  private final ApplicationState applicationState;
 
   @Autowired
-  public CreateEnvButton(AstEnvironmentService astEnvironmentService, AstUserService astUserService) {
+  public CreateEnvButton(AstEnvironmentService astEnvironmentService, ApplicationState applicationState) {
     this.astEnvironmentService = astEnvironmentService;
-    this.astUserService = astUserService;
+    this.applicationState = applicationState;
 
     addClassName("create-button");
     setWidthFull();
@@ -33,8 +33,8 @@ public class CreateEnvButton extends Button {
   }
 
   private void createEnv() {
-    var currentUser = astUserService.getCurrentUser();
-    var newEnv = defaultEnv(currentUser.getId());
+    var currentUserId = applicationState.getCurrentUser().getId();
+    var newEnv = defaultEnv(currentUserId);
 
     try {
       var envId = astEnvironmentService.create(newEnv);

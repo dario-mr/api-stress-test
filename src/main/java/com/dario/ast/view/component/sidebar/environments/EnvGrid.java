@@ -5,9 +5,9 @@ import static com.dario.ast.util.EventUtil.focusEnvName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
-import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
@@ -31,15 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EnvGrid extends Grid<Environment> {
 
   private final AstEnvironmentService astEnvironmentService;
-  private final AstUserService astUserService;
+  private final ApplicationState applicationState;
 
   private ListDataProvider<Environment> dataProvider;
   private Environment lastSelectedItem;
 
   @Autowired
-  public EnvGrid(AstEnvironmentService astEnvironmentService, AstUserService astUserService) {
+  public EnvGrid(AstEnvironmentService astEnvironmentService, ApplicationState applicationState) {
     this.astEnvironmentService = astEnvironmentService;
-    this.astUserService = astUserService;
+    this.applicationState = applicationState;
 
     addClassName("sidebar-grid");
 
@@ -103,7 +103,7 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void loadEnvs() {
-    var currentUserId = astUserService.getCurrentUser().getId();
+    var currentUserId = applicationState.getCurrentUser().getId();
     var userEnvironments = getUserEnvironments(currentUserId);
 
     dataProvider = new ListDataProvider<>(userEnvironments);

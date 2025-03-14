@@ -2,7 +2,9 @@ package com.dario.ast.view.component.headline;
 
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 
+import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.GoogleUser;
+import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.core.service.UserSessionService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -19,10 +21,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserAvatar extends Div {
 
   private final UserSessionService userSessionService;
+  private final AstUserService astUserService;
+  private final ApplicationState applicationState;
 
   @Autowired
-  public UserAvatar(UserSessionService userSessionService) {
+  public UserAvatar(UserSessionService userSessionService,
+      AstUserService astUserService,
+      ApplicationState applicationState) {
     this.userSessionService = userSessionService;
+    this.astUserService = astUserService;
+    this.applicationState = applicationState;
+    loadCurrentUser(); // this is the first bean that is loaded and that has a user session... not great, but it works
 
     setHeightFull();
     getStyle().set("display", "flex")
@@ -64,4 +73,10 @@ public class UserAvatar extends Div {
 
     return menu;
   }
+
+  private void loadCurrentUser() {
+    var currentUser = astUserService.getCurrentUser();
+    applicationState.setCurrentUser(currentUser);
+  }
+
 }
