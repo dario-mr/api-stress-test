@@ -3,6 +3,11 @@ package com.dario.ast.view.component.environment;
 import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.event.EnvironmentCreatedEvent;
+import com.dario.ast.event.EnvironmentDeletedEvent;
+import com.dario.ast.event.EnvironmentUpdatedEvent;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -11,29 +16,71 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @SpringComponent
 public class EnvironmentCombo extends ComboBox<Environment> {
 
+  private final AstEnvironmentService environmentService;
   private final ApplicationState applicationState;
 
-  // TODO update combo values when an Environment is created or deleted
-  public EnvironmentCombo(
-      AstEnvironmentService environmentService,
-      ApplicationState applicationState
-  ) {
+  public EnvironmentCombo(AstEnvironmentService environmentService, ApplicationState applicationState) {
+    this.environmentService = environmentService;
     this.applicationState = applicationState;
 
-    var currentUserId = applicationState.getCurrentUser().getId();
-    var environments = environmentService.getByUserId(currentUserId);
-
-    setItems(environments);
-    if (!environments.isEmpty()) {
-      var environment = environments.getFirst();
-      setValue(environment);
-      applicationState.setEnvironment(environment);
-    }
-
-    addValueChangeListener(event -> selectValue(event.getValue()));
+    loadEnvironments();
+    addValueChangeListener(event -> setEnvironment(event.getValue()));
   }
 
-  private void selectValue(Environment environment) {
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    super.onAttach(attachEvent);
+
+    // Listen for events indicating that an Environment was updated
+    ComponentUtil.addListener(attachEvent.getUI(),
+        EnvironmentUpdatedEvent.class,
+        event -> reloadEnvironments()
+    );
+
+    // Listen for events indicating that a new Environment was created
+    ComponentUtil.addListener(attachEvent.getUI(),
+        EnvironmentCreatedEvent.class,
+        event -> reloadEnvironments()
+    );
+
+    // Listen for events indicating that an Environment was deleted
+    ComponentUtil.addListener(attachEvent.getUI(),
+        EnvironmentDeletedEvent.class,
+        event -> reloadEnvironments()
+    );
+  }
+
+  private void loadEnvironments() {
+    var currentUserId = applicationState.getCurrentUser().getId();
+    var userEnvironments = environmentService.getByUserId(currentUserId);
+    setItems(userEnvironments);
+
+    if (!userEnvironments.isEmpty()) {
+      var environment = userEnvironments.getFirst();
+      setValue(environment);
+      setEnvironment(environment);
+    }
+  }
+
+  private void reloadEnvironments() {
+    var currentEnv = getValue(); // save currently selected environment
+    var userEnvironments = environmentService.getByUserId(applicationState.getCurrentUser().getId());
+    setItems(userEnvironments);
+
+    if (userEnvironments.isEmpty()) {
+      return;
+    }
+
+    var newSelection = userEnvironments.stream()
+        .filter(env -> currentEnv != null && env.getId().equals(currentEnv.getId()))
+        .findFirst()
+        .orElse(userEnvironments.getFirst());
+
+    setValue(newSelection);
+    setEnvironment(newSelection);
+  }
+
+  private void setEnvironment(Environment environment) {
     applicationState.setEnvironment(environment);
   }
 
