@@ -11,6 +11,7 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -57,19 +58,39 @@ public class UserAvatar extends Div {
         .set("height", "60px");
 
     var nameItem = new Span(currentUser.name());
-    nameItem.getStyle().set("font-weight", "bold");
+    nameItem.getStyle()
+        .set("font-size", "0.95em")
+        .set("font-weight", "bold");
 
     var emailItem = new Span(currentUser.email());
-    emailItem.getStyle().set("font-size", "0.95em").set("color", "lightgray");
+    emailItem.getStyle()
+        .set("font-size", "0.9em")
+        .set("color", "lightgray");
 
     var userInfoLayout = new VerticalLayout(avatar, nameItem, emailItem);
-    userInfoLayout.setPadding(false);
     userInfoLayout.setAlignItems(CENTER);
+    userInfoLayout.getStyle()
+        .set("gap", "var(--lumo-space-xs)")
+        .set("padding", "var(--lumo-space-s)");
 
-    // TODO remove focus on the first item when opening the menu, cannot figure out how
-    menu.addItem(userInfoLayout);
-    menu.add(new Hr()); // separator
-    menu.addItem("Logout", e -> userSessionService.logout());
+    var logoutItem = new Div(new Span("Logout"));
+    logoutItem.getStyle()
+        .set("cursor", "pointer")
+        .set("padding", "var(--lumo-space-xs)")
+        .set("color", "var(--lumo-primary-text-color)");
+    logoutItem.addClickListener(e -> userSessionService.logout());
+
+    // wrap logout item in a layout to center it
+    var logoutLayout = new VerticalLayout(logoutItem);
+    logoutLayout.setPadding(false);
+    logoutLayout.setAlignItems(CENTER);
+    logoutLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+
+    menu.add(
+        userInfoLayout,
+        new Hr(),
+        logoutLayout
+    );
 
     return menu;
   }
