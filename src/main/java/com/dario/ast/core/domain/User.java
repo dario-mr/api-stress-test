@@ -1,11 +1,10 @@
 package com.dario.ast.core.domain;
 
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
 
 @Data
 @Builder
@@ -13,8 +12,8 @@ import java.time.Instant;
 @AllArgsConstructor
 public final class User {
 
-    private Long id;
-    private String email;
-    private Instant createdOn;
-    private boolean active;
+  private Long id;
+  private String email;
+  private Instant createdOn;
+  private boolean active;
 }

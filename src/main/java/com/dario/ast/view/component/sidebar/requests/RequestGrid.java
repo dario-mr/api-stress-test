@@ -1,8 +1,9 @@
-package com.dario.ast.view.component.sidebar;
+package com.dario.ast.view.component.sidebar.requests;
 
 import static com.dario.ast.util.EventUtil.applyConfigParams;
 import static com.dario.ast.util.EventUtil.applyRunParams;
 import static com.dario.ast.util.EventUtil.focusRequestName;
+import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AstRequest;
@@ -35,18 +36,20 @@ public class RequestGrid extends Grid<AstRequest> {
   private final UserSessionService userSessionService;
 
   private ListDataProvider<AstRequest> dataProvider;
+  private AstRequest lastSelectedItem;
 
   @Autowired
   public RequestGrid(AstRequestService astRequestService, UserSessionService userSessionService) {
     this.astRequestService = astRequestService;
     this.userSessionService = userSessionService;
 
-    addClassName("requests-grid");
+    addClassName("sidebar-grid");
 
     // name column
     addColumn(astRequest -> astRequest.getConfigParams().getRequestName())
         .setAutoWidth(true)
         .setFlexGrow(1);
+
     // delete button
     addDeleteColumn();
 
@@ -57,9 +60,9 @@ public class RequestGrid extends Grid<AstRequest> {
       applyRunParams(astRequest.getRunParams());
     });
 
+    preventUnselection();
     loadRequests();
   }
-
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
@@ -71,7 +74,7 @@ public class RequestGrid extends Grid<AstRequest> {
     // Listen for events indicating that the selected AST request was updated
     ComponentUtil.addListener(attachEvent.getUI(),
         AsrRequestUpdatedEvent.class,
-        event -> updateAsrRequest(event.getAstRequest())
+        event -> updateAsrRequestInDataProvider(event.getAstRequest())
     );
 
     // Listen for events indicating that a new AST request was created
@@ -89,6 +92,18 @@ public class RequestGrid extends Grid<AstRequest> {
     }))
         .setAutoWidth(true)
         .setFlexGrow(0);
+  }
+
+  private void preventUnselection() {
+    // prevent unselection by restoring last selected item
+    var selectionModel = setSelectionMode(SINGLE);
+    selectionModel.addSelectionListener(event -> {
+      if (event.getFirstSelectedItem().isEmpty() && lastSelectedItem != null) {
+        selectionModel.select(lastSelectedItem);
+      } else {
+        lastSelectedItem = event.getFirstSelectedItem().orElse(null);
+      }
+    });
   }
 
   private void loadRequests() {
@@ -125,17 +140,22 @@ public class RequestGrid extends Grid<AstRequest> {
     getSelectionModel().select(astRequest); // highlight item in the grid
   }
 
-  private void updateAsrRequest(AstRequest updatedRequest) {
-    var optSelectedRequest = getSelectionModel().getFirstSelectedItem();
-    if (optSelectedRequest.isEmpty()) {
+  // if a request is updated by some other component, we need to refresh it in the grid data provider
+  private void updateAsrRequestInDataProvider(AstRequest updatedRequest) {
+    // find the updated request in the data provider (by requestId)
+    var currentRequestOpt = dataProvider.getItems().stream()
+        .filter(astRequest ->
+            astRequest.getConfigParams().getRequestId().equals(updatedRequest.getConfigParams().getRequestId()))
+        .findFirst();
+    if (currentRequestOpt.isEmpty()) {
       return;
     }
 
-    var selectedRequest = optSelectedRequest.get();
-    selectedRequest.setConfigParams(updatedRequest.getConfigParams());
-    selectedRequest.setRunParams(updatedRequest.getRunParams());
+    var currentRequest = currentRequestOpt.get();
+    currentRequest.setConfigParams(updatedRequest.getConfigParams());
+    currentRequest.setRunParams(updatedRequest.getRunParams());
 
-    dataProvider.refreshItem(selectedRequest);
+    dataProvider.refreshItem(currentRequest);
   }
 
   private void addAsrRequest(Long astRequestId) {

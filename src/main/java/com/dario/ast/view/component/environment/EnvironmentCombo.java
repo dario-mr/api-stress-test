@@ -1,9 +1,9 @@
 package com.dario.ast.view.component.environment;
 
-import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
-import com.dario.ast.core.service.UserSessionService;
+import com.dario.ast.core.service.AstUserService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -15,14 +15,14 @@ public class EnvironmentCombo extends ComboBox<Environment> {
   private final ApplicationState applicationState;
 
   public EnvironmentCombo(
-      UserSessionService userSessionService,
+      AstUserService astUserService,
       AstEnvironmentService environmentService,
       ApplicationState applicationState
   ) {
     this.applicationState = applicationState;
 
-    var currentGoogleUser = userSessionService.getUser();
-    var environments = environmentService.getByEmail(currentGoogleUser.email());
+    var currentUserId = astUserService.getCurrentUser().getId();
+    var environments = environmentService.getByUserId(currentUserId);
 
     setItems(environments);
     if (!environments.isEmpty()) {

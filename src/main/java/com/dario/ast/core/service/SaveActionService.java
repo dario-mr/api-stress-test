@@ -1,9 +1,12 @@
 package com.dario.ast.core.service;
 
+import static com.dario.ast.util.EventUtil.asrRequestUpdated;
+import static com.dario.ast.util.EventUtil.environmentUpdated;
+
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.RunParams;
-import static com.dario.ast.util.EventUtil.asrRequestUpdated;
 import com.dario.ast.view.component.notification.ErrorNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class SaveActionService {
 
   private final AstRequestService astRequestService;
+  private final AstEnvironmentService astEnvironmentService;
 
   public void saveParams(ConfigParams configParams, RunParams runParams) {
     var asrRequest = new AstRequest(configParams, runParams);
@@ -28,5 +32,17 @@ public class SaveActionService {
     }
 
     asrRequestUpdated(asrRequest);
+  }
+
+  public void saveEnvironment(Environment environment) {
+    try {
+      astEnvironmentService.update(environment);
+    } catch (Exception ex) {
+      log.error("Error saving environment", ex);
+      ErrorNotification.show("Error saving environment");
+      throw new RuntimeException(ex);
+    }
+
+    environmentUpdated(environment);
   }
 }
