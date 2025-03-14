@@ -34,7 +34,7 @@ public class CreateEnvButton extends Button {
 
   private void createEnv() {
     var currentUser = astUserService.getCurrentUser();
-    var newEnv = new Environment(null, "New Environment", currentUser.getId());
+    var newEnv = defaultEnv(currentUser.getId());
 
     try {
       var envId = astEnvironmentService.create(newEnv);
@@ -44,6 +44,14 @@ public class CreateEnvButton extends Button {
       ErrorNotification.show("Error creating Environment");
       throw new RuntimeException(ex);
     }
+  }
+
+  private static Environment defaultEnv(Long userId) {
+    return Environment.builder()
+        .id(null)
+        .name("New Environment")
+        .userId(userId)
+        .build();
   }
 
 }

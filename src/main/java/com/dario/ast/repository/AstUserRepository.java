@@ -4,7 +4,6 @@ import com.dario.ast.core.domain.User;
 import com.dario.ast.repository.jpa.AstUserJpaRepository;
 import com.dario.ast.repository.jpa.entity.AstUserEntity;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -26,7 +25,6 @@ public class AstUserRepository {
         .email(email)
         .createdOn(Instant.now())
         .active(true)
-        .requests(new ArrayList<>())
         .build();
 
     return mapToDomain(jpaRepository.save(userEntity));

@@ -7,9 +7,8 @@ import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AstRequest;
-import com.dario.ast.core.domain.GoogleUser;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.core.service.UserSessionService;
+import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.event.AsrRequestCreatedEvent;
 import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.view.component.notification.ErrorNotification;
@@ -33,15 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RequestGrid extends Grid<AstRequest> {
 
   private final AstRequestService astRequestService;
-  private final UserSessionService userSessionService;
+  private final AstUserService astUserService;
 
   private ListDataProvider<AstRequest> dataProvider;
   private AstRequest lastSelectedItem;
 
   @Autowired
-  public RequestGrid(AstRequestService astRequestService, UserSessionService userSessionService) {
+  public RequestGrid(AstRequestService astRequestService, AstUserService astUserService) {
     this.astRequestService = astRequestService;
-    this.userSessionService = userSessionService;
+    this.astUserService = astUserService;
 
     addClassName("sidebar-grid");
 
@@ -107,18 +106,18 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void loadRequests() {
-    var currentUser = userSessionService.getUser();
-    var userRequests = getUserRequests(currentUser);
+    var currentUser = astUserService.getCurrentUser();
+    var userRequests = getUserRequests(currentUser.getId());
 
     dataProvider = new ListDataProvider<>(userRequests);
     setDataProvider(dataProvider);
   }
 
-  private ArrayList<AstRequest> getUserRequests(GoogleUser currentUser) {
+  private ArrayList<AstRequest> getUserRequests(long currentUserId) {
     try {
-      return new ArrayList<>(astRequestService.getByEmail(currentUser.email())); // mutable list
+      return new ArrayList<>(astRequestService.getByUserId(currentUserId)); // mutable list
     } catch (Exception ex) {
-      log.error("Error fetching [{}] requests", currentUser, ex);
+      log.error("Error fetching requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");
       throw new RuntimeException(ex);
     }

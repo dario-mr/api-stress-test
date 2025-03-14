@@ -1,18 +1,13 @@
 package com.dario.ast.repository.jpa.entity;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-import com.dario.ast.core.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,10 +38,6 @@ public class AstUserEntity {
   @Column(name = "active", nullable = false)
   private boolean active;
 
-  @OneToMany(mappedBy = "user", cascade = ALL, orphanRemoval = true)
-  @ToString.Exclude
-  private List<AstRequestEntity> requests = new ArrayList<>();
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -62,15 +53,6 @@ public class AstUserEntity {
   @Override
   public int hashCode() {
     return id == null ? 0 : id.hashCode();
-  }
-
-  public User mapToDomainUser() {
-    return User.builder()
-        .id(id)
-        .email(email)
-        .createdOn(createdOn)
-        .active(active)
-        .build();
   }
 
 }
