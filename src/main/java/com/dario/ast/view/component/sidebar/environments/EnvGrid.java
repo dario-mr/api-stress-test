@@ -1,6 +1,7 @@
 package com.dario.ast.view.component.sidebar.environments;
 
 import static com.dario.ast.util.EventUtil.applyEnvironment;
+import static com.dario.ast.util.EventUtil.environmentDeleted;
 import static com.dario.ast.util.EventUtil.focusEnvName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
@@ -58,7 +59,6 @@ public class EnvGrid extends Grid<Environment> {
     preventUnselection();
     loadEnvs();
   }
-
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
@@ -197,6 +197,8 @@ public class EnvGrid extends Grid<Environment> {
     if (selectedEnv.isPresent() && selectedEnv.get().equals(toDelete)) {
       selectFirstItem();
     }
+
+    environmentDeleted(toDelete.getId()); // notify other components of the environment deletion
   }
 
 }

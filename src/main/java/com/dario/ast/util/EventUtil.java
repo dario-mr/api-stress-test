@@ -13,6 +13,7 @@ import com.dario.ast.event.AsrRequestCreatedEvent;
 import com.dario.ast.event.AsrRequestUpdatedEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.EnvironmentCreatedEvent;
+import com.dario.ast.event.EnvironmentDeletedEvent;
 import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
@@ -52,6 +53,10 @@ public class EventUtil {
 
   public static void environmentCreated(Long envId) {
     fireEvent(UI.getCurrent(), new EnvironmentCreatedEvent(envId));
+  }
+
+  public static void environmentDeleted(Long envId) {
+    fireEvent(UI.getCurrent(), new EnvironmentDeletedEvent(envId));
   }
 
   public static void focusEnvName() {
