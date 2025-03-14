@@ -8,7 +8,6 @@ import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.domain.User;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
@@ -51,7 +50,7 @@ public class ConfigLayout extends VerticalLayout {
   private final TextArea previewText = new PreviewTextArea();
 
   private Long requestId;
-  private User user;
+  private Long userId;
 
   @Autowired
   public ConfigLayout(SaveActionService saveActionService, ApplicationState applicationState) {
@@ -148,7 +147,7 @@ public class ConfigLayout extends VerticalLayout {
 
     return ConfigParams.builder()
         .requestId(requestId)
-        .user(user)
+        .userId(userId)
         .requestName(name)
         .uri(url)
         .method(method)
@@ -217,7 +216,7 @@ public class ConfigLayout extends VerticalLayout {
     applicationState.setConfigParams(params);
 
     this.requestId = params.getRequestId();
-    this.user = params.getUser();
+    this.userId = params.getUserId();
 
     nameText.setValue(params.getRequestName());
 

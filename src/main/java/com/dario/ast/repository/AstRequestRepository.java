@@ -5,9 +5,6 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.repository.jpa.AstRequestJpaRepository;
 import com.dario.ast.repository.jpa.entity.AstRequestEntity;
-import com.dario.ast.repository.jpa.entity.AstUserEntity;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -19,13 +16,10 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class AstRequestRepository {
 
-  @PersistenceContext
-  private EntityManager entityManager;
-
   private final AstRequestJpaRepository jpaRepository;
 
-  public List<AstRequest> findByUserEmail(String userEmail) {
-    return jpaRepository.findByUser_EmailOrderByCreatedOn(userEmail).stream()
+  public List<AstRequest> findByUserId(long userId) {
+    return jpaRepository.findByUserIdOrderByCreatedOn(userId).stream()
         .map(this::mapToDomain)
         .toList();
   }
@@ -66,8 +60,7 @@ public class AstRequestRepository {
     return AstRequestEntity.builder()
         .id(configParams.getRequestId())
         .name(configParams.getRequestName())
-        // only set user reference, without instantiating the whole user entity
-        .user(entityManager.getReference(AstUserEntity.class, configParams.getUser().getId()))
+        .userId(configParams.getUserId())
         .uri(configParams.getUri())
         .httpMethod(configParams.getMethod().toString())
         .headers(configParams.getHeaders())
@@ -90,7 +83,7 @@ public class AstRequestRepository {
     return ConfigParams.builder()
         .requestId(astRequestEntity.getId())
         .requestName(astRequestEntity.getName())
-        .user(astRequestEntity.getUser().mapToDomainUser())
+        .userId(astRequestEntity.getUserId())
         .uri(astRequestEntity.getUri())
         .method(HttpMethod.valueOf(astRequestEntity.getHttpMethod().toUpperCase()))
         .headers(astRequestEntity.getHeaders())

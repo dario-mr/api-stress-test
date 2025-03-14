@@ -6,7 +6,6 @@ import static org.springframework.http.HttpMethod.GET;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.domain.User;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.view.component.notification.ErrorNotification;
@@ -55,7 +54,7 @@ public class CreateRequestButton extends Button {
   private static ConfigParams defaultConfigParams(Long userId) {
     return ConfigParams.builder()
         .requestName("New Request")
-        .user(User.builder().id(userId).build())
+        .userId(userId)
         .uri("")
         .method(GET)
         .requestBody("")

@@ -14,6 +14,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
 
   private final ApplicationState applicationState;
 
+  // TODO update combo values when an Environment is created or deleted
   public EnvironmentCombo(
       AstUserService astUserService,
       AstEnvironmentService environmentService,
