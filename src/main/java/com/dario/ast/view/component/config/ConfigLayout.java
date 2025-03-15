@@ -50,8 +50,6 @@ public class ConfigLayout extends VerticalLayout {
   private final TextArea requestBodyText = new TextArea();
   private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
   private final TextArea previewText = new PreviewTextArea();
-  private final CodePreview codePreview = new CodePreview();
-  private final ClipboardHelper codePreviewClipboard = new ClipboardHelper();
 
   private Long requestId;
   private Long userId;
@@ -100,8 +98,6 @@ public class ConfigLayout extends VerticalLayout {
     // curl preview
     previewTextClipboard.wrap(previewText);
     previewTextClipboard.getStyle().set("width", "100%");
-    codePreviewClipboard.wrap(codePreview);
-    codePreviewClipboard.getStyle().set("width", "100%");
 
     // add listeners
     addBlurListeners();
@@ -112,9 +108,7 @@ public class ConfigLayout extends VerticalLayout {
         nameText,
         urlMethodLayout,
         new ConfigTabs(tabsMap),
-        previewTextClipboard,
-        codePreviewClipboard,
-        codePreview
+        previewTextClipboard
     );
   }
 
@@ -217,9 +211,7 @@ public class ConfigLayout extends VerticalLayout {
     var curlPreview = buildCurlPreview(configParams);
 
     previewText.setValue(curlPreview);
-    codePreview.setCode(curlPreview);
     previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
-    codePreviewClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
   }
 
   private void applyParams(ConfigParams params) {
