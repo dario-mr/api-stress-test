@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO folders...
-  // TODO fix /h2-console access
+  // TODO use env variables when running stress test
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;

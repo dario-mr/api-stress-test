@@ -2,7 +2,7 @@ package com.dario.ast.core.service;
 
 import com.dario.ast.core.domain.User;
 import com.dario.ast.repository.AstUserRepository;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

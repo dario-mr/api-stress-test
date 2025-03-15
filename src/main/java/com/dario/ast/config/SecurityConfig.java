@@ -3,6 +3,7 @@ package com.dario.ast.config;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
@@ -29,12 +30,20 @@ public class SecurityConfig extends VaadinWebSecurity {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
-        .authorizeHttpRequests(auth -> auth.requestMatchers(whitelistPatterns).permitAll())
-        .oauth2Login(oauth2 -> oauth2.loginPage(LOGIN_URL).permitAll());
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(whitelistPatterns).permitAll()
+        )
+        .headers(headers -> headers
+            .frameOptions(Customizer.withDefaults()).disable() // allow H2 Console inside iframes
+        )
+        .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/h2-console/**") // disable CSRF for H2 Console
+        )
+        .oauth2Login(oauth2 -> oauth2
+            .loginPage(LOGIN_URL).permitAll()
+        );
 
     super.configure(http);
   }
 
 }
-
-

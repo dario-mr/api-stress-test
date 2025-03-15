@@ -8,7 +8,7 @@ import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;

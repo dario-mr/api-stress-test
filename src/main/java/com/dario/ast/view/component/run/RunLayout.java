@@ -7,7 +7,7 @@ import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.proxy.ApiResponse;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
-import com.dario.ast.view.component.notification.WarnNotification;
+import com.dario.ast.view.component.common.notification.WarnNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;

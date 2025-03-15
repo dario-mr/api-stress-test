@@ -1,5 +1,6 @@
 package com.dario.ast.core.domain;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class Environment {
   private Long id;
   private String name;
   private Long userId;
+  private Map<String, String> variables;
 
   @Override
   public String toString() {

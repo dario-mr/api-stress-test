@@ -11,7 +11,7 @@ import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.event.EnvironmentUpdatedEvent;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -147,6 +147,7 @@ public class EnvGrid extends Grid<Environment> {
 
     var currentEnv = currentEnvOpt.get();
     currentEnv.setName(updatedEnv.getName());
+    currentEnv.setVariables(updatedEnv.getVariables());
 
     dataProvider.refreshItem(currentEnv);
   }
