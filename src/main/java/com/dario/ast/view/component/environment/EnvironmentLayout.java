@@ -13,6 +13,7 @@ import com.dario.ast.view.component.common.EntriesSection;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -35,21 +36,22 @@ public class EnvironmentLayout extends VerticalLayout {
   public EnvironmentLayout(SaveActionService saveActionService) {
     this.saveActionService = saveActionService;
 
-    setWidthFull();
-    setSpacing(false);
     addClassNames("card-layout", "env-layout");
+    setWidthFull();
 
     // name
     nameText.setPlaceholder("Enter the request name");
     nameText.setWidthFull();
-    nameText.setMaxWidth("30em");
+    nameText.setMaxWidth("20em");
     nameText.setMinWidth("0");
 
     // add listeners
     addListeners();
 
     add(
+        new H4("Environment"),
         nameText,
+        new H4("Variables"),
         variablesSection
     );
   }
