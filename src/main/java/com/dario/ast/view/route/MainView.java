@@ -34,6 +34,9 @@ public class MainView extends VerticalLayout {
   @PostConstruct
   public void init() {
     setSizeFull();
+    getStyle()
+        .set("gap", "var(--lumo-space-s)")
+        .set("padding", "var(--lumo-space-s)");
 
     var requestLayout = new VerticalLayout(configLayout, runLayout);
     requestLayout.getStyle().set("gap", "var(--lumo-space-s)");
