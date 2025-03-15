@@ -48,6 +48,20 @@ VALUES (1, 'LOCAL', '2025-03-02 12:00:00', 1),
        (2, 'INT', '2025-03-02 14:00:00', 1),
        (3, 'QA', '2025-03-02 15:30:00', 1);
 
+-- Insert environment variables for ast_environment 1
+INSERT INTO my_schema.ast_env_variables (ast_environment_id, variable_key, variable_value)
+VALUES (1, 'var1', 'local value 1'),
+       (1, 'var2', 'local value 2');
+-- Insert environment variables for ast_environment 2
+INSERT INTO my_schema.ast_env_variables (ast_environment_id, variable_key, variable_value)
+VALUES (2, 'var1', 'int value 1'),
+       (2, 'var2', 'int value 2');
+-- Insert environment variables for ast_environment 3
+INSERT INTO my_schema.ast_env_variables (ast_environment_id, variable_key, variable_value)
+VALUES (3, 'var1', 'QA value 1'),
+       (3, 'var2', 'QA value 2');
+
+
 -- Adjust the auto-increment value to avoid PK constraint violation
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;

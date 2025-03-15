@@ -5,7 +5,7 @@ import static com.dario.ast.util.EventUtil.environmentCreated;
 import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;

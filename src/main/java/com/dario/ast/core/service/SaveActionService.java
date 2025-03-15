@@ -7,7 +7,7 @@ import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

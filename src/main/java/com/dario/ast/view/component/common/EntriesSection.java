@@ -1,6 +1,5 @@
-package com.dario.ast.view.component.config;
+package com.dario.ast.view.component.common;
 
-import static com.dario.ast.util.EventUtil.configEntriesUpdated;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static org.springframework.util.StringUtils.hasText;
@@ -17,8 +16,11 @@ import lombok.Getter;
 public class EntriesSection extends VerticalLayout {
 
   private final Map<String, String> entries = new HashMap<>();
+  private final Runnable notifyChangesAction;
 
-  public EntriesSection() {
+  public EntriesSection(Runnable notifyChangesAction) {
+    this.notifyChangesAction = notifyChangesAction;
+
     setPadding(false);
     setSpacing(false);
   }
@@ -93,7 +95,7 @@ public class EntriesSection extends VerticalLayout {
   }
 
   private void notifyChanges() {
-    configEntriesUpdated();
+    notifyChangesAction.run();
   }
 
   private static TextField createEntryField(String placeHolder, String value) {

@@ -11,7 +11,7 @@ import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.AsrRequestCreatedEvent;
 import com.dario.ast.event.AsrRequestUpdatedEvent;
-import com.dario.ast.view.component.notification.ErrorNotification;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;

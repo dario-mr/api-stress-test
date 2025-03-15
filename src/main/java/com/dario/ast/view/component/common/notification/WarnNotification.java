@@ -1,4 +1,4 @@
-package com.dario.ast.view.component.notification;
+package com.dario.ast.view.component.common.notification;
 
 import com.vaadin.flow.component.notification.Notification;
 

@@ -12,4 +12,4 @@ spring.security.oauth2.client.registration.google:
   client-secret: ${OAUTH_CLIENT_SECRET}
 
 # Security
-security.whitelist.ant-patterns: /icons/**,/images/**
+security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**

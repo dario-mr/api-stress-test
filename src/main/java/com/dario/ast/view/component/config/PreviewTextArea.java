@@ -1,6 +1,6 @@
 package com.dario.ast.view.component.config;
 
-import com.dario.ast.view.component.notification.SuccessNotification;
+import com.dario.ast.view.component.common.notification.SuccessNotification;
 import com.vaadin.flow.component.textfield.TextArea;
 
 public class PreviewTextArea extends TextArea {

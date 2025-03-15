@@ -1,13 +1,19 @@
 package com.dario.ast.repository.jpa.entity;
 
+import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +43,12 @@ public class AstEnvironmentEntity {
 
   @Column(name = "user_id", nullable = false)
   private Long userId;
+
+  @ElementCollection(fetch = EAGER)
+  @CollectionTable(name = "ast_env_variables", schema = "my_schema", joinColumns = @JoinColumn(name = "ast_environment_id"))
+  @MapKeyColumn(name = "variable_key")
+  @Column(name = "variable_value")
+  private Map<String, String> variables;
 
   @Override
   public boolean equals(Object other) {

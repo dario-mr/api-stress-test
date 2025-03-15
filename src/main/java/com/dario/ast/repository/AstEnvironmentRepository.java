@@ -50,7 +50,8 @@ public class AstEnvironmentRepository {
     return new Environment(
         entity.getId(),
         entity.getName(),
-        entity.getUserId()
+        entity.getUserId(),
+        entity.getVariables()
     );
   }
 
@@ -59,6 +60,7 @@ public class AstEnvironmentRepository {
         .id(environment.getId())
         .name(environment.getName())
         .userId(environment.getUserId())
+        .variables(environment.getVariables())
         .build();
   }
 }
