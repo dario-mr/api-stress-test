@@ -1,15 +1,17 @@
 package com.dario.ast.view.component.environment;
 
-import static com.dario.ast.util.MapUtil.removeEmptyEntries;
+import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
+import static com.dario.ast.util.MapUtil.removeEnvVarEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
+import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.util.EventUtil;
-import com.dario.ast.view.component.common.EntriesSection;
+import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -28,7 +30,8 @@ public class EnvironmentLayout extends VerticalLayout {
   private final SaveActionService saveActionService;
 
   private final TextField nameText = new TextField();
-  private final EntriesSection variablesSection = new EntriesSection(EventUtil::environmentEntriesUpdated);
+  private final EntriesSection<EnvVariable> variablesSection = new EntriesSection<>(
+      EventUtil::environmentEntriesUpdated, EnvVariable::defaultEnvVariable);
 
   private Environment selectedEnvironment;
 
@@ -86,7 +89,7 @@ public class EnvironmentLayout extends VerticalLayout {
 
     variablesSection.clearEntries();
     variablesSection.addEntries(environment.getVariables());
-    variablesSection.addEntry("", "");
+    variablesSection.addEntry("", defaultEnvVariable());
   }
 
   private void addListeners() {
@@ -106,7 +109,7 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment getEnvParams() {
     var name = nameText.getValue();
-    var variables = removeEmptyEntries(variablesSection.getEntries());
+    var variables = removeEnvVarEmptyEntries(variablesSection.getEntries());
 
     return Environment.builder()
         .id(selectedEnvironment.getId())

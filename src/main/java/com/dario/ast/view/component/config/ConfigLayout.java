@@ -13,7 +13,6 @@ import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
-import com.dario.ast.view.component.common.EntriesSection;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
