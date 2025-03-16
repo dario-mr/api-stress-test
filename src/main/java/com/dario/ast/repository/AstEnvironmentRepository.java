@@ -1,10 +1,16 @@
 package com.dario.ast.repository;
 
+import static java.util.stream.Collectors.toMap;
+
+import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.repository.jpa.AstEnvironmentJpaRepository;
+import com.dario.ast.repository.jpa.entity.AstEnvVariableEntity;
 import com.dario.ast.repository.jpa.entity.AstEnvironmentEntity;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -52,6 +58,14 @@ public class AstEnvironmentRepository {
         entity.getName(),
         entity.getUserId(),
         entity.getVariables()
+            .entrySet().stream()
+            .collect(toMap(
+                Entry::getKey,
+                entry -> new EnvVariable(
+                    entry.getValue().getValue(),
+                    entry.getValue().getCreatedOn()),
+                (e1, e2) -> e1,
+                LinkedHashMap::new))
     );
   }
 
@@ -60,7 +74,15 @@ public class AstEnvironmentRepository {
         .id(environment.getId())
         .name(environment.getName())
         .userId(environment.getUserId())
-        .variables(environment.getVariables())
+        .variables(environment.getVariables()
+            .entrySet().stream()
+            .collect(toMap(
+                Entry::getKey,
+                entry -> new AstEnvVariableEntity(
+                    entry.getValue().getValue(),
+                    entry.getValue().getCreatedOn()
+                )))
+        )
         .build();
   }
 }

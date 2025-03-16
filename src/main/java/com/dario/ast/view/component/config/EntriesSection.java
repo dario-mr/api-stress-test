@@ -1,4 +1,4 @@
-package com.dario.ast.view.component.common;
+package com.dario.ast.view.component.config;
 
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;

@@ -17,7 +17,7 @@ public class Environment {
   private Long id;
   private String name;
   private Long userId;
-  private Map<String, String> variables;
+  private Map<String, EnvVariable> variables;
 
   @Override
   public String toString() {
