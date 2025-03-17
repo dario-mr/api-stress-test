@@ -1,18 +1,25 @@
 package com.dario.ast.view.component.config;
 
+import static com.dario.ast.core.domain.RequestHeader.defaultRequestHeader;
+import static com.dario.ast.core.domain.RequestQueryParam.defaultRequestQueryParam;
+import static com.dario.ast.core.domain.RequestUriVariable.defaultRequestUriVariable;
 import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
-import static com.dario.ast.util.MapUtil.removeEmptyEntries;
+import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.RequestHeader;
+import com.dario.ast.core.domain.RequestQueryParam;
+import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
+import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -43,9 +50,12 @@ public class ConfigLayout extends VerticalLayout {
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
   private final ComboBox<HttpMethod> methodCombo = new ComboBox<>(null, values());
-  private final EntriesSection headerSection = new EntriesSection(EventUtil::configEntriesUpdated);
-  private final EntriesSection uriVariablesSection = new EntriesSection(EventUtil::configEntriesUpdated);
-  private final EntriesSection queryParamsSection = new EntriesSection(EventUtil::configEntriesUpdated);
+  private final EntriesSection<RequestHeader> headerSection = new EntriesSection<>(
+      EventUtil::configEntriesUpdated, RequestHeader::defaultRequestHeader);
+  private final EntriesSection<RequestUriVariable> uriVariablesSection = new EntriesSection<>(
+      EventUtil::configEntriesUpdated, RequestUriVariable::defaultRequestUriVariable);
+  private final EntriesSection<RequestQueryParam> queryParamsSection = new EntriesSection<>(
+      EventUtil::configEntriesUpdated, RequestQueryParam::defaultRequestQueryParam);
   private final TextArea requestBodyText = new TextArea();
   private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
   private final TextArea previewText = new PreviewTextArea();
@@ -141,9 +151,9 @@ public class ConfigLayout extends VerticalLayout {
     var name = nameText.getValue();
     var url = urlText.getValue();
     var method = methodCombo.getValue();
-    var headers = removeEmptyEntries(headerSection.getEntries());
-    var uriVariables = removeEmptyEntries(uriVariablesSection.getEntries());
-    var queryParams = removeEmptyEntries(queryParamsSection.getEntries());
+    var headers = removeGenericEmptyEntries(headerSection.getEntries());
+    var uriVariables = removeGenericEmptyEntries(uriVariablesSection.getEntries());
+    var queryParams = removeGenericEmptyEntries(queryParamsSection.getEntries());
     var requestBody = requestBodyText.getValue();
 
     return ConfigParams.builder()
@@ -226,15 +236,15 @@ public class ConfigLayout extends VerticalLayout {
 
     headerSection.clearEntries();
     headerSection.addEntries(params.getHeaders());
-    headerSection.addEntry("", "");
+    headerSection.addEntry("", defaultRequestHeader());
 
     uriVariablesSection.clearEntries();
     uriVariablesSection.addEntries(params.getUriVariables());
-    uriVariablesSection.addEntry("", "");
+    uriVariablesSection.addEntry("", defaultRequestUriVariable());
 
     queryParamsSection.clearEntries();
     queryParamsSection.addEntries(params.getQueryParams());
-    queryParamsSection.addEntry("", "");
+    queryParamsSection.addEntry("", defaultRequestQueryParam());
 
     requestBodyText.setValue(params.getRequestBody() == null
         ? "" : params.getRequestBody());

@@ -5,11 +5,12 @@ import static java.util.stream.Collectors.toMap;
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.repository.jpa.AstEnvironmentJpaRepository;
-import com.dario.ast.repository.jpa.entity.AstEnvVariableEntity;
-import com.dario.ast.repository.jpa.entity.AstEnvironmentEntity;
+import com.dario.ast.repository.jpa.entity.EnvVariableEntity;
+import com.dario.ast.repository.jpa.entity.EnvironmentEntity;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -52,37 +53,43 @@ public class AstEnvironmentRepository {
     jpaRepository.deleteById(id);
   }
 
-  private Environment mapToDomain(AstEnvironmentEntity entity) {
+  private Environment mapToDomain(EnvironmentEntity entity) {
     return new Environment(
         entity.getId(),
         entity.getName(),
         entity.getUserId(),
-        entity.getVariables()
-            .entrySet().stream()
-            .collect(toMap(
-                Entry::getKey,
-                entry -> new EnvVariable(
-                    entry.getValue().getValue(),
-                    entry.getValue().getCreatedOn()),
-                (e1, e2) -> e1,
-                LinkedHashMap::new))
+        mapEnvVariablesToDomain(entity.getVariables())
     );
   }
 
-  private AstEnvironmentEntity mapToEntity(Environment environment) {
-    return AstEnvironmentEntity.builder()
+  private static LinkedHashMap<String, EnvVariable> mapEnvVariablesToDomain(
+      Map<String, EnvVariableEntity> envVariables) {
+    return envVariables.entrySet().stream()
+        .collect(toMap(
+            Entry::getKey,
+            entry -> new EnvVariable(
+                entry.getValue().getValue(),
+                entry.getValue().getCreatedOn()),
+            (e1, e2) -> e1,
+            LinkedHashMap::new));
+  }
+
+  private EnvironmentEntity mapToEntity(Environment environment) {
+    return EnvironmentEntity.builder()
         .id(environment.getId())
         .name(environment.getName())
         .userId(environment.getUserId())
-        .variables(environment.getVariables()
-            .entrySet().stream()
-            .collect(toMap(
-                Entry::getKey,
-                entry -> new AstEnvVariableEntity(
-                    entry.getValue().getValue(),
-                    entry.getValue().getCreatedOn()
-                )))
-        )
+        .variables(mapEnvVariablesToEntity(environment.getVariables()))
         .build();
+  }
+
+  private static Map<String, EnvVariableEntity> mapEnvVariablesToEntity(Map<String, EnvVariable> envVariables) {
+    return envVariables.entrySet().stream()
+        .collect(toMap(
+            Entry::getKey,
+            entry -> new EnvVariableEntity(
+                entry.getValue().getValue(),
+                entry.getValue().getCreatedOn()
+            )));
   }
 }

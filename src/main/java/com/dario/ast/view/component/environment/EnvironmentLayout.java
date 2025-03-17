@@ -1,7 +1,7 @@
 package com.dario.ast.view.component.environment;
 
 import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
-import static com.dario.ast.util.MapUtil.removeEnvVarEmptyEntries;
+import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.EnvVariable;
@@ -109,7 +109,7 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment getEnvParams() {
     var name = nameText.getValue();
-    var variables = removeEnvVarEmptyEntries(variablesSection.getEntries());
+    var variables = removeGenericEmptyEntries(variablesSection.getEntries());
 
     return Environment.builder()
         .id(selectedEnvironment.getId())

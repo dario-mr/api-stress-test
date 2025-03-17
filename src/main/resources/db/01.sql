@@ -24,27 +24,30 @@ CREATE TABLE my_schema.ast_request
 
 CREATE TABLE my_schema.ast_request_headers
 (
-    ast_request_id BIGINT       NOT NULL,
-    header_key     VARCHAR(255) NOT NULL,
+    ast_request_id BIGINT                   NOT NULL,
+    header_key     VARCHAR(255)             NOT NULL,
     header_value   VARCHAR(2048),
+    created_on     TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (ast_request_id, header_key),
     FOREIGN KEY (ast_request_id) REFERENCES my_schema.ast_request (id) ON DELETE CASCADE
 );
 
 CREATE TABLE my_schema.ast_request_uri_variables
 (
-    ast_request_id BIGINT       NOT NULL,
-    variable_key   VARCHAR(255) NOT NULL,
+    ast_request_id BIGINT                   NOT NULL,
+    variable_key   VARCHAR(255)             NOT NULL,
     variable_value VARCHAR(2048),
+    created_on     TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (ast_request_id, variable_key),
     FOREIGN KEY (ast_request_id) REFERENCES my_schema.ast_request (id) ON DELETE CASCADE
 );
 
 CREATE TABLE my_schema.ast_request_query_params
 (
-    ast_request_id BIGINT       NOT NULL,
-    param_key      VARCHAR(255) NOT NULL,
+    ast_request_id BIGINT                   NOT NULL,
+    param_key      VARCHAR(255)             NOT NULL,
     param_value    VARCHAR(2048),
+    created_on     TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (ast_request_id, param_key),
     FOREIGN KEY (ast_request_id) REFERENCES my_schema.ast_request (id) ON DELETE CASCADE
 );

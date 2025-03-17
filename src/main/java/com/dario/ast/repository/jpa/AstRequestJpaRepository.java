@@ -1,12 +1,12 @@
 package com.dario.ast.repository.jpa;
 
-import com.dario.ast.repository.jpa.entity.AstRequestEntity;
+import com.dario.ast.repository.jpa.entity.RequestEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AstRequestJpaRepository extends JpaRepository<AstRequestEntity, Long> {
+public interface AstRequestJpaRepository extends JpaRepository<RequestEntity, Long> {
 
-  List<AstRequestEntity> findByUserIdOrderByCreatedOn(long userId);
+  List<RequestEntity> findByUserIdOrderByCreatedOn(long userId);
 }

@@ -21,8 +21,8 @@ public final class ConfigParams {
 
   private String uri;
   private HttpMethod method;
-  private Map<String, String> headers;
-  private Map<String, String> uriVariables;
-  private Map<String, String> queryParams;
+  private Map<String, RequestHeader> headers;
+  private Map<String, RequestUriVariable> uriVariables;
+  private Map<String, RequestQueryParam> queryParams;
   private String requestBody;
 }
