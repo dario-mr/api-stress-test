@@ -2,7 +2,7 @@ package com.dario.ast.repository;
 
 import com.dario.ast.core.domain.User;
 import com.dario.ast.repository.jpa.AstUserJpaRepository;
-import com.dario.ast.repository.jpa.entity.AstUserEntity;
+import com.dario.ast.repository.jpa.entity.UserEntity;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class AstUserRepository {
   }
 
   public User create(String email) {
-    var userEntity = AstUserEntity.builder()
+    var userEntity = UserEntity.builder()
         .id(null)
         .email(email)
         .createdOn(Instant.now())
@@ -30,7 +30,7 @@ public class AstUserRepository {
     return mapToDomain(jpaRepository.save(userEntity));
   }
 
-  private User mapToDomain(AstUserEntity userEntity) {
+  private User mapToDomain(UserEntity userEntity) {
     return new User(
         userEntity.getId(),
         userEntity.getEmail(),

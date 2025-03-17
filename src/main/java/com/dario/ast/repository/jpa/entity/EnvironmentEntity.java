@@ -30,7 +30,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AstEnvironmentEntity {
+public class EnvironmentEntity {
 
   @Id
   @GeneratedValue(strategy = IDENTITY)
@@ -53,7 +53,7 @@ public class AstEnvironmentEntity {
       schema = "my_schema",
       joinColumns = @JoinColumn(name = "ast_environment_id"))
   @OrderBy("created_on ASC")
-  private Map<String, AstEnvVariableEntity> variables;
+  private Map<String, EnvVariableEntity> variables;
 
   @Override
   public boolean equals(Object other) {
@@ -63,7 +63,7 @@ public class AstEnvironmentEntity {
     if (other == null || getClass() != other.getClass()) {
       return false;
     }
-    AstEnvironmentEntity otherEnv = (AstEnvironmentEntity) other;
+    EnvironmentEntity otherEnv = (EnvironmentEntity) other;
     return id != null && id.equals(otherEnv.id);
   }
 

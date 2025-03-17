@@ -3,7 +3,7 @@ package com.dario.ast.util;
 import static java.util.Map.Entry;
 import static java.util.stream.Collectors.toMap;
 
-import com.dario.ast.core.domain.EnvVariable;
+import com.dario.ast.view.component.common.entries.EntryValue;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
@@ -23,7 +23,7 @@ public class MapUtil {
         .collect(toMap(Entry::getKey, Entry::getValue));
   }
 
-  public static Map<String, EnvVariable> removeEnvVarEmptyEntries(Map<String, EnvVariable> map) {
+  public static <T> Map<String, T> removeGenericEmptyEntries(Map<String, T> map) {
     if (map == null) {
       return null;
     }
@@ -43,4 +43,13 @@ public class MapUtil {
 
     return multiValueMap;
   }
+
+  public static <T extends EntryValue> Map<String, String> flatEntryValueMap(Map<String, T> map) {
+    return map.entrySet().stream()
+        .collect(toMap(
+            Map.Entry::getKey,
+            e -> e.getValue().getValue()
+        ));
+  }
+
 }

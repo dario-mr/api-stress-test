@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AstEnvVariableEntity {
+public class RequestUriVariableEntity {
 
   @Column(name = "variable_value")
   private String value;

@@ -23,7 +23,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AstUserEntity {
+public class UserEntity {
 
   @Id
   @GeneratedValue(strategy = IDENTITY)
@@ -46,7 +46,7 @@ public class AstUserEntity {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AstUserEntity astUser = (AstUserEntity) o;
+    UserEntity astUser = (UserEntity) o;
     return id != null && id.equals(astUser.id);
   }
 
