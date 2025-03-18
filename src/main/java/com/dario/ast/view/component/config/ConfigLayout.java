@@ -217,7 +217,8 @@ public class ConfigLayout extends VerticalLayout {
 
   private void generateCurlPreview() {
     var configParams = getConfigParams();
-    var curlPreview = buildCurlPreview(configParams);
+    var selectedEnvironment = applicationState.getEnvironment();
+    var curlPreview = buildCurlPreview(configParams, selectedEnvironment);
 
     previewText.setValue(curlPreview);
     previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard

@@ -1,24 +1,27 @@
 package com.dario.ast.util;
 
+import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.Environment;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class CurlPreviewUtil {
 
-  public static String buildCurlPreview(ConfigParams params) {
-    if (params == null || !hasText(params.getUri())) {
+  public static String buildCurlPreview(ConfigParams configParams, Environment environment) {
+    if (configParams == null || !hasText(configParams.getUri())) {
       return "";
     }
 
+    var envConfigParams = applyEnvironmentVariables(configParams, environment);
     var previewBuilder = new StringBuilder();
 
     // replace URI variables
-    final String[] uriArr = {params.getUri()};
-    if (params.getUriVariables() != null) {
-      params.getUriVariables().entrySet().stream()
+    final String[] uriArr = {envConfigParams.getUri()};
+    if (envConfigParams.getUriVariables() != null) {
+      envConfigParams.getUriVariables().entrySet().stream()
           .filter(uriVar -> hasText(uriVar.getKey()) && hasText(uriVar.getValue().getValue()))
           .forEach(uriVar ->
               uriArr[0] = uriArr[0].replace("{%s}".formatted(uriVar.getKey()), uriVar.getValue().getValue()));
@@ -26,18 +29,18 @@ public class CurlPreviewUtil {
     var uri = uriArr[0];
 
     // append http method
-    if (params.getMethod() != null) {
-      previewBuilder.append(params.getMethod().name());
+    if (envConfigParams.getMethod() != null) {
+      previewBuilder.append(envConfigParams.getMethod().name());
     }
 
     // append uri
     previewBuilder.append(" '").append(uri);
 
     // append query parameters
-    if (params.getQueryParams() != null) {
+    if (envConfigParams.getQueryParams() != null) {
       final boolean[] isFirstQueryParam = {true};
 
-      params.getQueryParams().entrySet().stream()
+      envConfigParams.getQueryParams().entrySet().stream()
           .filter(queryParam -> hasText(queryParam.getKey()) && hasText(queryParam.getValue().getValue()))
           .forEach(queryParam -> {
             if (isFirstQueryParam[0]) {
@@ -54,8 +57,8 @@ public class CurlPreviewUtil {
     previewBuilder.append("'");
 
     // append headers
-    if (params.getHeaders() != null) {
-      params.getHeaders().entrySet().stream()
+    if (envConfigParams.getHeaders() != null) {
+      envConfigParams.getHeaders().entrySet().stream()
           .filter(header -> hasText(header.getKey()) && hasText(header.getValue().getValue()))
           .forEach(header -> previewBuilder
               .append(" \\\n")
@@ -65,11 +68,11 @@ public class CurlPreviewUtil {
     }
 
     // append request body
-    if (hasText(params.getRequestBody())) {
+    if (hasText(envConfigParams.getRequestBody())) {
       previewBuilder
           .append(" \\\n")
           .append(" -d '")
-          .append(params.getRequestBody())
+          .append(envConfigParams.getRequestBody())
           .append("'");
     }
 
