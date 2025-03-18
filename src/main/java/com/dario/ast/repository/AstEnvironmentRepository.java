@@ -84,6 +84,10 @@ public class AstEnvironmentRepository {
   }
 
   private static Map<String, EnvVariableEntity> mapEnvVariablesToEntity(Map<String, EnvVariable> envVariables) {
+    if (envVariables == null) {
+      return null;
+    }
+
     return envVariables.entrySet().stream()
         .collect(toMap(
             Entry::getKey,

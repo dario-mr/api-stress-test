@@ -85,6 +85,10 @@ public class AstRequestRepository {
   }
 
   private static Map<String, RequestHeaderEntity> mapHeadersToEntity(Map<String, RequestHeader> headers) {
+    if (headers == null) {
+      return null;
+    }
+
     return headers.entrySet().stream()
         .collect(toMap(
             Entry::getKey,
@@ -96,6 +100,10 @@ public class AstRequestRepository {
 
   private static Map<String, RequestUriVariableEntity> mapUriVariablesToEntity(
       Map<String, RequestUriVariable> uriVariables) {
+    if (uriVariables == null) {
+      return null;
+    }
+
     return uriVariables.entrySet().stream()
         .collect(toMap(
             Entry::getKey,
@@ -107,6 +115,10 @@ public class AstRequestRepository {
 
   private static Map<String, RequestQueryParameterEntity> mapQueryParamsToEntity(
       Map<String, RequestQueryParam> queryParams) {
+    if (queryParams == null) {
+      return null;
+    }
+
     return queryParams.entrySet().stream()
         .collect(toMap(
             Entry::getKey,
