@@ -7,6 +7,8 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.EnvVariable;
+import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestUriVariable;
@@ -18,24 +20,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpMethod;
 
-public class CurlPreviewUtilTest {
-
-  @MethodSource("getBuildCurlPreviewParams")
-  @ParameterizedTest
-  void buildCurlPreview_whenParamsArePassed_shouldConvertToCurlPreview(ConfigParams params, String expectedPreview) {
-    // when
-    var actualPreview = buildCurlPreview(params);
-
-    // then
-    assertThat(actualPreview).isEqualTo(expectedPreview);
-  }
+class CurlPreviewUtilTest {
 
   private static Stream<Arguments> getBuildCurlPreviewParams() {
     var uri = "https://www.api.com";
     var uriWithVar = "https://www.api.com/{uriVar}";
 
     var headers = new LinkedHashMap<String, RequestHeader>();
-    headers.put("header1", RequestHeader.builder().value("headerValue1").build());
+    headers.put("header1", RequestHeader.builder().value("{{headerValue1}}").build());
     headers.put("header2", RequestHeader.builder().value("headerValue2").build());
 
     var uriVariables = new LinkedHashMap<String, RequestUriVariable>();
@@ -47,29 +39,42 @@ public class CurlPreviewUtilTest {
 
     var requestBody = "{ \"requestBody\": \"requestBodyValue\" }";
 
+    var environment = buildEnvironment();
+
     return Stream.of(
-        of(ConfigParams.builder().build(), ""),
-        of(null, ""),
-        of(buildConfigParams(uri, POST, null, null, null, null), "curl -X POST 'https://www.api.com'"),
-        of(buildConfigParams(uri, POST, null, null, null, requestBody),
+        of(ConfigParams.builder().build(), null, ""),
+        of(null, null, ""),
+        of(buildConfigParams(uri, POST, null, null, null, null), null, "curl -X POST 'https://www.api.com'"),
+        of(buildConfigParams(uri, POST, null, null, null, requestBody), null,
             """
                 curl -X POST 'https://www.api.com' \\
                  -d '{ "requestBody": "requestBodyValue" }'"""),
-        of(buildConfigParams(uri, POST, null, null, queryParams, requestBody),
+        of(buildConfigParams(uri, POST, null, null, queryParams, requestBody), null,
             """
                 curl -X POST 'https://www.api.com?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
                  -d '{ "requestBody": "requestBodyValue" }'"""),
-        of(buildConfigParams(uriWithVar, GET, null, uriVariables, queryParams, requestBody),
+        of(buildConfigParams(uriWithVar, GET, null, uriVariables, queryParams, requestBody), null,
             """
                 curl -X GET 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
                  -d '{ "requestBody": "requestBodyValue" }'"""),
-        of(buildConfigParams(uriWithVar, POST, headers, uriVariables, queryParams, requestBody),
+        of(buildConfigParams(uriWithVar, POST, headers, uriVariables, queryParams, requestBody), environment,
             """
                 curl -X POST 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
-                 -H 'header1: headerValue1' \\
+                 -H 'header1: this is a header' \\
                  -H 'header2: headerValue2' \\
                  -d '{ "requestBody": "requestBodyValue" }'""")
     );
+  }
+
+  @MethodSource("getBuildCurlPreviewParams")
+  @ParameterizedTest
+  void buildCurlPreview_whenParamsArePassed_shouldConvertToCurlPreview(ConfigParams params, Environment environment,
+      String expectedPreview) {
+    // when
+    var actualPreview = buildCurlPreview(params, environment);
+
+    // then
+    assertThat(actualPreview).isEqualTo(expectedPreview);
   }
 
   private static ConfigParams buildConfigParams(
@@ -87,6 +92,14 @@ public class CurlPreviewUtilTest {
         .uriVariables(uriVariables)
         .queryParams(queryParams)
         .requestBody(requestBody)
+        .build();
+  }
+
+  private static Environment buildEnvironment() {
+    return Environment.builder()
+        .variables(Map.of(
+            "headerValue1", EnvVariable.builder().value("this is a header").build()
+        ))
         .build();
   }
 

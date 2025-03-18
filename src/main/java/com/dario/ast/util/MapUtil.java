@@ -48,7 +48,7 @@ public class MapUtil {
     return map.entrySet().stream()
         .collect(toMap(
             Map.Entry::getKey,
-            e -> e.getValue().getValue()
+            e -> e.getValue().getValue() != null ? e.getValue().getValue() : ""
         ));
   }
 

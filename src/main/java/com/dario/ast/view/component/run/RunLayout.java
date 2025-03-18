@@ -1,12 +1,20 @@
 package com.dario.ast.view.component.run;
 
-import com.dario.ast.core.domain.RunParams;
+import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
+import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
+import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
+import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.springframework.util.StringUtils.hasText;
+
 import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.proxy.ApiResponse;
-import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import com.dario.ast.view.component.common.notification.WarnNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
@@ -14,21 +22,15 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H4;
-import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
-import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import static org.springframework.util.StringUtils.hasText;
 
 @Slf4j
 @UIScope
@@ -197,11 +199,13 @@ public class RunLayout extends VerticalLayout {
     stopStressTest();
     startStressTestUI();
 
+    var selectedEnvironment = applicationState.getEnvironment();
+    var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
     var runParams = getRunParams();
     var threadPoolSize = threadPoolSizeField.getValue();
 
     stressTestService.startStressTest(
-        configParams, runParams,
+        envConfigParams, runParams,
         response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
         newFixedThreadPool(threadPoolSize)
     );
