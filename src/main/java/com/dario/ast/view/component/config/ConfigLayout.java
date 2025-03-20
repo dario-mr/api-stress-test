@@ -182,7 +182,11 @@ public class ConfigLayout extends VerticalLayout {
     nameText.addBlurListener(event -> {
       var currentValue = applicationState.getConfigParams().getRequestName();
       var newValue = nameText.getValue();
-      if (hasText(newValue) && !newValue.equals(currentValue)) {
+      if (!hasText(newValue)) {
+        nameText.setValue(currentValue);
+        return;
+      }
+      if (!newValue.equals(currentValue)) {
         saveParams();
       }
     });
@@ -191,7 +195,11 @@ public class ConfigLayout extends VerticalLayout {
     urlText.addBlurListener(event -> {
       var currentValue = applicationState.getConfigParams().getUri();
       var newValue = urlText.getValue();
-      if (hasText(newValue) && !newValue.equals(currentValue)) {
+      if (!hasText(newValue)) {
+        urlText.setValue(currentValue);
+        return;
+      }
+      if (!newValue.equals(currentValue)) {
         saveParams();
       }
     });
@@ -200,7 +208,7 @@ public class ConfigLayout extends VerticalLayout {
     requestBodyText.addBlurListener(event -> {
       var currentValue = applicationState.getConfigParams().getRequestBody();
       var newValue = requestBodyText.getValue();
-      if (hasText(newValue) && !newValue.equals(currentValue)) {
+      if (!newValue.equals(currentValue)) {
         saveParams();
       }
     });
