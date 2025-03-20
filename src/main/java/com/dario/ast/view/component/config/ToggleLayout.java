@@ -1,5 +1,7 @@
 package com.dario.ast.view.component.config;
 
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H5;
@@ -8,45 +10,42 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
-
 public class ToggleLayout extends VerticalLayout {
 
-    private final VerticalLayout contentLayout;
-    private final Button toggleButton;
-    private final Icon expandIcon;
-    private final Icon collapseIcon;
+  private final VerticalLayout contentLayout;
+  private final Button toggleButton;
+  private final Icon expandIcon;
+  private final Icon collapseIcon;
 
-    public ToggleLayout(String title, Component... components) {
-        setSpacing(false);
-        setPadding(false);
-        getStyle().set("margin-bottom", "1em");
+  public ToggleLayout(String title, Component... components) {
+    setSpacing(false);
+    setPadding(false);
 
-        expandIcon = VaadinIcon.ANGLE_DOWN.create();
-        collapseIcon = VaadinIcon.ANGLE_RIGHT.create();
+    expandIcon = VaadinIcon.ANGLE_DOWN.create();
+    collapseIcon = VaadinIcon.ANGLE_RIGHT.create();
 
-        toggleButton = new Button(collapseIcon);
-        toggleButton.getStyle().set("background", "none");
-        toggleButton.getStyle().set("margin", "0");
-        toggleButton.getStyle().set("padding-left", "0");
-        toggleButton.addClickListener(event -> toggleContentVisibility());
+    toggleButton = new Button(collapseIcon);
+    toggleButton.getStyle().set("background", "none");
+    toggleButton.getStyle().set("margin", "0");
+    toggleButton.getStyle().set("padding-left", "0");
+    toggleButton.addClickListener(event -> toggleContentVisibility());
 
-        var titleText = new H5(title);
-        var titleLayout = new HorizontalLayout(toggleButton, titleText);
-        titleLayout.setVerticalComponentAlignment(CENTER, titleText);
-        titleLayout.setSpacing(false);
+    var titleText = new H5(title);
+    var titleLayout = new HorizontalLayout(toggleButton, titleText);
+    titleLayout.setVerticalComponentAlignment(CENTER, titleText);
+    titleLayout.setSpacing(false);
 
-        contentLayout = new VerticalLayout(components);
-        contentLayout.setPadding(false);
-        contentLayout.setVisible(false);
+    contentLayout = new VerticalLayout(components);
+    contentLayout.setPadding(false);
+    contentLayout.setVisible(false);
 
-        add(titleLayout, contentLayout);
-    }
+    add(titleLayout, contentLayout);
+  }
 
-    private void toggleContentVisibility() {
-        boolean isVisible = contentLayout.isVisible();
+  private void toggleContentVisibility() {
+    boolean isVisible = contentLayout.isVisible();
 
-        contentLayout.setVisible(!isVisible);
-        toggleButton.setIcon(isVisible ? collapseIcon : expandIcon);
-    }
+    contentLayout.setVisible(!isVisible);
+    toggleButton.setIcon(isVisible ? collapseIcon : expandIcon);
+  }
 }

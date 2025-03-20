@@ -1,5 +1,7 @@
 package com.dario.ast.view.component.environment;
 
+import static com.dario.ast.util.EventUtil.environmentSelected;
+
 import com.dario.ast.core.domain.ApplicationState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
@@ -82,6 +84,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
 
   private void setEnvironment(Environment environment) {
     applicationState.setEnvironment(environment);
+    environmentSelected();
   }
 
 }

@@ -22,7 +22,8 @@ import lombok.RequiredArgsConstructor;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-  // TODO folders...
+  // TODO folders
+  // TODO pre-request scripts
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;

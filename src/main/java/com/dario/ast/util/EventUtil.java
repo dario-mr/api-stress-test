@@ -15,6 +15,7 @@ import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.event.EnvironmentDeletedEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
+import com.dario.ast.event.EnvironmentSelectedEvent;
 import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
@@ -62,6 +63,10 @@ public class EventUtil {
 
   public static void environmentEntriesUpdated() {
     fireEvent(UI.getCurrent(), new EnvironmentEntriesUpdatedEvent());
+  }
+
+  public static void environmentSelected() {
+    fireEvent(UI.getCurrent(), new EnvironmentSelectedEvent());
   }
 
   public static void focusEnvName() {

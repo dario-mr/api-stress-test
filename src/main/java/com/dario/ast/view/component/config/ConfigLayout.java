@@ -17,6 +17,7 @@ import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.service.SaveActionService;
 import com.dario.ast.event.ApplyConfigParamsEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
+import com.dario.ast.event.EnvironmentSelectedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
@@ -107,6 +108,7 @@ public class ConfigLayout extends VerticalLayout {
     // curl preview
     previewTextClipboard.wrap(previewText);
     previewTextClipboard.getStyle().set("width", "100%");
+    var curlPreviewToggleLayout = new ToggleLayout("cURL preview", previewTextClipboard);
 
     // add listeners
     addBlurListeners();
@@ -117,7 +119,7 @@ public class ConfigLayout extends VerticalLayout {
         nameText,
         urlMethodLayout,
         new ConfigTabs(tabsMap),
-        previewTextClipboard
+        curlPreviewToggleLayout
     );
   }
 
@@ -144,6 +146,12 @@ public class ConfigLayout extends VerticalLayout {
     ComponentUtil.addListener(attachEvent.getUI(),
         FocusRequestNameEvent.class,
         event -> nameText.focus()
+    );
+
+    // Listen for events indicating that an environment was selected in the EnvironmentCombo
+    ComponentUtil.addListener(attachEvent.getUI(),
+        EnvironmentSelectedEvent.class,
+        event -> generateCurlPreview()
     );
   }
 
