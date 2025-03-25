@@ -1,6 +1,6 @@
 package com.dario.ast.core.service;
 
-import com.dario.ast.core.domain.GoogleUser;
+import com.dario.ast.core.domain.OAuthUser;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -19,11 +19,11 @@ public class UserSessionService implements Serializable {
 
   private static final String LOGOUT_SUCCESS_URL = "/";
 
-  public GoogleUser getUser() {
+  public OAuthUser getUser() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var principal = (OAuth2AuthenticatedPrincipal) authentication.getPrincipal();
 
-    return new GoogleUser(
+    return new OAuthUser(
         principal.getAttribute("given_name"),
         principal.getAttribute("family_name"),
         principal.getAttribute("email"),

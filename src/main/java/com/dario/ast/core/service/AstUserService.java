@@ -16,9 +16,9 @@ public class AstUserService {
   private final UserSessionService userSessionService;
 
   public User getCurrentUser() {
-    var currentGoogleUser = userSessionService.getUser();
+    var currentOAuthUser = userSessionService.getUser();
     try {
-      return getOrCreateUser(currentGoogleUser.email());
+      return getOrCreateUser(currentOAuthUser.email());
     } catch (Exception ex) {
       log.error("Error getting current user from DB", ex);
       ErrorNotification.show(ex.getMessage());

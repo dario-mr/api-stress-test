@@ -3,7 +3,7 @@ package com.dario.ast.view.component.headline;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 
 import com.dario.ast.core.domain.ApplicationState;
-import com.dario.ast.core.domain.GoogleUser;
+import com.dario.ast.core.domain.OAuthUser;
 import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.core.service.UserSessionService;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -48,7 +48,7 @@ public class UserAvatar extends Div {
     add(avatar);
   }
 
-  private ContextMenu createUserMenu(GoogleUser currentUser) {
+  private ContextMenu createUserMenu(OAuthUser currentUser) {
     var menu = new ContextMenu();
     menu.setOpenOnClick(true);
 
