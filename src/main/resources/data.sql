@@ -60,6 +60,9 @@ INSERT INTO my_schema.ast_env_variables (ast_environment_id, variable_key, varia
 VALUES (3, 'var1', 'QA value 1', '2025-03-02 12:00:00'),
        (3, 'var2', 'QA value 2', '2025-03-02 13:00:00');
 
+INSERT INTO my_schema.persistent_logins (series, username, token, last_used)
+VALUES ('SHI5669QxarHRVEEi3I0Og==', '111235512772934408325', 'SJSlJa3pClw55Ft5SkgvqA==', '2025-03-25 14:26:11.89');
+
 -- Adjust the auto-increment value to avoid PK constraint violation
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;
