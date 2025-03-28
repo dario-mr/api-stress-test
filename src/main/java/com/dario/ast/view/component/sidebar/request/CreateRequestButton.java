@@ -1,5 +1,6 @@
-package com.dario.ast.view.component.sidebar.requests;
+package com.dario.ast.view.component.sidebar.request;
 
+import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.astRequestCreated;
 import static org.springframework.http.HttpMethod.GET;
 
@@ -56,6 +57,8 @@ public class CreateRequestButton extends Button {
         .uri("")
         .method(GET)
         .requestBody("")
+        .requestType(REQUEST)
+        .active(true)
         .build();
   }
 

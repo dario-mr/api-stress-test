@@ -6,6 +6,7 @@ import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
+import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.repository.jpa.AstRequestJpaRepository;
@@ -29,8 +30,9 @@ public class AstRequestRepository {
 
   private final AstRequestJpaRepository jpaRepository;
 
-  public List<AstRequest> findByUserId(long userId) {
-    return jpaRepository.findByUserIdOrderByCreatedOn(userId).stream()
+  public List<AstRequest> findByUserIdAndTypeAndStatus(long userId, RequestType requestType, boolean active) {
+    return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(userId, requestType.toString(), active)
+        .stream()
         .map(this::mapToDomain)
         .toList();
   }
@@ -74,6 +76,8 @@ public class AstRequestRepository {
         .userId(configParams.getUserId())
         .uri(configParams.getUri())
         .httpMethod(configParams.getMethod().toString())
+        .requestType(configParams.getRequestType().toString())
+        .active(configParams.isActive())
         .headers(mapHeadersToEntity(configParams.getHeaders()))
         .uriVariables(mapUriVariablesToEntity(configParams.getUriVariables()))
         .queryParams(mapQueryParamsToEntity(configParams.getQueryParams()))
@@ -141,6 +145,8 @@ public class AstRequestRepository {
         .userId(requestEntity.getUserId())
         .uri(requestEntity.getUri())
         .method(HttpMethod.valueOf(requestEntity.getHttpMethod().toUpperCase()))
+        .requestType(RequestType.fromString(requestEntity.getRequestType()))
+        .active(requestEntity.getActive())
         .headers(mapHeadersToDomain(requestEntity.getHeaders()))
         .uriVariables(mapUriVariablesToDomain(requestEntity.getUriVariables()))
         .queryParams(mapQueryParamsToDomain(requestEntity.getQueryParams()))

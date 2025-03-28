@@ -1,5 +1,6 @@
-package com.dario.ast.view.component.sidebar.requests;
+package com.dario.ast.view.component.sidebar.request;
 
+import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
@@ -116,7 +117,7 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private ArrayList<AstRequest> getUserRequests(long currentUserId) {
     try {
-      return new ArrayList<>(astRequestService.getByUserId(currentUserId)); // mutable list
+      return new ArrayList<>(astRequestService.getByUserIdAndTypeAndStatus(currentUserId, REQUEST, true));
     } catch (Exception ex) {
       log.error("Error fetching requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");

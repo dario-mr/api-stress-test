@@ -31,4 +31,6 @@ public final class ConfigParams {
   private Map<String, RequestUriVariable> uriVariables;
   private Map<String, RequestQueryParam> queryParams;
   private String requestBody;
+  private boolean active;
+  private RequestType requestType;
 }

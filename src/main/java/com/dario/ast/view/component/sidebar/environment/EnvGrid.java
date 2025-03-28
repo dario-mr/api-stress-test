@@ -1,4 +1,4 @@
-package com.dario.ast.view.component.sidebar.environments;
+package com.dario.ast.view.component.sidebar.environment;
 
 import static com.dario.ast.util.EventUtil.applyEnvironment;
 import static com.dario.ast.util.EventUtil.environmentDeleted;

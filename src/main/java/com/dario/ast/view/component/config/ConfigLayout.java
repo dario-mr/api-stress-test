@@ -14,6 +14,7 @@ import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
+import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
@@ -63,6 +64,8 @@ public class ConfigLayout extends VerticalLayout {
 
   private Long requestId;
   private Long userId;
+  private RequestType requestType;
+  private boolean active;
 
   public ConfigLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
@@ -164,6 +167,8 @@ public class ConfigLayout extends VerticalLayout {
     return ConfigParams.builder()
         .requestId(requestId)
         .userId(userId)
+        .requestType(requestType)
+        .active(active)
         .requestName(name)
         .uri(url)
         .method(method)
@@ -246,6 +251,8 @@ public class ConfigLayout extends VerticalLayout {
   private void applyParams(ConfigParams params) {
     this.requestId = params.getRequestId();
     this.userId = params.getUserId();
+    this.requestType = params.getRequestType();
+    this.active = params.isActive();
 
     nameText.setValue(params.getRequestName());
 

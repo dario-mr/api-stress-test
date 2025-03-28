@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AstRequestJpaRepository extends JpaRepository<RequestEntity, Long> {
 
-  List<RequestEntity> findByUserIdOrderByCreatedOn(long userId);
+  List<RequestEntity> findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(
+      long userId, String requestType, boolean active);
 }

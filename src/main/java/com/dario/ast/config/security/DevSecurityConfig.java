@@ -11,6 +11,7 @@ import java.util.Set;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +28,13 @@ public class DevSecurityConfig extends VaadinWebSecurity {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
-        .addFilterBefore(new DevAuthFilter(), BasicAuthenticationFilter.class);
+        .addFilterBefore(new DevAuthFilter(), BasicAuthenticationFilter.class)
+        .headers(headers -> headers
+            .frameOptions(Customizer.withDefaults()).disable() // allow H2 Console inside iframes
+        )
+        .csrf(csrf -> csrf
+            .ignoringRequestMatchers("/h2-console/**") // disable CSRF for H2 Console
+        );
 
     super.configure(http);
   }
@@ -46,7 +53,8 @@ public class DevSecurityConfig extends VaadinWebSecurity {
                 "given_name", "Dario",
                 "family_name", "Mauri",
                 "email", "dario.mauri9@gmail.com",
-                "picture", "https://lh3.googleusercontent.com/a/ACg8ocIei7A86wJJMtwFWuCKAsAfiodTBXMaJBrc38DROLhcUjXocEDk=s96-c"
+                "picture",
+                "https://lh3.googleusercontent.com/a/ACg8ocIei7A86wJJMtwFWuCKAsAfiodTBXMaJBrc38DROLhcUjXocEDk=s96-c"
             ),
             "sub"
         );

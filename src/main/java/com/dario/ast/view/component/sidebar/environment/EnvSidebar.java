@@ -1,4 +1,4 @@
-package com.dario.ast.view.component.sidebar.environments;
+package com.dario.ast.view.component.sidebar.environment;
 
 import static com.dario.ast.view.component.sidebar.MainSidebar.MAX_SIDEBAR_WIDTH;
 import static com.dario.ast.view.component.sidebar.MainSidebar.MIN_SIDEBAR_WIDTH;
