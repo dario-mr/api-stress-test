@@ -1,19 +1,17 @@
 package com.dario.ast.view.component.sidebar.requests;
 
-import static com.dario.ast.util.EventUtil.applyConfigParams;
-import static com.dario.ast.util.EventUtil.applyRunParams;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.event.AsrRequestCreatedEvent;
-import com.dario.ast.event.AsrRequestUpdatedEvent;
+import com.dario.ast.event.AstRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -32,15 +30,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RequestGrid extends Grid<AstRequest> {
 
   private final AstRequestService astRequestService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
   private ListDataProvider<AstRequest> dataProvider;
   private AstRequest lastSelectedItem;
 
   @Autowired
-  public RequestGrid(AstRequestService astRequestService, ApplicationState applicationState) {
+  public RequestGrid(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
-    this.applicationState = applicationState;
+    this.appState = appState;
 
     addClassName("sidebar-grid");
 
@@ -55,12 +53,23 @@ public class RequestGrid extends Grid<AstRequest> {
     // click listener to load request into UI
     addItemClickListener(event -> {
       var astRequest = event.getItem();
-      applyConfigParams(astRequest.getConfigParams());
-      applyRunParams(astRequest.getRunParams());
+      selectItem(astRequest);
     });
+
+    observeAppState();
 
     preventUnselection();
     loadRequests();
+  }
+
+  private void observeAppState() {
+    appState.getConfigParamsStream().subscribe(configParams ->
+        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams())))
+    );
+
+    appState.getRunParamsStream().subscribe(runParams ->
+        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams)))
+    );
   }
 
   @Override
@@ -70,16 +79,10 @@ public class RequestGrid extends Grid<AstRequest> {
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
-    // Listen for events indicating that the selected AST request was updated
-    ComponentUtil.addListener(attachEvent.getUI(),
-        AsrRequestUpdatedEvent.class,
-        event -> updateAsrRequestInDataProvider(event.getAstRequest())
-    );
-
     // Listen for events indicating that a new AST request was created
     ComponentUtil.addListener(attachEvent.getUI(),
-        AsrRequestCreatedEvent.class,
-        event -> addAsrRequest(event.getAstRequestId())
+        AstRequestCreatedEvent.class,
+        event -> addAstRequest(event.getAstRequestId())
     );
   }
 
@@ -106,7 +109,7 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void loadRequests() {
-    var currentUserId = applicationState.getCurrentUser().getId();
+    var currentUserId = appState.getCurrentUser().getId();
     var userRequests = getUserRequests(currentUserId);
 
     dataProvider = new ListDataProvider<>(userRequests);
@@ -119,7 +122,7 @@ public class RequestGrid extends Grid<AstRequest> {
     } catch (Exception ex) {
       log.error("Error fetching requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");
-      throw new RuntimeException(ex);
+      throw ex;
     }
   }
 
@@ -134,40 +137,23 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void selectItem(AstRequest astRequest) {
-    applyConfigParams(astRequest.getConfigParams());
-    applyRunParams(astRequest.getRunParams());
+    appState.setConfigParams(astRequest.getConfigParams());
+    appState.setRunParams(astRequest.getRunParams());
+
     getSelectionModel().select(astRequest); // highlight item in the grid
   }
 
-  // if a request is updated by some other component, we need to refresh it in the grid data provider
-  private void updateAsrRequestInDataProvider(AstRequest updatedRequest) {
-    // find the updated request in the data provider (by requestId)
-    var currentRequestOpt = dataProvider.getItems().stream()
-        .filter(astRequest ->
-            astRequest.getConfigParams().getRequestId().equals(updatedRequest.getConfigParams().getRequestId()))
-        .findFirst();
-    if (currentRequestOpt.isEmpty()) {
+  private void addAstRequest(Long astRequestId) {
+    var optAstRequest = astRequestService.getById(astRequestId);
+    if (optAstRequest.isEmpty()) {
       return;
     }
 
-    var currentRequest = currentRequestOpt.get();
-    currentRequest.setConfigParams(updatedRequest.getConfigParams());
-    currentRequest.setRunParams(updatedRequest.getRunParams());
+    var newAstRequest = optAstRequest.get();
 
-    dataProvider.refreshItem(currentRequest);
-  }
-
-  private void addAsrRequest(Long astRequestId) {
-    var optAsrRequest = astRequestService.getById(astRequestId);
-    if (optAsrRequest.isEmpty()) {
-      return;
-    }
-
-    var newAsrRequest = optAsrRequest.get();
-
-    dataProvider.getItems().add(newAsrRequest);
+    dataProvider.getItems().add(newAstRequest);
     dataProvider.refreshAll();
-    selectItem(newAsrRequest); // set new request as currently selected item
+    selectItem(newAstRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout
   }
 

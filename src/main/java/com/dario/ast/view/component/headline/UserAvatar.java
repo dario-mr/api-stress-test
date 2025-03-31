@@ -2,7 +2,7 @@ package com.dario.ast.view.component.headline;
 
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.OAuthUser;
 import com.dario.ast.core.service.AstUserService;
 import com.dario.ast.core.service.UserSessionService;
@@ -23,15 +23,15 @@ public class UserAvatar extends Div {
 
   private final UserSessionService userSessionService;
   private final AstUserService astUserService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
   @Autowired
   public UserAvatar(UserSessionService userSessionService,
       AstUserService astUserService,
-      ApplicationState applicationState) {
+      AppState appState) {
     this.userSessionService = userSessionService;
     this.astUserService = astUserService;
-    this.applicationState = applicationState;
+    this.appState = appState;
     loadCurrentUser(); // this is the first bean that is loaded and that has a user session... not great, but it works
 
     setHeightFull();
@@ -97,7 +97,7 @@ public class UserAvatar extends Div {
 
   private void loadCurrentUser() {
     var currentUser = astUserService.getCurrentUser();
-    applicationState.setCurrentUser(currentUser);
+    appState.setCurrentUser(currentUser);
   }
 
 }

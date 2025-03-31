@@ -185,6 +185,7 @@ public class AstRequestRepository {
 
   private RunParams mapToRunParams(RequestEntity requestEntity) {
     return RunParams.builder()
+        .requestId(requestEntity.getId())
         .numRequests(requestEntity.getNumRequests())
         .threadPoolSize(requestEntity.getThreadPoolSize())
         .stopOnError(requestEntity.isStopOnError())

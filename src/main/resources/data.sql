@@ -1,7 +1,6 @@
 -- Insert users
 INSERT INTO my_schema.ast_user (id, email, created_on, active)
-VALUES (1, 'dario.mauri9@gmail.com', '2024-02-23T10:00:00Z', true),
-       (2, 'user2@example.com', '2024-02-23T11:00:00Z', false);
+VALUES (1, 'dario.mauri9@gmail.com', '2024-02-23T10:00:00Z', true);
 
 -- Insert ast_requests
 INSERT INTO my_schema.ast_request (id, user_id, name, created_on, modified_on, uri, method, request_body, num_requests,

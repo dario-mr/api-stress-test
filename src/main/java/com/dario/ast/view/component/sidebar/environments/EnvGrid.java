@@ -6,7 +6,7 @@ import static com.dario.ast.util.EventUtil.focusEnvName;
 import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
@@ -32,15 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EnvGrid extends Grid<Environment> {
 
   private final AstEnvironmentService astEnvironmentService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
   private Environment lastSelectedItem;
 
   @Autowired
-  public EnvGrid(AstEnvironmentService astEnvironmentService, ApplicationState applicationState) {
+  public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
-    this.applicationState = applicationState;
+    this.appState = appState;
 
     addClassName("sidebar-grid");
 
@@ -67,10 +67,10 @@ public class EnvGrid extends Grid<Environment> {
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
-    // Listen for events indicating that the selected Environment was updated
+    // Listen for events indicating that an Environment was updated
     ComponentUtil.addListener(attachEvent.getUI(),
         EnvironmentUpdatedEvent.class,
-        event -> updateEnvironment(event.getEnvironment())
+        event -> dataProvider.refreshItem(event.getEnvironment())
     );
 
     // Listen for events indicating that a new Environment was created
@@ -103,7 +103,7 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void loadEnvs() {
-    var currentUserId = applicationState.getCurrentUser().getId();
+    var currentUserId = appState.getCurrentUser().getId();
     var userEnvironments = getUserEnvironments(currentUserId);
 
     dataProvider = new ListDataProvider<>(userEnvironments);
@@ -116,7 +116,7 @@ public class EnvGrid extends Grid<Environment> {
     } catch (Exception ex) {
       log.error("Error fetching environments for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching environments");
-      throw new RuntimeException(ex);
+      throw ex;
     }
   }
 
@@ -133,23 +133,6 @@ public class EnvGrid extends Grid<Environment> {
   private void selectItem(Environment environment) {
     applyEnvironment(environment);
     getSelectionModel().select(environment); // highlight item in the grid
-  }
-
-  // if an environment is updated by some other component, we need to refresh it in the grid data provider
-  private void updateEnvironment(Environment updatedEnv) {
-    // find the updated environment in the data provider (by environment id)
-    var currentEnvOpt = dataProvider.getItems().stream()
-        .filter(env -> env.getId().equals(updatedEnv.getId()))
-        .findFirst();
-    if (currentEnvOpt.isEmpty()) {
-      return;
-    }
-
-    var currentEnv = currentEnvOpt.get();
-    currentEnv.setName(updatedEnv.getName());
-    currentEnv.setVariables(updatedEnv.getVariables());
-
-    dataProvider.refreshItem(currentEnv);
   }
 
   private void addEnv(Long envId) {
