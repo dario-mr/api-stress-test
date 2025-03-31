@@ -36,7 +36,6 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
 
@@ -65,7 +64,6 @@ public class ConfigLayout extends VerticalLayout {
   private Long requestId;
   private Long userId;
 
-  @Autowired
   public ConfigLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
     this.astRequestService = astRequestService;

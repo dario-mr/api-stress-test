@@ -13,7 +13,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 @UIScope
@@ -23,7 +22,6 @@ public class CreateRequestButton extends Button {
   private final AstRequestService astRequestService;
   private final AppState appState;
 
-  @Autowired
   public CreateRequestButton(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
     this.appState = appState;

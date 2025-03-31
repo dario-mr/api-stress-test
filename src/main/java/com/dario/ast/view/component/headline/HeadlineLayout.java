@@ -8,14 +8,12 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/headline-layout.css")
 public class HeadlineLayout extends HorizontalLayout {
 
-  @Autowired
   public HeadlineLayout(UserAvatar userAvatar, EnvironmentCombo environmentCombo) {
     setWidthFull();
     setAlignItems(CENTER);

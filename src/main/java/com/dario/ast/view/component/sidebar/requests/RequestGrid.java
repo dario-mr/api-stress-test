@@ -22,7 +22,6 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 @UIScope
@@ -35,7 +34,6 @@ public class RequestGrid extends Grid<AstRequest> {
   private ListDataProvider<AstRequest> dataProvider;
   private AstRequest lastSelectedItem;
 
-  @Autowired
   public RequestGrid(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
     this.appState = appState;
