@@ -1,11 +1,11 @@
 package com.dario.ast.view.component.common.entries;
 
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
-import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
+import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.NOWRAP;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import java.util.LinkedHashMap;
@@ -38,9 +38,12 @@ public class EntriesSection<V extends EntryValue> extends VerticalLayout {
     var removeButton = new Button();
     removeButton.setIcon(TRASH.create());
 
-    var entryLayout = new HorizontalLayout(keyField, valueField, removeButton);
+    var entryLayout = new FlexLayout(keyField, valueField, removeButton);
     entryLayout.setWidthFull();
-    entryLayout.setVerticalComponentAlignment(END, removeButton);
+    entryLayout.setFlexWrap(NOWRAP);
+    entryLayout.setFlexGrow(1, keyField);
+    entryLayout.setFlexGrow(3, valueField);
+    entryLayout.getStyle().set("gap", "var(--lumo-space-s)");
     add(entryLayout);
 
     // key changed listener
@@ -110,8 +113,6 @@ public class EntriesSection<V extends EntryValue> extends VerticalLayout {
     var entryField = new TextField();
     entryField.setPlaceholder(placeHolder);
     entryField.setValue(value);
-    entryField.setWidthFull();
-    entryField.setMinWidth("0");
 
     return entryField;
   }

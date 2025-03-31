@@ -5,6 +5,7 @@ import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
+import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.springframework.util.StringUtils.hasText;
@@ -65,7 +66,7 @@ public class RunLayout extends VerticalLayout {
     setSpacing(false);
     addClassNames("card-layout", "run-layout");
 
-    // requests + thread pool
+    // requests + thread pool + stop on error
     requestNumberField.setWidthFull();
     requestNumberField.setMinWidth("5em");
     requestNumberField.setMin(1);
@@ -76,8 +77,11 @@ public class RunLayout extends VerticalLayout {
     threadPoolSizeField.setMin(1);
     threadPoolSizeField.addValueChangeListener(integerValidationListener(threadPoolSizeField, 1));
 
-    var requestThreadLayout = new HorizontalLayout(requestNumberField, threadPoolSizeField);
-    requestThreadLayout.setWidthFull();
+    stopOnErrorCheckbox.setMinWidth("9em");
+
+    var firstRow = new HorizontalLayout(requestNumberField, threadPoolSizeField, stopOnErrorCheckbox);
+    firstRow.setVerticalComponentAlignment(END, stopOnErrorCheckbox);
+    firstRow.setWidthFull();
 
     // start + stop buttons
     startButton.addClickListener(event -> startStressTest());
@@ -103,7 +107,7 @@ public class RunLayout extends VerticalLayout {
     resultsLayout.setWidthFull();
     resultsLayout.setFlexWrap(WRAP);
     resultsLayout.setFlexGrow(1, completedText, failedText);
-    resultsLayout.setFlexGrow(1, errorText);
+    resultsLayout.setFlexGrow(5, errorText);
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
     // add listeners
@@ -115,8 +119,7 @@ public class RunLayout extends VerticalLayout {
     // add all components
     add(
         new H4("Run"),
-        requestThreadLayout,
-        stopOnErrorCheckbox,
+        firstRow,
         startButton, stopButton,
         resultsLayout
     );
