@@ -15,7 +15,6 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
@@ -25,7 +24,6 @@ public class UserAvatar extends Div {
   private final AstUserService astUserService;
   private final AppState appState;
 
-  @Autowired
   public UserAvatar(UserSessionService userSessionService,
       AstUserService astUserService,
       AppState appState) {

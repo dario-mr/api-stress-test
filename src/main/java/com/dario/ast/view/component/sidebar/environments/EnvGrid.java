@@ -24,7 +24,6 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 @UIScope
@@ -37,7 +36,6 @@ public class EnvGrid extends Grid<Environment> {
   private ListDataProvider<Environment> dataProvider;
   private Environment lastSelectedItem;
 
-  @Autowired
   public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
     this.appState = appState;

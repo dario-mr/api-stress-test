@@ -7,14 +7,12 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/sidebar.css")
 public class RequestSidebar extends VerticalLayout {
 
-  @Autowired
   public RequestSidebar(CreateRequestButton createRequestButton, RequestGrid requestGrid) {
     addClassNames("card-layout", "sidebar-layout");
     setPadding(false);

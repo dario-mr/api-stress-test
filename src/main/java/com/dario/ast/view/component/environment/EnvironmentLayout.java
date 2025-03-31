@@ -22,7 +22,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
@@ -37,7 +36,6 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment selectedEnvironment;
 
-  @Autowired
   public EnvironmentLayout(AstEnvironmentService astEnvironmentService) {
     this.astEnvironmentService = astEnvironmentService;
 

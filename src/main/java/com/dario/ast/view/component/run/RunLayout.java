@@ -30,7 +30,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 @UIScope
@@ -54,7 +53,6 @@ public class RunLayout extends VerticalLayout {
   private long completedRequests = 0, failedRequests = 0;
   private Long requestId;
 
-  @Autowired
   public RunLayout(
       StressTestService stressTestService,
       AppState appState,

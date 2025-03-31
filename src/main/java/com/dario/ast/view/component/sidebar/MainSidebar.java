@@ -15,7 +15,6 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.function.Consumer;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @UIScope
 @SpringComponent
@@ -32,7 +31,6 @@ public class MainSidebar extends HorizontalLayout {
   @Setter
   private Consumer<SidebarSection> selectionListener;
 
-  @Autowired
   public MainSidebar(RequestSidebar requestSidebar, EnvSidebar envSidebar) {
     this.requestSidebar = requestSidebar;
     this.envSidebar = envSidebar;
