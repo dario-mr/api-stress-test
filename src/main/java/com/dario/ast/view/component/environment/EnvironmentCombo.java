@@ -1,8 +1,6 @@
 package com.dario.ast.view.component.environment;
 
-import static com.dario.ast.util.EventUtil.environmentSelected;
-
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
@@ -19,11 +17,11 @@ import com.vaadin.flow.spring.annotation.UIScope;
 public class EnvironmentCombo extends ComboBox<Environment> {
 
   private final AstEnvironmentService environmentService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
-  public EnvironmentCombo(AstEnvironmentService environmentService, ApplicationState applicationState) {
+  public EnvironmentCombo(AstEnvironmentService environmentService, AppState appState) {
     this.environmentService = environmentService;
-    this.applicationState = applicationState;
+    this.appState = appState;
 
     loadEnvironments();
     addValueChangeListener(event -> setEnvironment(event.getValue()));
@@ -53,7 +51,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
   }
 
   private void loadEnvironments() {
-    var currentUserId = applicationState.getCurrentUser().getId();
+    var currentUserId = appState.getCurrentUser().getId();
     var userEnvironments = environmentService.getByUserId(currentUserId);
     setItems(userEnvironments);
 
@@ -66,7 +64,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
 
   private void reloadEnvironments() {
     var currentEnv = getValue(); // save currently selected environment
-    var userEnvironments = environmentService.getByUserId(applicationState.getCurrentUser().getId());
+    var userEnvironments = environmentService.getByUserId(appState.getCurrentUser().getId());
     setItems(userEnvironments);
 
     if (userEnvironments.isEmpty()) {
@@ -83,8 +81,9 @@ public class EnvironmentCombo extends ComboBox<Environment> {
   }
 
   private void setEnvironment(Environment environment) {
-    applicationState.setEnvironment(environment);
-    environmentSelected();
+    if (environment != null) {
+      appState.setSelectedEnvironment(environment);
+    }
   }
 
 }

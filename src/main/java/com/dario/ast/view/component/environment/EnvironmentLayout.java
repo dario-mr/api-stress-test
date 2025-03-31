@@ -1,17 +1,19 @@
 package com.dario.ast.view.component.environment;
 
 import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
+import static com.dario.ast.util.EventUtil.environmentUpdated;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.SaveActionService;
+import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -27,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @CssImport(value = "./styles/env-layout.css")
 public class EnvironmentLayout extends VerticalLayout {
 
-  private final SaveActionService saveActionService;
+  private final AstEnvironmentService astEnvironmentService;
 
   private final TextField nameText = new TextField();
   private final EntriesSection<EnvVariable> variablesSection = new EntriesSection<>(
@@ -36,8 +38,8 @@ public class EnvironmentLayout extends VerticalLayout {
   private Environment selectedEnvironment;
 
   @Autowired
-  public EnvironmentLayout(SaveActionService saveActionService) {
-    this.saveActionService = saveActionService;
+  public EnvironmentLayout(AstEnvironmentService astEnvironmentService) {
+    this.astEnvironmentService = astEnvironmentService;
 
     addClassNames("card-layout", "env-layout");
     setWidthFull();
@@ -104,7 +106,15 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private void saveChanges() {
     selectedEnvironment = getEnvParams();
-    saveActionService.saveEnvironment(selectedEnvironment);
+
+    try {
+      astEnvironmentService.update(selectedEnvironment);
+    } catch (Exception ex) {
+      ErrorNotification.show("Error saving environment");
+      throw ex;
+    }
+
+    environmentUpdated(selectedEnvironment);
   }
 
   private Environment getEnvParams() {

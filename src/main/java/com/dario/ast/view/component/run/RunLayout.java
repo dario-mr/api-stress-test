@@ -9,15 +9,15 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.SaveActionService;
+import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.StressTestService;
-import com.dario.ast.event.ApplyRunParamsEvent;
 import com.dario.ast.proxy.ApiResponse;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -38,9 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 @CssImport(value = "./styles/run-layout.css")
 public class RunLayout extends VerticalLayout {
 
-  private final SaveActionService saveActionService;
   private final StressTestService stressTestService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
+  private final AstRequestService astRequestService;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -52,14 +52,16 @@ public class RunLayout extends VerticalLayout {
   private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
 
   private long completedRequests = 0, failedRequests = 0;
+  private Long requestId;
 
   @Autowired
-  public RunLayout(SaveActionService saveActionService,
+  public RunLayout(
       StressTestService stressTestService,
-      ApplicationState applicationState) {
-    this.saveActionService = saveActionService;
+      AppState appState,
+      AstRequestService astRequestService) {
     this.stressTestService = stressTestService;
-    this.applicationState = applicationState;
+    this.appState = appState;
+    this.astRequestService = astRequestService;
 
     setWidthFull();
     setSpacing(false);
@@ -108,6 +110,9 @@ public class RunLayout extends VerticalLayout {
 
     // add listeners
     addBlurListeners();
+    appState.getRunParamsStream().subscribe(runParams ->
+        UI.getCurrent().access(() -> applyParams(runParams))
+    );
 
     // add all components
     add(
@@ -126,27 +131,17 @@ public class RunLayout extends VerticalLayout {
     var stopOnError = stopOnErrorCheckbox.getValue();
 
     return RunParams.builder()
+        .requestId(requestId)
         .numRequests(numRequests)
         .threadPoolSize(threadPoolSize)
         .stopOnError(stopOnError)
         .build();
   }
 
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
-
-    // Listen for events that should trigger applying the run params in the UI
-    ComponentUtil.addListener(attachEvent.getUI(),
-        ApplyRunParamsEvent.class,
-        event -> applyParams(event.getRunParams())
-    );
-  }
-
   private void addBlurListeners() {
     // name
     requestNumberField.addBlurListener(event -> {
-      var currentValue = applicationState.getRunParams().getNumRequests();
+      var currentValue = appState.getRunParams().getNumRequests();
       var newValue = requestNumberField.getValue();
       if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
         saveParams();
@@ -155,7 +150,7 @@ public class RunLayout extends VerticalLayout {
 
     // url
     threadPoolSizeField.addBlurListener(event -> {
-      var currentValue = applicationState.getRunParams().getThreadPoolSize();
+      var currentValue = appState.getRunParams().getThreadPoolSize();
       var newValue = threadPoolSizeField.getValue();
       if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
         saveParams();
@@ -164,7 +159,7 @@ public class RunLayout extends VerticalLayout {
 
     // request
     stopOnErrorCheckbox.addClickListener(event -> {
-      var currentValue = applicationState.getRunParams().isStopOnError();
+      var currentValue = appState.getRunParams().isStopOnError();
       var newValue = stopOnErrorCheckbox.getValue();
       if (newValue != null && !newValue.equals(currentValue)) {
         saveParams();
@@ -173,15 +168,21 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void saveParams() {
-    var configParams = applicationState.getConfigParams();
+    var configParams = appState.getConfigParams();
     var runParams = getRunParams();
 
-    applicationState.setRunParams(runParams);
-    saveActionService.saveParams(configParams, runParams);
+    try {
+      astRequestService.update(new AstRequest(configParams, runParams));
+    } catch (Exception ex) {
+      ErrorNotification.show("Error saving parameters");
+      throw ex;
+    }
+
+    appState.setRunParams(runParams);
   }
 
   private void applyParams(RunParams params) {
-    applicationState.setRunParams(params);
+    this.requestId = params.getRequestId();
 
     requestNumberField.setValue(params.getNumRequests());
     threadPoolSizeField.setValue(params.getThreadPoolSize());
@@ -190,7 +191,7 @@ public class RunLayout extends VerticalLayout {
 
   private void startStressTest() {
     // validate parameters
-    var configParams = applicationState.getConfigParams();
+    var configParams = appState.getConfigParams();
     if (!hasText(configParams.getUri())) {
       WarnNotification.show("Please provide a valid URL");
       return;
@@ -199,7 +200,7 @@ public class RunLayout extends VerticalLayout {
     stopStressTest();
     startStressTestUI();
 
-    var selectedEnvironment = applicationState.getEnvironment();
+    var selectedEnvironment = appState.getSelectedEnvironment();
     var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
     var runParams = getRunParams();
     var threadPoolSize = threadPoolSizeField.getValue();

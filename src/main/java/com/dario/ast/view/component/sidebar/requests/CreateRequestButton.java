@@ -1,9 +1,9 @@
 package com.dario.ast.view.component.sidebar.requests;
 
-import static com.dario.ast.util.EventUtil.asrRequestCreated;
+import static com.dario.ast.util.EventUtil.astRequestCreated;
 import static org.springframework.http.HttpMethod.GET;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
@@ -21,33 +21,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateRequestButton extends Button {
 
   private final AstRequestService astRequestService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
   @Autowired
-  public CreateRequestButton(AstRequestService astRequestService, ApplicationState applicationState) {
+  public CreateRequestButton(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
-    this.applicationState = applicationState;
+    this.appState = appState;
 
     addClassName("create-button");
     setWidthFull();
     setText("+");
 
-    addClickListener(event -> createAsrRequest());
+    addClickListener(event -> createAstRequest());
   }
 
-  private void createAsrRequest() {
-    var currentUserId = applicationState.getCurrentUser().getId();
+  private void createAstRequest() {
+    var currentUserId = appState.getCurrentUser().getId();
     var configParams = defaultConfigParams(currentUserId);
     var runParams = defaultRunParams();
     var astRequest = new AstRequest(configParams, runParams);
 
     try {
       var astRequestId = astRequestService.create(astRequest);
-      asrRequestCreated(astRequestId);
+      astRequestCreated(astRequestId);
     } catch (Exception ex) {
       log.error("Error creating new Request", ex);
       ErrorNotification.show("Error creating Request");
-      throw new RuntimeException(ex);
+      throw ex;
     }
   }
 

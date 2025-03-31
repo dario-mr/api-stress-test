@@ -22,7 +22,7 @@ public class AstUserService {
     } catch (Exception ex) {
       log.error("Error getting current user from DB", ex);
       ErrorNotification.show(ex.getMessage());
-      throw new RuntimeException(ex);
+      throw ex;
     }
   }
 

@@ -2,7 +2,7 @@ package com.dario.ast.view.component.sidebar.environments;
 
 import static com.dario.ast.util.EventUtil.environmentCreated;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -18,12 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateEnvButton extends Button {
 
   private final AstEnvironmentService astEnvironmentService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
 
   @Autowired
-  public CreateEnvButton(AstEnvironmentService astEnvironmentService, ApplicationState applicationState) {
+  public CreateEnvButton(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
-    this.applicationState = applicationState;
+    this.appState = appState;
 
     addClassName("create-button");
     setWidthFull();
@@ -33,7 +33,7 @@ public class CreateEnvButton extends Button {
   }
 
   private void createEnv() {
-    var currentUserId = applicationState.getCurrentUser().getId();
+    var currentUserId = appState.getCurrentUser().getId();
     var newEnv = defaultEnv(currentUserId);
 
     try {
@@ -42,7 +42,7 @@ public class CreateEnvButton extends Button {
     } catch (Exception ex) {
       log.error("Error creating new Environment", ex);
       ErrorNotification.show("Error creating Environment");
-      throw new RuntimeException(ex);
+      throw ex;
     }
   }
 

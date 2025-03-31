@@ -9,21 +9,22 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.ApplicationState;
+import com.dario.ast.core.domain.AppState;
+import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.service.SaveActionService;
-import com.dario.ast.event.ApplyConfigParamsEvent;
+import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.EnvironmentSelectedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
+import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H4;
@@ -45,8 +46,8 @@ import org.vaadin.olli.ClipboardHelper;
 @CssImport(value = "./styles/config-layout.css")
 public class ConfigLayout extends VerticalLayout {
 
-  private final SaveActionService saveActionService;
-  private final ApplicationState applicationState;
+  private final AppState appState;
+  private final AstRequestService astRequestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -65,9 +66,9 @@ public class ConfigLayout extends VerticalLayout {
   private Long userId;
 
   @Autowired
-  public ConfigLayout(SaveActionService saveActionService, ApplicationState applicationState) {
-    this.saveActionService = saveActionService;
-    this.applicationState = applicationState;
+  public ConfigLayout(AppState appState, AstRequestService astRequestService) {
+    this.appState = appState;
+    this.astRequestService = astRequestService;
 
     setWidthFull();
     setSpacing(false);
@@ -112,6 +113,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // add listeners
     addBlurListeners();
+    observeAppState();
 
     // add all components
     add(
@@ -127,12 +129,6 @@ public class ConfigLayout extends VerticalLayout {
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    // Listen for events that should trigger applying the config params in the UI
-    ComponentUtil.addListener(attachEvent.getUI(),
-        ApplyConfigParamsEvent.class,
-        event -> applyParams(event.getConfigParams())
-    );
-
     // Listen for events indicating that config entries (EntriesSection class) were updated
     ComponentUtil.addListener(attachEvent.getUI(),
         ConfigEntriesUpdatedEvent.class,
@@ -147,11 +143,14 @@ public class ConfigLayout extends VerticalLayout {
         FocusRequestNameEvent.class,
         event -> nameText.focus()
     );
+  }
 
-    // Listen for events indicating that an environment was selected in the EnvironmentCombo
-    ComponentUtil.addListener(attachEvent.getUI(),
-        EnvironmentSelectedEvent.class,
-        event -> generateCurlPreview()
+  private void observeAppState() {
+    appState.getConfigParamsStream().subscribe(configParams ->
+        UI.getCurrent().access(() -> applyParams(configParams))
+    );
+    appState.getSelectedEnvironmentStream().subscribe(environment ->
+        UI.getCurrent().access(this::generateCurlPreview)
     );
   }
 
@@ -180,7 +179,7 @@ public class ConfigLayout extends VerticalLayout {
   private void addBlurListeners() {
     // name
     nameText.addBlurListener(event -> {
-      var currentValue = applicationState.getConfigParams().getRequestName();
+      var currentValue = appState.getConfigParams().getRequestName();
       var newValue = nameText.getValue();
       if (!hasText(newValue)) {
         nameText.setValue(currentValue);
@@ -193,7 +192,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // url
     urlText.addBlurListener(event -> {
-      var currentValue = applicationState.getConfigParams().getUri();
+      var currentValue = appState.getConfigParams().getUri();
       var newValue = urlText.getValue();
       if (!hasText(newValue)) {
         urlText.setValue(currentValue);
@@ -206,7 +205,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // request body
     requestBodyText.addBlurListener(event -> {
-      var currentValue = applicationState.getConfigParams().getRequestBody();
+      var currentValue = appState.getConfigParams().getRequestBody();
       var newValue = requestBodyText.getValue();
       if (!newValue.equals(currentValue)) {
         saveParams();
@@ -215,7 +214,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // method
     methodCombo.addBlurListener(event -> {
-      var currentValue = applicationState.getConfigParams().getMethod();
+      var currentValue = appState.getConfigParams().getMethod();
       var newValue = methodCombo.getValue();
       if (newValue != null && !newValue.equals(currentValue)) {
         saveParams();
@@ -225,15 +224,21 @@ public class ConfigLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var runParams = applicationState.getRunParams();
+    var runParams = appState.getRunParams();
 
-    applicationState.setConfigParams(configParams);
-    saveActionService.saveParams(configParams, runParams);
+    try {
+      astRequestService.update(new AstRequest(configParams, runParams));
+    } catch (Exception ex) {
+      ErrorNotification.show("Error saving parameters");
+      throw ex;
+    }
+
+    appState.setConfigParams(configParams);
   }
 
   private void generateCurlPreview() {
     var configParams = getConfigParams();
-    var selectedEnvironment = applicationState.getEnvironment();
+    var selectedEnvironment = appState.getSelectedEnvironment();
     var curlPreview = buildCurlPreview(configParams, selectedEnvironment);
 
     previewText.setValue(curlPreview);
@@ -241,8 +246,6 @@ public class ConfigLayout extends VerticalLayout {
   }
 
   private void applyParams(ConfigParams params) {
-    applicationState.setConfigParams(params);
-
     this.requestId = params.getRequestId();
     this.userId = params.getUserId();
 
