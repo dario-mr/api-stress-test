@@ -20,6 +20,7 @@ import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
+import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
@@ -76,7 +77,7 @@ public class ConfigLayout extends VerticalLayout {
     addClassNames("card-layout", "config-layout");
 
     // name
-    nameText.setPlaceholder("Enter the request name");
+    nameText.setPlaceholder("Request name");
     nameText.setWidthFull();
     nameText.setMaxWidth("30em");
     nameText.setMinWidth("0");

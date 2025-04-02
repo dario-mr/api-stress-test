@@ -37,6 +37,13 @@ public class AstRequestRepository {
         .toList();
   }
 
+  public List<AstRequest> findByUserIdAndType(long userId, RequestType requestType) {
+    return jpaRepository.findByUserIdAndRequestTypeOrderByCreatedOn(userId, requestType.toString())
+        .stream()
+        .map(this::mapToDomain)
+        .toList();
+  }
+
   public Optional<AstRequest> findById(Long id) {
     return jpaRepository.findById(id)
         .map(this::mapToDomain);

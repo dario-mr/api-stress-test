@@ -8,7 +8,11 @@ INSERT INTO my_schema.ast_request (id, user_id, name, created_on, modified_on, u
 VALUES (1, 1, 'Request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.google.{domain}/', 'GET',
         '{ "key": "{{bodyValue}}" }', 1, 1, true, 'REQUEST', true),
        (2, 1, 'Request 2', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
-        NULL, 50, 5, true, 'REQUEST', true);
+        NULL, 50, 5, true, 'REQUEST', true),
+       (3, 1, 'Pre-request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.google.com/', 'GET',
+        '{ "key": "body pre-request 1" }', 1, 1, true, 'PRE_REQUEST', true),
+       (4, 1, 'Pre-request 2', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
+        NULL, 1, 1, true, 'PRE_REQUEST', false);
 
 -- Insert headers for ast_request 1
 INSERT INTO my_schema.ast_request_headers (ast_request_id, header_key, header_value, created_on)
@@ -39,6 +43,30 @@ INSERT INTO my_schema.ast_request_query_params (ast_request_id, param_key, param
 VALUES (2, 'page', '2', '2025-03-02 12:00:00'),
        (2, 'size', '20', '2025-03-02 13:00:00');
 
+-- Insert headers for ast_request (pre-request) 3
+INSERT INTO my_schema.ast_request_headers (ast_request_id, header_key, header_value, created_on)
+VALUES (3, 'pre-request 1 header', 'application/xml', '2025-03-02 12:00:00');
+
+-- Insert URI variables for ast_request (pre-request) 3
+INSERT INTO my_schema.ast_request_uri_variables (ast_request_id, variable_key, variable_value, created_on)
+VALUES (3, 'pre-request 1 uriVar', '789', '2025-03-02 12:00:00');
+
+-- Insert query parameters for ast_request (pre-request) 3
+INSERT INTO my_schema.ast_request_query_params (ast_request_id, param_key, param_value, created_on)
+VALUES (3, 'pre-request 1 queryParam', '2', '2025-03-02 12:00:00');
+
+-- Insert headers for ast_request (pre-request) 4
+INSERT INTO my_schema.ast_request_headers (ast_request_id, header_key, header_value, created_on)
+VALUES (4, 'pre-request 2 header', 'application/xml', '2025-03-02 12:00:00');
+
+-- Insert URI variables for ast_request (pre-request) 4
+INSERT INTO my_schema.ast_request_uri_variables (ast_request_id, variable_key, variable_value, created_on)
+VALUES (4, 'pre-request 2 uriVar', '789', '2025-03-02 12:00:00');
+
+-- Insert query parameters for ast_request (pre-request) 4
+INSERT INTO my_schema.ast_request_query_params (ast_request_id, param_key, param_value, created_on)
+VALUES (4, 'pre-request 2 queryParam', '2', '2025-03-02 12:00:00');
+
 -- ast_environment
 INSERT INTO my_schema.ast_environment (id, name, created_on, user_id)
 VALUES (1, 'LOCAL', '2025-03-02 12:00:00', 1),
@@ -63,6 +91,6 @@ VALUES (3, 'var1', 'QA value 1', '2025-03-02 12:00:00'),
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;
 ALTER TABLE my_schema.ast_request
-    ALTER COLUMN id RESTART WITH 4;
+    ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE my_schema.ast_environment
     ALTER COLUMN id RESTART WITH 4;

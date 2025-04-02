@@ -18,6 +18,10 @@ public class AstRequestService {
     return astRequestRepository.findByUserIdAndTypeAndStatus(userId, requestType, active);
   }
 
+  public List<AstRequest> getByUserIdAndType(long userId, RequestType requestType) {
+    return astRequestRepository.findByUserIdAndType(userId, requestType);
+  }
+
   public Optional<AstRequest> getById(Long id) {
     return astRequestRepository.findById(id);
   }

@@ -13,7 +13,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 @CssImport(value = "./styles/sidebar.css")
 public class PreRequestSidebar extends VerticalLayout {
 
-  public PreRequestSidebar() { // TODO CreatePreRequestButton + PreRequestGrid, reuse ast_request table
+  public PreRequestSidebar(PreRequestGrid preRequestGrid, CreatePreRequestButton createPreRequestButton) {
     addClassNames("card-layout", "sidebar-layout");
     setPadding(false);
     setSpacing(false);
@@ -21,7 +21,7 @@ public class PreRequestSidebar extends VerticalLayout {
     setMinWidth(MIN_SIDEBAR_WIDTH);
     setMaxWidth(MAX_SIDEBAR_WIDTH);
 
-//    add(createPreRequestButton, preRequestGrid);
+    add(createPreRequestButton, preRequestGrid);
   }
 
 }

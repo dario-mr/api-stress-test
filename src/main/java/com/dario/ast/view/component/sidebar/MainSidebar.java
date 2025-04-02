@@ -23,8 +23,8 @@ import lombok.Setter;
 @SpringComponent
 public class MainSidebar extends HorizontalLayout {
 
-  public static final String MIN_SIDEBAR_WIDTH = "250px";
-  public static final String MAX_SIDEBAR_WIDTH = "350px";
+  public static final String MIN_SIDEBAR_WIDTH = "300px";
+  public static final String MAX_SIDEBAR_WIDTH = "400px";
 
   private final RequestSidebar requestSidebar;
   private final EnvSidebar envSidebar;

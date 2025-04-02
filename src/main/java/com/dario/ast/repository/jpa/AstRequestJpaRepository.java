@@ -10,4 +10,6 @@ public interface AstRequestJpaRepository extends JpaRepository<RequestEntity, Lo
 
   List<RequestEntity> findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(
       long userId, String requestType, boolean active);
+
+  List<RequestEntity> findByUserIdAndRequestTypeOrderByCreatedOn(long userId, String requestType);
 }
