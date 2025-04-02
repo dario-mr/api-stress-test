@@ -15,6 +15,7 @@ import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
+import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.event.PreRequestUpdatedEvent;
 import com.vaadin.flow.component.UI;
@@ -41,6 +42,10 @@ public class EventUtil {
 
   public static void applyPreRequest(AstRequest preRequest) {
     fireEvent(UI.getCurrent(), new ApplyPreRequestEvent(preRequest));
+  }
+
+  public static void preRequestConfigEntriesUpdated() {
+    fireEvent(UI.getCurrent(), new PreRequestConfigEntriesUpdatedEvent());
   }
 
   public static void applyEnvironment(Environment environment) {

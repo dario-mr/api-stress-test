@@ -20,6 +20,7 @@ import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
+import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
@@ -51,11 +52,11 @@ public class PreRequestLayout extends VerticalLayout {
   private final TextField urlText = new TextField();
   private final ComboBox<HttpMethod> methodCombo = new ComboBox<>(null, values());
   private final EntriesSection<RequestHeader> headerSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestHeader::defaultRequestHeader); // TODO preRequestConfigEntriesUpdated
+      EventUtil::preRequestConfigEntriesUpdated, RequestHeader::defaultRequestHeader);
   private final EntriesSection<RequestUriVariable> uriVariablesSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestUriVariable::defaultRequestUriVariable);
+      EventUtil::preRequestConfigEntriesUpdated, RequestUriVariable::defaultRequestUriVariable);
   private final EntriesSection<RequestQueryParam> queryParamsSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestQueryParam::defaultRequestQueryParam);
+      EventUtil::preRequestConfigEntriesUpdated, RequestQueryParam::defaultRequestQueryParam);
   private final TextArea requestBodyText = new TextArea();
 
   private Long requestId;
@@ -64,7 +65,6 @@ public class PreRequestLayout extends VerticalLayout {
   private boolean active;
   private RunParams runParams;
 
-  // TODO save changes, including ConfigEntriesUpdatedEvent
   // TODO store pre-requests in AppState? use observer pattern
   public PreRequestLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
@@ -128,6 +128,12 @@ public class PreRequestLayout extends VerticalLayout {
     ComponentUtil.addListener(attachEvent.getUI(),
         FocusPreRequestNameEvent.class,
         event -> nameText.focus()
+    );
+
+    // Listen for events indicating that config entries (EntriesSection class) were updated
+    ComponentUtil.addListener(attachEvent.getUI(),
+        PreRequestConfigEntriesUpdatedEvent.class,
+        event -> saveParams()
     );
   }
 
