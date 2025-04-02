@@ -65,6 +65,8 @@ public class PreRequestLayout extends VerticalLayout {
   private boolean active;
   private RunParams runParams;
 
+  private boolean isUiLoading = false;
+
   // TODO store pre-requests in AppState? use observer pattern
   public PreRequestLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
@@ -104,7 +106,7 @@ public class PreRequestLayout extends VerticalLayout {
     requestBodyText.getStyle().set("font-family", "monospace");
 
     // add listeners
-    addBlurListeners();
+    addListeners();
 
     add(
         new H4("Pre-request"),
@@ -138,6 +140,8 @@ public class PreRequestLayout extends VerticalLayout {
   }
 
   private void loadPreRequestIntoUI(AstRequest preRequest) {
+    isUiLoading = true;
+
     var configParams = preRequest.getConfigParams();
 
     this.requestId = configParams.getRequestId();
@@ -165,37 +169,72 @@ public class PreRequestLayout extends VerticalLayout {
 
     requestBodyText.setValue(configParams.getRequestBody() == null
         ? "" : configParams.getRequestBody());
+
+    isUiLoading = false;
   }
 
-  // TODO better listeners? onChange clashes with first loading
-  private void addBlurListeners() {
+  private void addListeners() {
     // name
-    nameText.addBlurListener(event -> {
-      var newValue = nameText.getValue();
-      if (!hasText(newValue)) {
+    nameText.addValueChangeListener(event -> {
+      if (isUiLoading) {
         return;
       }
-      saveParams();
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (!hasText(newValue)) {
+        nameText.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
+        saveParams();
+      }
     });
 
     // url
-    urlText.addBlurListener(event -> {
-      var newValue = urlText.getValue();
-      if (!hasText(newValue)) {
+    urlText.addValueChangeListener(event -> {
+      if (isUiLoading) {
         return;
       }
-      saveParams();
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (!hasText(newValue)) {
+        urlText.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
+        saveParams();
+      }
     });
 
     // request body
-    requestBodyText.addBlurListener(event -> {
-      saveParams();
+    requestBodyText.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+
+      if (!newValue.equals(oldValue)) {
+        saveParams();
+      }
     });
 
     // method
-    methodCombo.addBlurListener(event -> {
-      var newValue = methodCombo.getValue();
-      if (newValue != null) {
+    methodCombo.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (newValue == null) {
+        methodCombo.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
         saveParams();
       }
     });

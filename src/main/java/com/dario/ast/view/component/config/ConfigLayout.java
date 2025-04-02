@@ -68,6 +68,8 @@ public class ConfigLayout extends VerticalLayout {
   private RequestType requestType;
   private boolean active;
 
+  private boolean isUiLoading = false;
+
   public ConfigLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
     this.astRequestService = astRequestService;
@@ -114,7 +116,7 @@ public class ConfigLayout extends VerticalLayout {
     var curlPreviewToggleLayout = new ToggleLayout("cURL preview", previewTextClipboard);
 
     // add listeners
-    addBlurListeners();
+    addListeners();
     observeAppState();
 
     // add all components
@@ -149,7 +151,7 @@ public class ConfigLayout extends VerticalLayout {
 
   private void observeAppState() {
     appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> applyParams(configParams))
+        UI.getCurrent().access(() -> loadPreRequestIntoUI(configParams))
     );
     appState.getSelectedEnvironmentStream().subscribe(environment ->
         UI.getCurrent().access(this::generateCurlPreview)
@@ -180,47 +182,68 @@ public class ConfigLayout extends VerticalLayout {
         .build();
   }
 
-  private void addBlurListeners() {
+  private void addListeners() {
     // name
-    nameText.addBlurListener(event -> {
-      var currentValue = appState.getConfigParams().getRequestName();
-      var newValue = nameText.getValue();
-      if (!hasText(newValue)) {
-        nameText.setValue(currentValue);
+    nameText.addValueChangeListener(event -> {
+      if (isUiLoading) {
         return;
       }
-      if (!newValue.equals(currentValue)) {
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (!hasText(newValue)) {
+        nameText.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
         saveParams();
       }
     });
 
     // url
-    urlText.addBlurListener(event -> {
-      var currentValue = appState.getConfigParams().getUri();
-      var newValue = urlText.getValue();
-      if (!hasText(newValue)) {
-        urlText.setValue(currentValue);
+    urlText.addValueChangeListener(event -> {
+      if (isUiLoading) {
         return;
       }
-      if (!newValue.equals(currentValue)) {
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (!hasText(newValue)) {
+        urlText.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
         saveParams();
       }
     });
 
     // request body
-    requestBodyText.addBlurListener(event -> {
-      var currentValue = appState.getConfigParams().getRequestBody();
-      var newValue = requestBodyText.getValue();
-      if (!newValue.equals(currentValue)) {
+    requestBodyText.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+
+      if (!newValue.equals(oldValue)) {
         saveParams();
       }
     });
 
     // method
-    methodCombo.addBlurListener(event -> {
-      var currentValue = appState.getConfigParams().getMethod();
-      var newValue = methodCombo.getValue();
-      if (newValue != null && !newValue.equals(currentValue)) {
+    methodCombo.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (newValue == null) {
+        methodCombo.setValue(oldValue);
+        return;
+      }
+      if (!newValue.equals(oldValue)) {
         saveParams();
       }
     });
@@ -249,7 +272,9 @@ public class ConfigLayout extends VerticalLayout {
     previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
   }
 
-  private void applyParams(ConfigParams params) {
+  private void loadPreRequestIntoUI(ConfigParams params) {
+    isUiLoading = true;
+
     this.requestId = params.getRequestId();
     this.userId = params.getUserId();
     this.requestType = params.getRequestType();
@@ -274,5 +299,7 @@ public class ConfigLayout extends VerticalLayout {
 
     requestBodyText.setValue(params.getRequestBody() == null
         ? "" : params.getRequestBody());
+
+    isUiLoading = false;
   }
 }
