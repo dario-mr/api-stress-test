@@ -2,7 +2,7 @@ package com.dario.ast.util;
 
 import static com.vaadin.flow.component.ComponentUtil.fireEvent;
 
-import com.dario.ast.core.domain.AstRequest;
+import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.ApplyPreRequestEvent;
@@ -17,7 +17,6 @@ import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.event.PreRequestCreatedEvent;
-import com.dario.ast.event.PreRequestUpdatedEvent;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -36,12 +35,8 @@ public class EventUtil {
     fireEvent(UI.getCurrent(), new PreRequestCreatedEvent(astRequestId));
   }
 
-  public static void preRequestUpdated(AstRequest preRequest) {
-    fireEvent(UI.getCurrent(), new PreRequestUpdatedEvent(preRequest));
-  }
-
-  public static void applyPreRequest(AstRequest preRequest) {
-    fireEvent(UI.getCurrent(), new ApplyPreRequestEvent(preRequest));
+  public static void applyPreRequest(ConfigParams preRequestConfigParams) {
+    fireEvent(UI.getCurrent(), new ApplyPreRequestEvent(preRequestConfigParams));
   }
 
   public static void preRequestConfigEntriesUpdated() {

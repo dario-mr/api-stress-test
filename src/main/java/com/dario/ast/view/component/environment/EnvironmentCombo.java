@@ -24,7 +24,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     this.appState = appState;
 
     loadEnvironments();
-    addValueChangeListener(event -> setEnvironment(event.getValue()));
+    addValueChangeListener(event -> setSelectedEnvironment(event.getValue()));
   }
 
   @Override
@@ -58,7 +58,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     if (!userEnvironments.isEmpty()) {
       var environment = userEnvironments.getFirst();
       setValue(environment);
-      setEnvironment(environment);
+      setSelectedEnvironment(environment);
     }
   }
 
@@ -77,10 +77,10 @@ public class EnvironmentCombo extends ComboBox<Environment> {
         .orElse(userEnvironments.getFirst());
 
     setValue(newSelection);
-    setEnvironment(newSelection);
+    setSelectedEnvironment(newSelection);
   }
 
-  private void setEnvironment(Environment environment) {
+  private void setSelectedEnvironment(Environment environment) {
     if (environment != null) {
       appState.setSelectedEnvironment(environment);
     }

@@ -17,4 +17,13 @@ public final class RunParams {
   private int numRequests;
   private int threadPoolSize;
   private boolean stopOnError;
+
+  public static RunParams defaultRunParams() {
+    return RunParams.builder()
+        .numRequests(1)
+        .threadPoolSize(1)
+        .stopOnError(true)
+        .build();
+  }
+
 }

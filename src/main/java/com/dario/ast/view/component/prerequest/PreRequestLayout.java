@@ -3,7 +3,7 @@ package com.dario.ast.view.component.prerequest;
 import static com.dario.ast.core.domain.RequestHeader.defaultRequestHeader;
 import static com.dario.ast.core.domain.RequestQueryParam.defaultRequestQueryParam;
 import static com.dario.ast.core.domain.RequestUriVariable.defaultRequestUriVariable;
-import static com.dario.ast.util.EventUtil.preRequestUpdated;
+import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
@@ -16,7 +16,6 @@ import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
@@ -38,6 +37,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import org.springframework.http.HttpMethod;
 
 @UIScope
@@ -63,11 +63,9 @@ public class PreRequestLayout extends VerticalLayout {
   private Long userId;
   private RequestType requestType;
   private boolean active;
-  private RunParams runParams;
 
   private boolean isUiLoading = false;
 
-  // TODO store pre-requests in AppState? use observer pattern
   public PreRequestLayout(AppState appState, AstRequestService astRequestService) {
     this.appState = appState;
     this.astRequestService = astRequestService;
@@ -123,7 +121,7 @@ public class PreRequestLayout extends VerticalLayout {
     // Listen for events that should trigger applying the given pre-request in the UI
     ComponentUtil.addListener(attachEvent.getUI(),
         ApplyPreRequestEvent.class,
-        event -> loadPreRequestIntoUI(event.getPreRequest())
+        event -> loadPreRequestIntoUI(event.getPreRequestConfigParams())
     );
 
     // Listen for events indicating that the request name field should be focused
@@ -139,16 +137,13 @@ public class PreRequestLayout extends VerticalLayout {
     );
   }
 
-  private void loadPreRequestIntoUI(AstRequest preRequest) {
+  private void loadPreRequestIntoUI(ConfigParams configParams) {
     isUiLoading = true;
-
-    var configParams = preRequest.getConfigParams();
 
     this.requestId = configParams.getRequestId();
     this.userId = configParams.getUserId();
     this.requestType = configParams.getRequestType();
     this.active = configParams.isActive();
-    this.runParams = preRequest.getRunParams();
 
     nameText.setValue(configParams.getRequestName());
 
@@ -242,7 +237,7 @@ public class PreRequestLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var preRequest = new AstRequest(configParams, runParams);
+    var preRequest = new AstRequest(configParams, defaultRunParams());
 
     try {
       astRequestService.update(preRequest);
@@ -251,7 +246,20 @@ public class PreRequestLayout extends VerticalLayout {
       throw ex;
     }
 
-    preRequestUpdated(preRequest);
+    updateAppState(preRequest);
+  }
+
+  private void updateAppState(AstRequest updatedPreRequest) {
+    var updatedPreRequestParams = updatedPreRequest.getConfigParams();
+    var currentPreRequestsParams = appState.getPreRequestsParams();
+
+    currentPreRequestsParams.replaceAll(preRequest ->
+        Objects.equals(preRequest.getRequestId(), updatedPreRequestParams.getRequestId())
+            ? updatedPreRequestParams
+            : preRequest
+    );
+
+    appState.setPreRequestsParams(currentPreRequestsParams);
   }
 
   private ConfigParams getConfigParams() {

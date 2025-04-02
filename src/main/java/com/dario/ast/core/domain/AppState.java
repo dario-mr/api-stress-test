@@ -1,5 +1,9 @@
 package com.dario.ast.core.domain;
 
+import static com.dario.ast.util.CopyUtil.deepCopy;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -21,10 +25,23 @@ public class AppState {
   private Environment selectedEnvironment;
   @Setter
   private User currentUser;
+  private List<ConfigParams> preRequestsParams;
 
   private final Sinks.Many<ConfigParams> configParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<RunParams> runParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<Environment> selectedEnvironmentSink = Sinks.many().replay().latest();
+  private final Sinks.Many<List<ConfigParams>> preRequestsParamsSink = Sinks.many().replay().latest();
+
+  public List<ConfigParams> getPreRequestsParams() {
+    return deepCopy(preRequestsParams, new TypeReference<>() {
+    });
+  }
+
+  public void setPreRequestsParams(List<ConfigParams> preRequestsParams) {
+    this.preRequestsParams = deepCopy(preRequestsParams, new TypeReference<>() {
+    });
+    preRequestsParamsSink.tryEmitNext(preRequestsParams);
+  }
 
   public Flux<ConfigParams> getConfigParamsStream() {
     return configParamsSink.asFlux();
@@ -36,6 +53,10 @@ public class AppState {
 
   public Flux<Environment> getSelectedEnvironmentStream() {
     return selectedEnvironmentSink.asFlux();
+  }
+
+  public Flux<List<ConfigParams>> getPreRequestsParamsStream() {
+    return preRequestsParamsSink.asFlux();
   }
 
   public void setConfigParams(ConfigParams configParams) {

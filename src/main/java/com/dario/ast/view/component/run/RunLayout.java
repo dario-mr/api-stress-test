@@ -203,6 +203,7 @@ public class RunLayout extends VerticalLayout {
 
     var selectedEnvironment = appState.getSelectedEnvironment();
     var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
+    // todo run and apply pre-requests
     var runParams = getRunParams();
     var threadPoolSize = threadPoolSizeField.getValue();
 
