@@ -55,6 +55,12 @@ public class RequestEntity {
   @Column(name = "method", nullable = false)
   private String httpMethod;
 
+  @Column(name = "request_type", nullable = false)
+  private String requestType;
+
+  @Column(name = "active", nullable = false)
+  private Boolean active;
+
   @ElementCollection(fetch = EAGER)
   @MapKeyColumn(name = "header_key")
   @Column(name = "header_value")

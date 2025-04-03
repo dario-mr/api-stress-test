@@ -1,10 +1,10 @@
 package com.dario.ast.view.component.environment;
 
 import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
-import static com.dario.ast.util.EventUtil.environmentUpdated;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
+import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
@@ -22,13 +22,16 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/env-layout.css")
 public class EnvironmentLayout extends VerticalLayout {
 
   private final AstEnvironmentService astEnvironmentService;
+  private final AppState appState;
 
   private final TextField nameText = new TextField();
   private final EntriesSection<EnvVariable> variablesSection = new EntriesSection<>(
@@ -36,8 +39,9 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment selectedEnvironment;
 
-  public EnvironmentLayout(AstEnvironmentService astEnvironmentService) {
+  public EnvironmentLayout(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
+    this.appState = appState;
 
     addClassNames("card-layout", "env-layout");
     setWidthFull();
@@ -48,8 +52,8 @@ public class EnvironmentLayout extends VerticalLayout {
     nameText.setMaxWidth("20em");
     nameText.setMinWidth("0");
 
-    // add listeners
     addListeners();
+    observeAppState();
 
     add(
         new H4("Environment"),
@@ -66,7 +70,7 @@ public class EnvironmentLayout extends VerticalLayout {
     // Listen for events that should trigger applying the env params in the UI
     ComponentUtil.addListener(attachEvent.getUI(),
         ApplyEnvironmentEvent.class,
-        event -> applyEnv(event.getEnvironment())
+        event -> loadEnvironmentIntoUi(event.getEnvironment())
     );
 
     // Listen for events indicating that the env name field should be focused
@@ -82,7 +86,16 @@ public class EnvironmentLayout extends VerticalLayout {
     );
   }
 
-  private void applyEnv(Environment environment) {
+  private void observeAppState() {
+    // if the environment currently loaded in the UI was updated, update it in the UI
+    appState.getSelectedEnvironmentStream().subscribe(selectedEnvironment -> {
+      if (selectedEnvironment.equals(this.selectedEnvironment)) {
+        loadEnvironmentIntoUi(selectedEnvironment);
+      }
+    });
+  }
+
+  private void loadEnvironmentIntoUi(Environment environment) {
     selectedEnvironment = environment;
 
     nameText.setValue(environment.getName());
@@ -90,6 +103,8 @@ public class EnvironmentLayout extends VerticalLayout {
     variablesSection.clearEntries();
     variablesSection.addEntries(environment.getVariables());
     variablesSection.addEntry("", defaultEnvVariable());
+
+    log.info("Environment [{}] loaded into {}", environment, getClass().getSimpleName());
   }
 
   private void addListeners() {
@@ -112,7 +127,7 @@ public class EnvironmentLayout extends VerticalLayout {
       throw ex;
     }
 
-    environmentUpdated(selectedEnvironment);
+    astEnvironmentService.updateEnvironmentInAppState(selectedEnvironment);
   }
 
   private Environment getEnvParams() {

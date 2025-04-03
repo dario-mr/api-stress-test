@@ -1,19 +1,17 @@
-package com.dario.ast.view.component.sidebar.environments;
+package com.dario.ast.view.component.sidebar.environment;
 
 import static com.dario.ast.util.EventUtil.applyEnvironment;
-import static com.dario.ast.util.EventUtil.environmentDeleted;
 import static com.dario.ast.util.EventUtil.focusEnvName;
-import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.AstEnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
-import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -34,7 +32,7 @@ public class EnvGrid extends Grid<Environment> {
   private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
-  private Environment lastSelectedItem;
+  private Environment selectedEnvironment;
 
   public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
@@ -51,10 +49,10 @@ public class EnvGrid extends Grid<Environment> {
     // click listener to load selected env into UI
     addItemClickListener(event -> {
       var env = event.getItem();
-      applyEnvironment(env);
+      selectItem(env);
     });
 
-    preventUnselection();
+    observeAppState();
     loadEnvs();
   }
 
@@ -65,16 +63,23 @@ public class EnvGrid extends Grid<Environment> {
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
-    // Listen for events indicating that an Environment was updated
-    ComponentUtil.addListener(attachEvent.getUI(),
-        EnvironmentUpdatedEvent.class,
-        event -> dataProvider.refreshItem(event.getEnvironment())
-    );
-
     // Listen for events indicating that a new Environment was created
     ComponentUtil.addListener(attachEvent.getUI(),
         EnvironmentCreatedEvent.class,
         event -> addEnv(event.getEnvironmentId())
+    );
+  }
+
+  private void observeAppState() {
+    appState.getEnvironmentsStream().subscribe(environments ->
+        UI.getCurrent().access(() -> {
+          dataProvider = new ListDataProvider<>(environments);
+          setDataProvider(dataProvider);
+
+          if (selectedEnvironment != null) {
+            getSelectionModel().select(selectedEnvironment);
+          }
+        })
     );
   }
 
@@ -88,24 +93,11 @@ public class EnvGrid extends Grid<Environment> {
         .setFlexGrow(0);
   }
 
-  private void preventUnselection() {
-    // prevent unselection by restoring last selected item
-    var selectionModel = setSelectionMode(SINGLE);
-    selectionModel.addSelectionListener(event -> {
-      if (event.getFirstSelectedItem().isEmpty() && lastSelectedItem != null) {
-        selectionModel.select(lastSelectedItem);
-      } else {
-        lastSelectedItem = event.getFirstSelectedItem().orElse(null);
-      }
-    });
-  }
-
   private void loadEnvs() {
     var currentUserId = appState.getCurrentUser().getId();
     var userEnvironments = getUserEnvironments(currentUserId);
 
-    dataProvider = new ListDataProvider<>(userEnvironments);
-    setDataProvider(dataProvider);
+    appState.setEnvironments(userEnvironments);
   }
 
   private ArrayList<Environment> getUserEnvironments(long currentUserId) {
@@ -129,6 +121,7 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void selectItem(Environment environment) {
+    selectedEnvironment = environment;
     applyEnvironment(environment);
     getSelectionModel().select(environment); // highlight item in the grid
   }
@@ -141,10 +134,9 @@ public class EnvGrid extends Grid<Environment> {
 
     var newEnv = optEnv.get();
 
-    dataProvider.getItems().add(newEnv);
-    dataProvider.refreshAll();
-    selectItem(newEnv); // set new environment as currently selected item
+    appState.addEnvironment(newEnv);
 
+    selectItem(newEnv); // set new environment as currently selected item
     focusEnvName();
   }
 
@@ -171,16 +163,13 @@ public class EnvGrid extends Grid<Environment> {
 
     var selectedEnv = getSelectionModel().getFirstSelectedItem();
 
-    // update data provider
     dataProvider.getItems().remove(toDelete);
-    dataProvider.refreshAll();
+    appState.removeEnvironment(toDelete);
 
     // if the deleted item was currently selected, select another one (first in data provider)
     if (selectedEnv.isPresent() && selectedEnv.get().equals(toDelete)) {
       selectFirstItem();
     }
-
-    environmentDeleted(toDelete.getId()); // notify other components of the environment deletion
   }
 
 }

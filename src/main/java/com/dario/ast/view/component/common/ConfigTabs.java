@@ -1,4 +1,4 @@
-package com.dario.ast.view.component.config;
+package com.dario.ast.view.component.common;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -6,9 +6,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class ConfigTabs extends VerticalLayout {
 
   /**
