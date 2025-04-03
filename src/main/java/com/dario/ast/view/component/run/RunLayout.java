@@ -62,6 +62,7 @@ public class RunLayout extends VerticalLayout {
 
   private long completedRequests = 0, failedRequests = 0;
   private Long requestId;
+  private boolean isUiLoading = false;
 
   public RunLayout(
       StressTestService stressTestService,
@@ -124,10 +125,8 @@ public class RunLayout extends VerticalLayout {
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
     // add listeners
-    addBlurListeners();
-    appState.getRunParamsStream().subscribe(runParams ->
-        UI.getCurrent().access(() -> loadRunParamsIntoUi(runParams))
-    );
+    addListeners();
+    observeAppState();
 
     // add all components
     add(
@@ -153,30 +152,48 @@ public class RunLayout extends VerticalLayout {
         .build();
   }
 
-  private void addBlurListeners() {
+  private void observeAppState() {
+    appState.getRunParamsStream().subscribe(runParams ->
+        UI.getCurrent().access(() -> loadRunParamsIntoUi(runParams))
+    );
+  }
+
+  private void addListeners() {
     // name
-    requestNumberField.addBlurListener(event -> {
-      var currentValue = appState.getRunParams().getNumRequests();
-      var newValue = requestNumberField.getValue();
-      if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
+    requestNumberField.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (newValue != null && newValue > 0 && !newValue.equals(oldValue)) {
         saveParams();
       }
     });
 
     // url
-    threadPoolSizeField.addBlurListener(event -> {
-      var currentValue = appState.getRunParams().getThreadPoolSize();
-      var newValue = threadPoolSizeField.getValue();
-      if (newValue != null && newValue > 0 && !newValue.equals(currentValue)) {
+    threadPoolSizeField.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (newValue != null && newValue > 0 && !newValue.equals(oldValue)) {
         saveParams();
       }
     });
 
     // request
-    stopOnErrorCheckbox.addClickListener(event -> {
-      var currentValue = appState.getRunParams().isStopOnError();
-      var newValue = stopOnErrorCheckbox.getValue();
-      if (newValue != null && !newValue.equals(currentValue)) {
+    stopOnErrorCheckbox.addValueChangeListener(event -> {
+      if (isUiLoading) {
+        return;
+      }
+
+      var oldValue = event.getOldValue();
+      var newValue = event.getValue();
+      if (newValue != null && !newValue.equals(oldValue)) {
         saveParams();
       }
     });
@@ -197,11 +214,14 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void loadRunParamsIntoUi(RunParams params) {
+    isUiLoading = true;
     this.requestId = params.getRequestId();
 
     requestNumberField.setValue(params.getNumRequests());
     threadPoolSizeField.setValue(params.getThreadPoolSize());
     stopOnErrorCheckbox.setValue(params.isStopOnError());
+
+    isUiLoading = false;
   }
 
   private void startStressTest() {
