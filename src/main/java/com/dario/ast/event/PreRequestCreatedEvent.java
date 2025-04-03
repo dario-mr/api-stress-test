@@ -6,12 +6,12 @@ import com.vaadin.flow.component.UI;
 import lombok.Getter;
 
 @Getter
-public class EnvironmentDeletedEvent extends ComponentEvent<Component> {
+public class PreRequestCreatedEvent extends ComponentEvent<Component> {
 
-  private final Long environmentId;
+  private final Long preRequestId;
 
-  public EnvironmentDeletedEvent(Long environmentId) {
+  public PreRequestCreatedEvent(Long preRequestId) {
     super(new UI(), false);
-    this.environmentId = environmentId;
+    this.preRequestId = preRequestId;
   }
 }

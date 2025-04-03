@@ -1,7 +1,7 @@
-package com.dario.ast.view.component.sidebar.requests;
+package com.dario.ast.view.component.sidebar.request;
 
+import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.focusRequestName;
-import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -32,7 +32,6 @@ public class RequestGrid extends Grid<AstRequest> {
   private final AppState appState;
 
   private ListDataProvider<AstRequest> dataProvider;
-  private AstRequest lastSelectedItem;
 
   public RequestGrid(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
@@ -55,19 +54,7 @@ public class RequestGrid extends Grid<AstRequest> {
     });
 
     observeAppState();
-
-    preventUnselection();
     loadRequests();
-  }
-
-  private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams())))
-    );
-
-    appState.getRunParamsStream().subscribe(runParams ->
-        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams)))
-    );
   }
 
   @Override
@@ -84,6 +71,16 @@ public class RequestGrid extends Grid<AstRequest> {
     );
   }
 
+  private void observeAppState() {
+    appState.getConfigParamsStream().subscribe(configParams ->
+        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams())))
+    );
+
+    appState.getRunParamsStream().subscribe(runParams ->
+        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams)))
+    );
+  }
+
   private void addDeleteColumn() {
     addColumn(new ComponentRenderer<>(astRequest -> {
       var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(astRequest));
@@ -92,18 +89,6 @@ public class RequestGrid extends Grid<AstRequest> {
     }))
         .setAutoWidth(true)
         .setFlexGrow(0);
-  }
-
-  private void preventUnselection() {
-    // prevent unselection by restoring last selected item
-    var selectionModel = setSelectionMode(SINGLE);
-    selectionModel.addSelectionListener(event -> {
-      if (event.getFirstSelectedItem().isEmpty() && lastSelectedItem != null) {
-        selectionModel.select(lastSelectedItem);
-      } else {
-        lastSelectedItem = event.getFirstSelectedItem().orElse(null);
-      }
-    });
   }
 
   private void loadRequests() {
@@ -116,7 +101,7 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private ArrayList<AstRequest> getUserRequests(long currentUserId) {
     try {
-      return new ArrayList<>(astRequestService.getByUserId(currentUserId)); // mutable list
+      return new ArrayList<>(astRequestService.getByUserIdAndTypeAndStatus(currentUserId, REQUEST, true));
     } catch (Exception ex) {
       log.error("Error fetching requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");
@@ -151,6 +136,7 @@ public class RequestGrid extends Grid<AstRequest> {
 
     dataProvider.getItems().add(newAstRequest);
     dataProvider.refreshAll();
+
     selectItem(newAstRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout
   }

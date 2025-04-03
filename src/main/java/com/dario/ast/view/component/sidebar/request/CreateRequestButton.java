@@ -1,12 +1,13 @@
-package com.dario.ast.view.component.sidebar.requests;
+package com.dario.ast.view.component.sidebar.request;
 
+import static com.dario.ast.core.domain.RequestType.REQUEST;
+import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.EventUtil.astRequestCreated;
 import static org.springframework.http.HttpMethod.GET;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
@@ -56,14 +57,9 @@ public class CreateRequestButton extends Button {
         .uri("")
         .method(GET)
         .requestBody("")
+        .requestType(REQUEST)
+        .active(true)
         .build();
   }
 
-  private static RunParams defaultRunParams() {
-    return RunParams.builder()
-        .numRequests(1)
-        .threadPoolSize(1)
-        .stopOnError(true)
-        .build();
-  }
 }

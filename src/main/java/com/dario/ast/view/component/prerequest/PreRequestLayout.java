@@ -1,15 +1,14 @@
-package com.dario.ast.view.component.config;
+package com.dario.ast.view.component.prerequest;
 
 import static com.dario.ast.core.domain.RequestHeader.defaultRequestHeader;
 import static com.dario.ast.core.domain.RequestQueryParam.defaultRequestQueryParam;
 import static com.dario.ast.core.domain.RequestUriVariable.defaultRequestUriVariable;
-import static com.dario.ast.util.CurlPreviewUtil.buildCurlPreview;
+import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
@@ -17,8 +16,10 @@ import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.service.AstRequestService;
-import com.dario.ast.event.ConfigEntriesUpdatedEvent;
-import com.dario.ast.event.FocusRequestNameEvent;
+import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.event.ApplyPreRequestEvent;
+import com.dario.ast.event.FocusPreRequestNameEvent;
+import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
@@ -26,7 +27,6 @@ import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H4;
@@ -39,29 +39,26 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
-import org.vaadin.olli.ClipboardHelper;
 
 @Slf4j
 @UIScope
 @SpringComponent
-@CssImport(value = "./styles/config-layout.css")
-public class ConfigLayout extends VerticalLayout {
+@CssImport(value = "./styles/pre-request-layout.css")
+public class PreRequestLayout extends VerticalLayout {
 
-  private final AppState appState;
   private final AstRequestService astRequestService;
+  private final PreRequestService prerequestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
   private final ComboBox<HttpMethod> methodCombo = new ComboBox<>(null, values());
   private final EntriesSection<RequestHeader> headerSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestHeader::defaultRequestHeader);
+      EventUtil::preRequestConfigEntriesUpdated, RequestHeader::defaultRequestHeader);
   private final EntriesSection<RequestUriVariable> uriVariablesSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestUriVariable::defaultRequestUriVariable);
+      EventUtil::preRequestConfigEntriesUpdated, RequestUriVariable::defaultRequestUriVariable);
   private final EntriesSection<RequestQueryParam> queryParamsSection = new EntriesSection<>(
-      EventUtil::configEntriesUpdated, RequestQueryParam::defaultRequestQueryParam);
+      EventUtil::preRequestConfigEntriesUpdated, RequestQueryParam::defaultRequestQueryParam);
   private final TextArea requestBodyText = new TextArea();
-  private final ClipboardHelper previewTextClipboard = new ClipboardHelper();
-  private final TextArea previewText = new PreviewTextArea();
 
   private Long requestId;
   private Long userId;
@@ -70,16 +67,16 @@ public class ConfigLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public ConfigLayout(AppState appState, AstRequestService astRequestService) {
-    this.appState = appState;
+  public PreRequestLayout(AstRequestService astRequestService, PreRequestService prerequestService) {
     this.astRequestService = astRequestService;
+    this.prerequestService = prerequestService;
 
-    setWidthFull();
+    addClassNames("card-layout", "pre-request-layout");
     setSpacing(false);
-    addClassNames("card-layout", "config-layout");
+    setWidthFull();
 
     // name
-    nameText.setPlaceholder("Request name");
+    nameText.setPlaceholder("Pre-request name, used as environment variable");
     nameText.setWidthFull();
     nameText.setMaxWidth("30em");
     nameText.setMinWidth("0");
@@ -107,22 +104,14 @@ public class ConfigLayout extends VerticalLayout {
     requestBodyText.setWidthFull();
     requestBodyText.getStyle().set("font-family", "monospace");
 
-    // curl preview
-    previewTextClipboard.wrap(previewText);
-    previewTextClipboard.getStyle().set("width", "100%");
-    var curlPreviewToggleLayout = new ToggleLayout("cURL preview", previewTextClipboard);
-
     // add listeners
     addListeners();
-    observeAppState();
 
-    // add all components
     add(
-        new H4("Configure"),
+        new H4("Pre-request"),
         nameText,
         urlMethodLayout,
-        new ConfigTabs(tabsMap),
-        curlPreviewToggleLayout
+        new ConfigTabs(tabsMap)
     );
   }
 
@@ -130,54 +119,55 @@ public class ConfigLayout extends VerticalLayout {
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    // Listen for events indicating that config entries (EntriesSection class) were updated
+    // Listen for events that should trigger applying the given pre-request in the UI
     ComponentUtil.addListener(attachEvent.getUI(),
-        ConfigEntriesUpdatedEvent.class,
-        event -> saveParams()
+        ApplyPreRequestEvent.class,
+        event -> loadPreRequestIntoUI(event.getPreRequestConfigParams())
     );
 
     // Listen for events indicating that the request name field should be focused
     ComponentUtil.addListener(attachEvent.getUI(),
-        FocusRequestNameEvent.class,
+        FocusPreRequestNameEvent.class,
         event -> nameText.focus()
     );
-  }
 
-  private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> {
-          loadConfigIntoUI(configParams);
-          generateCurlPreview();
-        })
-    );
-
-    appState.getSelectedEnvironmentStream().subscribe(environment ->
-        UI.getCurrent().access(this::generateCurlPreview)
+    // Listen for events indicating that config entries (EntriesSection class) were updated
+    ComponentUtil.addListener(attachEvent.getUI(),
+        PreRequestConfigEntriesUpdatedEvent.class,
+        event -> saveParams()
     );
   }
 
-  private ConfigParams getConfigParams() {
-    var name = nameText.getValue();
-    var url = urlText.getValue();
-    var method = methodCombo.getValue();
-    var headers = removeGenericEmptyEntries(headerSection.getEntries());
-    var uriVariables = removeGenericEmptyEntries(uriVariablesSection.getEntries());
-    var queryParams = removeGenericEmptyEntries(queryParamsSection.getEntries());
-    var requestBody = requestBodyText.getValue();
+  private void loadPreRequestIntoUI(ConfigParams configParams) {
+    isUiLoading = true;
 
-    return ConfigParams.builder()
-        .requestId(requestId)
-        .userId(userId)
-        .requestType(requestType)
-        .active(active)
-        .requestName(name)
-        .uri(url)
-        .method(method)
-        .headers(headers)
-        .uriVariables(uriVariables)
-        .queryParams(queryParams)
-        .requestBody(requestBody)
-        .build();
+    this.requestId = configParams.getRequestId();
+    this.userId = configParams.getUserId();
+    this.requestType = configParams.getRequestType();
+    this.active = configParams.isActive();
+
+    nameText.setValue(configParams.getRequestName());
+
+    urlText.setValue(configParams.getUri());
+    methodCombo.setValue(configParams.getMethod());
+
+    headerSection.clearEntries();
+    headerSection.addEntries(configParams.getHeaders());
+    headerSection.addEntry("", defaultRequestHeader());
+
+    uriVariablesSection.clearEntries();
+    uriVariablesSection.addEntries(configParams.getUriVariables());
+    uriVariablesSection.addEntry("", defaultRequestUriVariable());
+
+    queryParamsSection.clearEntries();
+    queryParamsSection.addEntries(configParams.getQueryParams());
+    queryParamsSection.addEntry("", defaultRequestQueryParam());
+
+    requestBodyText.setValue(configParams.getRequestBody() == null
+        ? "" : configParams.getRequestBody());
+
+    isUiLoading = false;
+    log.info("Pre-request [{}] loaded into {}", configParams.getRequestName(), getClass().getSimpleName());
   }
 
   private void addListeners() {
@@ -249,60 +239,40 @@ public class ConfigLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var runParams = appState.getRunParams();
+    var preRequest = new AstRequest(configParams, defaultRunParams());
 
     try {
-      astRequestService.update(new AstRequest(configParams, runParams));
+      astRequestService.update(preRequest);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    appState.setConfigParams(configParams);
+    prerequestService.updatePreRequestInAppState(preRequest.getConfigParams());
   }
 
-  private void generateCurlPreview() {
-    var configParams = getConfigParams();
-    var selectedEnvironment = appState.getSelectedEnvironment();
-    var curlPreview = buildCurlPreview(configParams, selectedEnvironment);
+  private ConfigParams getConfigParams() {
+    var name = nameText.getValue();
+    var url = urlText.getValue();
+    var method = methodCombo.getValue();
+    var headers = removeGenericEmptyEntries(headerSection.getEntries());
+    var uriVariables = removeGenericEmptyEntries(uriVariablesSection.getEntries());
+    var queryParams = removeGenericEmptyEntries(queryParamsSection.getEntries());
+    var requestBody = requestBodyText.getValue();
 
-    previewText.setValue(curlPreview);
-    previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
-
-    log.info("cURL preview regenerated");
-  }
-
-  private void loadConfigIntoUI(ConfigParams params) {
-    isUiLoading = true;
-
-    this.requestId = params.getRequestId();
-    this.userId = params.getUserId();
-    this.requestType = params.getRequestType();
-    this.active = params.isActive();
-
-    nameText.setValue(params.getRequestName());
-
-    urlText.setValue(params.getUri());
-    methodCombo.setValue(params.getMethod());
-
-    headerSection.clearEntries();
-    headerSection.addEntries(params.getHeaders());
-    headerSection.addEntry("", defaultRequestHeader());
-
-    uriVariablesSection.clearEntries();
-    uriVariablesSection.addEntries(params.getUriVariables());
-    uriVariablesSection.addEntry("", defaultRequestUriVariable());
-
-    queryParamsSection.clearEntries();
-    queryParamsSection.addEntries(params.getQueryParams());
-    queryParamsSection.addEntry("", defaultRequestQueryParam());
-
-    requestBodyText.setValue(params.getRequestBody() == null
-        ? "" : params.getRequestBody());
-
-    isUiLoading = false;
-
-    log.info("Config params [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
+    return ConfigParams.builder()
+        .requestId(requestId)
+        .userId(userId)
+        .requestType(requestType)
+        .active(active)
+        .requestName(name)
+        .uri(url)
+        .method(method)
+        .headers(headers)
+        .uriVariables(uriVariables)
+        .queryParams(queryParams)
+        .requestBody(requestBody)
+        .build();
   }
 
 }
