@@ -32,7 +32,6 @@ public class RequestGrid extends Grid<AstRequest> {
   private final AppState appState;
 
   private ListDataProvider<AstRequest> dataProvider;
-  private AstRequest lastSelectedItem;
 
   public RequestGrid(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
@@ -137,6 +136,7 @@ public class RequestGrid extends Grid<AstRequest> {
 
     dataProvider.getItems().add(newAstRequest);
     dataProvider.refreshAll();
+
     selectItem(newAstRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout
   }

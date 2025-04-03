@@ -19,6 +19,8 @@ import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -28,6 +30,7 @@ import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -39,6 +42,10 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/run-layout.css")
 public class RunLayout extends VerticalLayout {
 
+  private static final ObjectMapper JSON_FORMATTER = new ObjectMapper()
+      .enable(SerializationFeature.INDENT_OUTPUT);
+  private static final String RESPONSE_LABEL = "Response";
+
   private final StressTestService stressTestService;
   private final AppState appState;
   private final AstRequestService astRequestService;
@@ -48,7 +55,7 @@ public class RunLayout extends VerticalLayout {
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
   private final TextField completedText = new TextField("Completed");
   private final TextField failedText = new TextField("Failed");
-  private final TextField errorText = new TextField("Error message");
+  private final TextArea responseText = new TextArea(RESPONSE_LABEL);
   private final Button startButton = new Button();
   private final Button stopButton = new Button();
   private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
@@ -104,14 +111,16 @@ public class RunLayout extends VerticalLayout {
     failedText.setReadOnly(true);
     failedText.setWidth("8em");
 
-    errorText.setReadOnly(true);
-    errorText.setWidth("20em");
+    responseText.setReadOnly(true);
+    responseText.setWidthFull();
+    responseText.getStyle()
+        .set("font-family", "monospace")
+        .set("font-size", "0.9em");
 
-    var resultsLayout = new FlexLayout(completedText, failedText, errorText);
+    var resultsLayout = new FlexLayout(completedText, failedText, responseText);
     resultsLayout.setWidthFull();
     resultsLayout.setFlexWrap(WRAP);
     resultsLayout.setFlexGrow(1, completedText, failedText);
-    resultsLayout.setFlexGrow(5, errorText);
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
     // add listeners
@@ -125,7 +134,8 @@ public class RunLayout extends VerticalLayout {
         new H4("Run"),
         firstRow,
         startButton, stopButton,
-        resultsLayout
+        resultsLayout,
+        responseText
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
@@ -241,17 +251,21 @@ public class RunLayout extends VerticalLayout {
 
     completedText.clear();
     failedText.clear();
-    errorText.clear();
+    responseText.clear();
+    responseText.setLabel(RESPONSE_LABEL);
   }
 
   private void applyApiResponse(ApiResponse response) {
+    responseText.setLabel("%s (%s)".formatted(RESPONSE_LABEL, response.statusCode()));
+
     if (response.statusCode().is2xxSuccessful()) {
       completedRequests++;
       completedText.setValue(String.valueOf(completedRequests));
+      responseText.setValue(formatJson(response.responseBody()));
     } else {
       failedRequests++;
       failedText.setValue(String.valueOf(failedRequests));
-      errorText.setValue(response.statusCode().value() + " - " + response.errorMessage());
+      responseText.setValue(response.errorMessage());
 
       if (stopOnErrorCheckbox.getValue()) {
         stopStressTest();
@@ -261,6 +275,15 @@ public class RunLayout extends VerticalLayout {
     // when stress test is completed, update UI to reflect it (this is janky)
     if (completedRequests + failedRequests == requestNumberField.getValue()) {
       stopStressTest();
+    }
+  }
+
+  private String formatJson(String json) {
+    try {
+      Object jsonObject = JSON_FORMATTER.readValue(json, Object.class);
+      return JSON_FORMATTER.writeValueAsString(jsonObject);
+    } catch (Exception e) {
+      return json;
     }
   }
 

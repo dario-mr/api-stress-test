@@ -37,8 +37,8 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   private final AppState appState;
 
   private ListDataProvider<ConfigParams> dataProvider;
-  private ConfigParams lastSelectedItem;
 
+  // TODO bug: when a pre-request is changed in PreRequestLayout, grid selection is lost
   public PreRequestGrid(AstRequestService astRequestService, AppState appState, PreRequestService preRequestService) {
     this.astRequestService = astRequestService;
     this.appState = appState;
@@ -157,6 +157,8 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     var newPreRequestParams = optPreRequest.get().getConfigParams();
 
     appState.addPreRequestParams(newPreRequestParams);
+
+    // TODO bug: new item is not selected
     selectItem(newPreRequestParams); // set new request as currently selected item
     focusPreRequestName();
   }

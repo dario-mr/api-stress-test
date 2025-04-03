@@ -33,7 +33,6 @@ public class EnvGrid extends Grid<Environment> {
   private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
-  private Environment lastSelectedItem;
 
   public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
     this.astEnvironmentService = astEnvironmentService;
@@ -129,8 +128,8 @@ public class EnvGrid extends Grid<Environment> {
 
     dataProvider.getItems().add(newEnv);
     dataProvider.refreshAll();
-    selectItem(newEnv); // set new environment as currently selected item
 
+    selectItem(newEnv); // set new environment as currently selected item
     focusEnvName();
   }
 
