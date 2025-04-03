@@ -37,8 +37,8 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   private final AppState appState;
 
   private ListDataProvider<ConfigParams> dataProvider;
+  private ConfigParams selectedPreRequestParams;
 
-  // TODO bug: when a pre-request is changed in PreRequestLayout, grid selection is lost
   public PreRequestGrid(AstRequestService astRequestService, AppState appState, PreRequestService preRequestService) {
     this.astRequestService = astRequestService;
     this.appState = appState;
@@ -96,6 +96,10 @@ public class PreRequestGrid extends Grid<ConfigParams> {
         UI.getCurrent().access(() -> {
           dataProvider = new ListDataProvider<>(preRequestParams);
           setDataProvider(dataProvider);
+
+          if (selectedPreRequestParams != null) {
+            getSelectionModel().select(selectedPreRequestParams);
+          }
         })
     );
   }
@@ -144,6 +148,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   }
 
   private void selectItem(ConfigParams preRequestParams) {
+    selectedPreRequestParams = preRequestParams;
     applyPreRequest(preRequestParams);
     getSelectionModel().select(preRequestParams); // highlight item in the grid
   }
@@ -158,7 +163,6 @@ public class PreRequestGrid extends Grid<ConfigParams> {
 
     appState.addPreRequestParams(newPreRequestParams);
 
-    // TODO bug: new item is not selected
     selectItem(newPreRequestParams); // set new request as currently selected item
     focusPreRequestName();
   }
@@ -186,6 +190,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
 
     var currentlySelected = getSelectionModel().getFirstSelectedItem();
 
+    dataProvider.getItems().remove(toDelete);
     appState.removePreRequestParams(toDelete);
 
     // if the deleted item was currently selected, select another one (first in data provider)
