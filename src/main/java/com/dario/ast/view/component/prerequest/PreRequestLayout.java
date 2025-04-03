@@ -37,8 +37,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 
+@Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/pre-request-layout.css")
@@ -165,6 +167,7 @@ public class PreRequestLayout extends VerticalLayout {
         ? "" : configParams.getRequestBody());
 
     isUiLoading = false;
+    log.info("Pre-request [{}] loaded into {}", configParams.getRequestName(), getClass().getSimpleName());
   }
 
   private void addListeners() {

@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO folders
-  // TODO pre-request scripts
   // TODO refresh user session (remember-me)
 
   private final HeadlineLayout headlineLayout;

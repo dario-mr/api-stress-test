@@ -55,7 +55,6 @@ public class RequestEntity {
   @Column(name = "method", nullable = false)
   private String httpMethod;
 
-  // TODO update supabase DB
   @Column(name = "request_type", nullable = false)
   private String requestType;
 

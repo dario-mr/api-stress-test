@@ -19,7 +19,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class EnvVariableEntity {
 
-  @Column(name = "variable_value")
+  @Column(name = "variable_value", columnDefinition = "TEXT")
   private String value;
 
   @Column(name = "created_on")

@@ -1,5 +1,9 @@
 package com.dario.ast.core.domain;
 
+import static com.dario.ast.util.MapUtil.convertToMultiValueMap;
+import static com.dario.ast.util.MapUtil.flatEntryValueMap;
+
+import com.dario.ast.proxy.ApiRequest;
 import com.dario.ast.util.jackson.HttpMethodDeserializer;
 import com.dario.ast.util.jackson.HttpMethodSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -33,4 +37,16 @@ public final class ConfigParams {
   private String requestBody;
   private boolean active;
   private RequestType requestType;
+
+  public ApiRequest toApiRequest() {
+    return new ApiRequest(
+        uri,
+        method,
+        convertToMultiValueMap(flatEntryValueMap(headers)),
+        flatEntryValueMap(uriVariables),
+        convertToMultiValueMap(flatEntryValueMap(queryParams)),
+        requestBody
+    );
+  }
+
 }

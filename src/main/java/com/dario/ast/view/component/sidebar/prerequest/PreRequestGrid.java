@@ -4,7 +4,6 @@ import static com.dario.ast.core.domain.RequestType.PRE_REQUEST;
 import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.EventUtil.applyPreRequest;
 import static com.dario.ast.util.EventUtil.focusPreRequestName;
-import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -75,7 +74,6 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     });
 
     observeAppState();
-    preventUnselection();
     loadRequests();
   }
 
@@ -93,16 +91,6 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     );
   }
 
-  private void addDeleteColumn() {
-    addColumn(new ComponentRenderer<>(preRequestParams -> {
-      var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(preRequestParams));
-      deleteButton.addClassName("delete-button");
-      return deleteButton;
-    }))
-        .setAutoWidth(true)
-        .setFlexGrow(0);
-  }
-
   private void observeAppState() {
     appState.getPreRequestsParamsStream().subscribe(preRequestParams ->
         UI.getCurrent().access(() -> {
@@ -112,16 +100,14 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     );
   }
 
-  private void preventUnselection() {
-    // prevent unselection by restoring last selected item
-    var selectionModel = setSelectionMode(SINGLE);
-    selectionModel.addSelectionListener(event -> {
-      if (event.getFirstSelectedItem().isEmpty() && lastSelectedItem != null) {
-        selectionModel.select(lastSelectedItem);
-      } else {
-        lastSelectedItem = event.getFirstSelectedItem().orElse(null);
-      }
-    });
+  private void addDeleteColumn() {
+    addColumn(new ComponentRenderer<>(preRequestParams -> {
+      var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(preRequestParams));
+      deleteButton.addClassName("delete-button");
+      return deleteButton;
+    }))
+        .setAutoWidth(true)
+        .setFlexGrow(0);
   }
 
   private void loadRequests() {

@@ -14,6 +14,7 @@ import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -41,6 +42,7 @@ public class RunLayout extends VerticalLayout {
   private final StressTestService stressTestService;
   private final AppState appState;
   private final AstRequestService astRequestService;
+  private final PreRequestService prerequestService;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -57,10 +59,12 @@ public class RunLayout extends VerticalLayout {
   public RunLayout(
       StressTestService stressTestService,
       AppState appState,
-      AstRequestService astRequestService) {
+      AstRequestService astRequestService,
+      PreRequestService prerequestService) {
     this.stressTestService = stressTestService;
     this.appState = appState;
     this.astRequestService = astRequestService;
+    this.prerequestService = prerequestService;
 
     setWidthFull();
     setSpacing(false);
@@ -191,19 +195,20 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void startStressTest() {
-    // validate parameters
+    // TODO better validation -> dedicated service with ValidationResult return type
     var configParams = appState.getConfigParams();
     if (!hasText(configParams.getUri())) {
       WarnNotification.show("Please provide a valid URL");
       return;
     }
 
+    prerequestService.runAndApplyPreRequests();
+
     stopStressTest();
     startStressTestUI();
 
     var selectedEnvironment = appState.getSelectedEnvironment();
     var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
-    // todo run and apply pre-requests
     var runParams = getRunParams();
     var threadPoolSize = threadPoolSizeField.getValue();
 

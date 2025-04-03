@@ -3,7 +3,6 @@ package com.dario.ast.view.component.sidebar.environment;
 import static com.dario.ast.util.EventUtil.applyEnvironment;
 import static com.dario.ast.util.EventUtil.environmentDeleted;
 import static com.dario.ast.util.EventUtil.focusEnvName;
-import static com.vaadin.flow.component.grid.Grid.SelectionMode.SINGLE;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -51,10 +50,9 @@ public class EnvGrid extends Grid<Environment> {
     // click listener to load selected env into UI
     addItemClickListener(event -> {
       var env = event.getItem();
-      applyEnvironment(env);
+      selectItem(env);
     });
 
-    preventUnselection();
     loadEnvs();
   }
 
@@ -86,18 +84,6 @@ public class EnvGrid extends Grid<Environment> {
     }))
         .setAutoWidth(true)
         .setFlexGrow(0);
-  }
-
-  private void preventUnselection() {
-    // prevent unselection by restoring last selected item
-    var selectionModel = setSelectionMode(SINGLE);
-    selectionModel.addSelectionListener(event -> {
-      if (event.getFirstSelectedItem().isEmpty() && lastSelectedItem != null) {
-        selectionModel.select(lastSelectedItem);
-      } else {
-        lastSelectedItem = event.getFirstSelectedItem().orElse(null);
-      }
-    });
   }
 
   private void loadEnvs() {

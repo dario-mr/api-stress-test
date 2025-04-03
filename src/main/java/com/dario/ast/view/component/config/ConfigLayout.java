@@ -87,9 +87,7 @@ public class ConfigLayout extends VerticalLayout {
 
     // http method + url
     methodCombo.setMaxWidth("7.5em");
-    methodCombo.addValueChangeListener(event -> generateCurlPreview());
     urlText.setPlaceholder("Enter the URL");
-    urlText.addValueChangeListener(event -> generateCurlPreview());
 
     var urlMethodLayout = new FlexLayout(methodCombo, urlText);
     urlMethodLayout.setWidthFull();
@@ -108,7 +106,6 @@ public class ConfigLayout extends VerticalLayout {
     // request body
     requestBodyText.setWidthFull();
     requestBodyText.getStyle().set("font-family", "monospace");
-    requestBodyText.addValueChangeListener(event -> generateCurlPreview());
 
     // curl preview
     previewTextClipboard.wrap(previewText);
@@ -136,10 +133,7 @@ public class ConfigLayout extends VerticalLayout {
     // Listen for events indicating that config entries (EntriesSection class) were updated
     ComponentUtil.addListener(attachEvent.getUI(),
         ConfigEntriesUpdatedEvent.class,
-        event -> {
-          generateCurlPreview();
-          saveParams();
-        }
+        event -> saveParams()
     );
 
     // Listen for events indicating that the request name field should be focused
@@ -151,8 +145,12 @@ public class ConfigLayout extends VerticalLayout {
 
   private void observeAppState() {
     appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> loadPreRequestIntoUI(configParams))
+        UI.getCurrent().access(() -> {
+          loadConfigIntoUI(configParams);
+          generateCurlPreview();
+        })
     );
+
     appState.getSelectedEnvironmentStream().subscribe(environment ->
         UI.getCurrent().access(this::generateCurlPreview)
     );
@@ -270,9 +268,11 @@ public class ConfigLayout extends VerticalLayout {
 
     previewText.setValue(curlPreview);
     previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
+
+    log.info("cURL preview regenerated");
   }
 
-  private void loadPreRequestIntoUI(ConfigParams params) {
+  private void loadConfigIntoUI(ConfigParams params) {
     isUiLoading = true;
 
     this.requestId = params.getRequestId();
@@ -301,5 +301,8 @@ public class ConfigLayout extends VerticalLayout {
         ? "" : params.getRequestBody());
 
     isUiLoading = false;
+
+    log.info("Config [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
   }
+
 }

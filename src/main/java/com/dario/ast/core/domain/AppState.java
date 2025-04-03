@@ -4,8 +4,6 @@ import static com.dario.ast.util.CopyUtil.deepCopy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -16,14 +14,12 @@ import reactor.core.publisher.Sinks;
  * <p>
  * This shared state is used to maintain and manage settings across different components of the application.
  */
-@Getter
 @Component
 public class AppState {
 
   private ConfigParams configParams;
   private RunParams runParams;
   private Environment selectedEnvironment;
-  @Setter
   private User currentUser;
   private List<ConfigParams> preRequestsParams;
 
@@ -31,6 +27,41 @@ public class AppState {
   private final Sinks.Many<RunParams> runParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<Environment> selectedEnvironmentSink = Sinks.many().replay().latest();
   private final Sinks.Many<List<ConfigParams>> preRequestsParamsSink = Sinks.many().replay().latest();
+
+  public ConfigParams getConfigParams() {
+    return deepCopy(configParams, ConfigParams.class);
+  }
+
+  public void setConfigParams(ConfigParams configParams) {
+    this.configParams = deepCopy(configParams, ConfigParams.class);
+    configParamsSink.tryEmitNext(configParams);
+  }
+
+  public RunParams getRunParams() {
+    return deepCopy(runParams, RunParams.class);
+  }
+
+  public void setRunParams(RunParams runParams) {
+    this.runParams = runParams;
+    runParamsSink.tryEmitNext(runParams);
+  }
+
+  public Environment getSelectedEnvironment() {
+    return deepCopy(selectedEnvironment, Environment.class);
+  }
+
+  public void setSelectedEnvironment(Environment selectedEnvironment) {
+    this.selectedEnvironment = selectedEnvironment;
+    selectedEnvironmentSink.tryEmitNext(selectedEnvironment);
+  }
+
+  public User getCurrentUser() {
+    return deepCopy(currentUser, User.class);
+  }
+
+  public void setCurrentUser(User currentUser) {
+    this.currentUser = deepCopy(currentUser, User.class);
+  }
 
   public List<ConfigParams> getPreRequestsParams() {
     return deepCopy(preRequestsParams, new TypeReference<>() {
@@ -69,21 +100,6 @@ public class AppState {
 
   public Flux<List<ConfigParams>> getPreRequestsParamsStream() {
     return preRequestsParamsSink.asFlux();
-  }
-
-  public void setConfigParams(ConfigParams configParams) {
-    this.configParams = configParams;
-    configParamsSink.tryEmitNext(configParams);
-  }
-
-  public void setRunParams(RunParams runParams) {
-    this.runParams = runParams;
-    runParamsSink.tryEmitNext(runParams);
-  }
-
-  public void setSelectedEnvironment(Environment selectedEnvironment) {
-    this.selectedEnvironment = selectedEnvironment;
-    selectedEnvironmentSink.tryEmitNext(selectedEnvironment);
   }
 
 }

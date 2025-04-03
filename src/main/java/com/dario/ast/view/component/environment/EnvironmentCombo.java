@@ -62,6 +62,7 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     }
   }
 
+  // TODO avoid querying db, use appState?
   private void reloadEnvironments() {
     var currentEnv = getValue(); // save currently selected environment
     var userEnvironments = environmentService.getByUserId(appState.getCurrentUser().getId());
@@ -77,7 +78,6 @@ public class EnvironmentCombo extends ComboBox<Environment> {
         .orElse(userEnvironments.getFirst());
 
     setValue(newSelection);
-    setSelectedEnvironment(newSelection);
   }
 
   private void setSelectedEnvironment(Environment environment) {
