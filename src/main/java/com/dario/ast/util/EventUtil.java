@@ -9,9 +9,7 @@ import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.AstRequestCreatedEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.EnvironmentCreatedEvent;
-import com.dario.ast.event.EnvironmentDeletedEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
-import com.dario.ast.event.EnvironmentUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
@@ -47,16 +45,8 @@ public class EventUtil {
     fireEvent(UI.getCurrent(), new ApplyEnvironmentEvent(environment));
   }
 
-  public static void environmentUpdated(Environment environment) {
-    fireEvent(UI.getCurrent(), new EnvironmentUpdatedEvent(environment));
-  }
-
   public static void environmentCreated(Long envId) {
     fireEvent(UI.getCurrent(), new EnvironmentCreatedEvent(envId));
-  }
-
-  public static void environmentDeleted(Long envId) {
-    fireEvent(UI.getCurrent(), new EnvironmentDeletedEvent(envId));
   }
 
   public static void environmentEntriesUpdated() {

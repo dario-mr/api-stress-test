@@ -302,7 +302,7 @@ public class ConfigLayout extends VerticalLayout {
 
     isUiLoading = false;
 
-    log.info("Config [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
+    log.info("Config params [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
   }
 
 }

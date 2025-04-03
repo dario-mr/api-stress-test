@@ -17,16 +17,18 @@ import reactor.core.publisher.Sinks;
 @Component
 public class AppState {
 
-  private ConfigParams configParams;
-  private RunParams runParams;
-  private Environment selectedEnvironment;
-  private User currentUser;
-  private List<ConfigParams> preRequestsParams;
+  private ConfigParams configParams; // config params of the currently selected request
+  private RunParams runParams; // run params of the currently selected request
+  private Environment selectedEnvironment; // currently selected environment
+  private User currentUser; // current user
+  private List<ConfigParams> preRequestsParams; // pre-request params of the current user
+  private List<Environment> environments; // environments of the current user
 
   private final Sinks.Many<ConfigParams> configParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<RunParams> runParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<Environment> selectedEnvironmentSink = Sinks.many().replay().latest();
   private final Sinks.Many<List<ConfigParams>> preRequestsParamsSink = Sinks.many().replay().latest();
+  private final Sinks.Many<List<Environment>> environmentsSink = Sinks.many().replay().latest();
 
   public ConfigParams getConfigParams() {
     return deepCopy(configParams, ConfigParams.class);
@@ -86,6 +88,29 @@ public class AppState {
     }));
   }
 
+  public List<Environment> getEnvironments() {
+    return deepCopy(environments, new TypeReference<>() {
+    });
+  }
+
+  public void setEnvironments(List<Environment> environments) {
+    this.environments = deepCopy(environments, new TypeReference<>() {
+    });
+    environmentsSink.tryEmitNext(environments);
+  }
+
+  public void addEnvironment(Environment environment) {
+    environments.add(deepCopy(environment, Environment.class));
+    environmentsSink.tryEmitNext(deepCopy(environments, new TypeReference<>() {
+    }));
+  }
+
+  public void removeEnvironment(Environment environment) {
+    environments.remove(environment);
+    environmentsSink.tryEmitNext(deepCopy(environments, new TypeReference<>() {
+    }));
+  }
+
   public Flux<ConfigParams> getConfigParamsStream() {
     return configParamsSink.asFlux();
   }
@@ -100,6 +125,10 @@ public class AppState {
 
   public Flux<List<ConfigParams>> getPreRequestsParamsStream() {
     return preRequestsParamsSink.asFlux();
+  }
+
+  public Flux<List<Environment>> getEnvironmentsStream() {
+    return environmentsSink.asFlux();
   }
 
 }

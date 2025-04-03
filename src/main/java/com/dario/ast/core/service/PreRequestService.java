@@ -1,7 +1,6 @@
 package com.dario.ast.core.service;
 
 import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
-import static com.dario.ast.util.EventUtil.environmentUpdated;
 import static java.util.stream.Collectors.toMap;
 
 import com.dario.ast.core.domain.AppState;
@@ -86,7 +85,7 @@ public class PreRequestService {
         });
 
     astEnvironmentService.update(environment);
-    environmentUpdated(environment);
+    astEnvironmentService.updateEnvironmentInAppState(environment);
   }
 
 }

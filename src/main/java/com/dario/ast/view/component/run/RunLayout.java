@@ -126,7 +126,7 @@ public class RunLayout extends VerticalLayout {
     // add listeners
     addBlurListeners();
     appState.getRunParamsStream().subscribe(runParams ->
-        UI.getCurrent().access(() -> applyParams(runParams))
+        UI.getCurrent().access(() -> loadRunParamsIntoUi(runParams))
     );
 
     // add all components
@@ -196,7 +196,7 @@ public class RunLayout extends VerticalLayout {
     appState.setRunParams(runParams);
   }
 
-  private void applyParams(RunParams params) {
+  private void loadRunParamsIntoUi(RunParams params) {
     this.requestId = params.getRequestId();
 
     requestNumberField.setValue(params.getNumRequests());

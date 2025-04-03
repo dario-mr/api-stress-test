@@ -1,7 +1,6 @@
 package com.dario.ast.view.component.environment;
 
 import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
-import static com.dario.ast.util.EventUtil.environmentUpdated;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -128,7 +127,7 @@ public class EnvironmentLayout extends VerticalLayout {
       throw ex;
     }
 
-    environmentUpdated(selectedEnvironment);
+    astEnvironmentService.updateEnvironmentInAppState(selectedEnvironment);
   }
 
   private Environment getEnvParams() {
