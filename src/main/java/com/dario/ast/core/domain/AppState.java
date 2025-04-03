@@ -43,6 +43,18 @@ public class AppState {
     preRequestsParamsSink.tryEmitNext(preRequestsParams);
   }
 
+  public void addPreRequestParams(ConfigParams preRequestParams) {
+    preRequestsParams.add(deepCopy(preRequestParams, ConfigParams.class));
+    preRequestsParamsSink.tryEmitNext(deepCopy(preRequestsParams, new TypeReference<>() {
+    }));
+  }
+
+  public void removePreRequestParams(ConfigParams preRequestParams) {
+    preRequestsParams.remove(preRequestParams);
+    preRequestsParamsSink.tryEmitNext(deepCopy(preRequestsParams, new TypeReference<>() {
+    }));
+  }
+
   public Flux<ConfigParams> getConfigParamsStream() {
     return configParamsSink.asFlux();
   }

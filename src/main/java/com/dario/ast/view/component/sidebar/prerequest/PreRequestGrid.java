@@ -11,6 +11,7 @@ import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
@@ -39,7 +40,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   private ListDataProvider<ConfigParams> dataProvider;
   private ConfigParams lastSelectedItem;
 
-  public PreRequestGrid(AstRequestService astRequestService, AppState appState) {
+  public PreRequestGrid(AstRequestService astRequestService, AppState appState, PreRequestService preRequestService) {
     this.astRequestService = astRequestService;
     this.appState = appState;
 
@@ -57,9 +58,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
       checkbox.addValueChangeListener(event -> {
         preRequestParams.setActive(event.getValue());
         astRequestService.update(new AstRequest(preRequestParams, defaultRunParams()));
-        dataProvider.refreshItem(preRequestParams);
-
-        // TODO update app state
+        preRequestService.updatePreRequestInAppState(preRequestParams);
       });
       return checkbox;
     })).setHeader("Active")
@@ -129,10 +128,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     var currentUserId = appState.getCurrentUser().getId();
     var preRequestsParams = getUserPreRequestsParams(currentUserId);
 
-    dataProvider = new ListDataProvider<>(preRequestsParams);
-    setDataProvider(dataProvider);
-
-    appState.setPreRequestsParams(preRequestsParams); // todo move to method updateAppState?
+    appState.setPreRequestsParams(preRequestsParams);
   }
 
   private List<ConfigParams> mapToConfigParams(List<AstRequest> preRequests) {
@@ -174,9 +170,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
 
     var newPreRequestParams = optPreRequest.get().getConfigParams();
 
-    // TODO update app state
-    dataProvider.getItems().add(newPreRequestParams);
-    dataProvider.refreshAll();
+    appState.addPreRequestParams(newPreRequestParams);
     selectItem(newPreRequestParams); // set new request as currently selected item
     focusPreRequestName();
   }
@@ -202,16 +196,12 @@ public class PreRequestGrid extends Grid<ConfigParams> {
       return;
     }
 
-    var selectedPreRequestParams = getSelectionModel().getFirstSelectedItem();
+    var currentlySelected = getSelectionModel().getFirstSelectedItem();
 
-    // update data provider
-    dataProvider.getItems().remove(toDelete);
-    dataProvider.refreshAll();
-
-    // TODO update app state
+    appState.removePreRequestParams(toDelete);
 
     // if the deleted item was currently selected, select another one (first in data provider)
-    if (selectedPreRequestParams.isPresent() && selectedPreRequestParams.get().equals(toDelete)) {
+    if (currentlySelected.isPresent() && currentlySelected.get().equals(toDelete)) {
       selectFirstItem();
     }
   }

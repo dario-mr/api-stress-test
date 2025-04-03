@@ -9,7 +9,6 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
@@ -17,6 +16,7 @@ import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
@@ -37,7 +37,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.LinkedHashMap;
-import java.util.Objects;
 import org.springframework.http.HttpMethod;
 
 @UIScope
@@ -45,8 +44,8 @@ import org.springframework.http.HttpMethod;
 @CssImport(value = "./styles/pre-request-layout.css")
 public class PreRequestLayout extends VerticalLayout {
 
-  private final AppState appState;
   private final AstRequestService astRequestService;
+  private final PreRequestService prerequestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -66,9 +65,9 @@ public class PreRequestLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public PreRequestLayout(AppState appState, AstRequestService astRequestService) {
-    this.appState = appState;
+  public PreRequestLayout(AstRequestService astRequestService, PreRequestService prerequestService) {
     this.astRequestService = astRequestService;
+    this.prerequestService = prerequestService;
 
     addClassNames("card-layout", "pre-request-layout");
     setSpacing(false);
@@ -246,20 +245,7 @@ public class PreRequestLayout extends VerticalLayout {
       throw ex;
     }
 
-    updateAppState(preRequest);
-  }
-
-  private void updateAppState(AstRequest updatedPreRequest) {
-    var updatedPreRequestParams = updatedPreRequest.getConfigParams();
-    var currentPreRequestsParams = appState.getPreRequestsParams();
-
-    currentPreRequestsParams.replaceAll(preRequest ->
-        Objects.equals(preRequest.getRequestId(), updatedPreRequestParams.getRequestId())
-            ? updatedPreRequestParams
-            : preRequest
-    );
-
-    appState.setPreRequestsParams(currentPreRequestsParams);
+    prerequestService.updatePreRequestInAppState(preRequest.getConfigParams());
   }
 
   private ConfigParams getConfigParams() {
