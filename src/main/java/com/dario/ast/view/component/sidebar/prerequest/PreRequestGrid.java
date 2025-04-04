@@ -47,22 +47,22 @@ public class PreRequestGrid extends Grid<ConfigParams> {
 
     // name column
     addColumn(ConfigParams::getRequestName)
-        .setHeader("Name")
         .setAutoWidth(true)
         .setFlexGrow(1);
 
     // active column
     addColumn(new ComponentRenderer<>(preRequestParams -> {
       var checkbox = new Checkbox(preRequestParams.isActive());
+      checkbox.addClassName("active-column");
       checkbox.addValueChangeListener(event -> {
         preRequestParams.setActive(event.getValue());
         astRequestService.update(new AstRequest(preRequestParams, defaultRunParams()));
         preRequestService.updatePreRequestInAppState(preRequestParams);
       });
       return checkbox;
-    })).setHeader("Active")
+    }))
         .setAutoWidth(true)
-        .setFlexGrow(1);
+        .setFlexGrow(0);
 
     // delete button
     addDeleteColumn();

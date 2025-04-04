@@ -72,7 +72,7 @@ public class PreRequestLayout extends VerticalLayout {
     this.prerequestService = prerequestService;
 
     addClassNames("card-layout", "pre-request-layout");
-    setSpacing(false);
+    setHeight("fit-content");
     setWidthFull();
 
     // name
@@ -102,7 +102,6 @@ public class PreRequestLayout extends VerticalLayout {
 
     // request body
     requestBodyText.setWidthFull();
-    requestBodyText.getStyle().set("font-family", "monospace");
 
     // add listeners
     addListeners();

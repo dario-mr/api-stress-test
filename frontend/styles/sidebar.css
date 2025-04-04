@@ -1,6 +1,12 @@
-/* Sidebar */
+/* Main sidebar */
+.main-sidebar {
+  background: #22472B;
+  padding: var(--lumo-space-m);
+}
+
+/* Secondary sidebars */
 .sidebar-layout {
-  background: #2c4c3b;
+  background: #2C4C3B;
 }
 
 /* Sidebar grid */
@@ -12,10 +18,16 @@
 
 .sidebar-grid::part(cell) {
   background: transparent;
+  font-size: var(--lumo-font-size-s);
 }
 
 .sidebar-grid::part(selected-row) {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-grid vaadin-grid-cell-content {
+  padding-left: var(--lumo-space-s);
+  padding-right: var(--lumo-space-s);
 }
 
 /* Create button */
@@ -23,7 +35,7 @@
   margin: 0;
   color: antiquewhite;
   background: transparent;
-  border-radius: 0 var(--card-border-radius) 0 0;
+  font-size: var(--lumo-font-size-s);
 }
 
 /* Delete button */
@@ -32,4 +44,10 @@
   margin: 0;
   color: antiquewhite;
   background: transparent;
+}
+
+/* Active checkbox (pre-request) */
+.sidebar-grid vaadin-grid-cell-content:has(.active-column) {
+  padding-left: 0;
+  padding-right: 0;
 }

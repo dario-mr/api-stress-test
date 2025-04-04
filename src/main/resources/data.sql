@@ -12,7 +12,7 @@ VALUES (1, 1, 'Request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'http
        (3, 1, 'Pre-request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.example.com/', 'GET',
         '{ "key": "body pre-request 1" }', 1, 1, true, 'PRE_REQUEST', true),
        (4, 1, 'AuthzToken', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z',
-        'http://localhost:8099/v1/authz-token?env={{env}}', 'GET', '{ "key": "body pre-request 1" }', 1, 1, true,
+        'http://localhost:8099/v1/authz-token?env={{env}}', 'GET', '{ "key": "body AuthzToken" }', 1, 1, true,
         'PRE_REQUEST', true),
        (5, 1, 'Pre-request 3', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
         NULL, 1, 1, true, 'PRE_REQUEST', false);
