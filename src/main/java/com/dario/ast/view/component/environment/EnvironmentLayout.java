@@ -104,7 +104,7 @@ public class EnvironmentLayout extends VerticalLayout {
     variablesSection.addEntries(environment.getVariables());
     variablesSection.addEntry("", defaultEnvVariable());
 
-    log.info("Environment [{}] loaded into {}", environment, getClass().getSimpleName());
+    log.debug("Environment [{}] loaded into {}", environment, getClass().getSimpleName());
   }
 
   private void addListeners() {

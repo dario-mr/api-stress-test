@@ -167,7 +167,7 @@ public class PreRequestLayout extends VerticalLayout {
         ? "" : configParams.getRequestBody());
 
     isUiLoading = false;
-    log.info("Pre-request [{}] loaded into {}", configParams.getRequestName(), getClass().getSimpleName());
+    log.debug("Pre-request [{}] loaded into {}", configParams.getRequestName(), getClass().getSimpleName());
   }
 
   private void addListeners() {

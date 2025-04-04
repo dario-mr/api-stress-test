@@ -269,7 +269,7 @@ public class ConfigLayout extends VerticalLayout {
     previewText.setValue(curlPreview);
     previewTextClipboard.setContent(curlPreview); // prepare curl preview to be copied to user's clipboard
 
-    log.info("cURL preview regenerated");
+    log.debug("cURL preview regenerated");
   }
 
   private void loadConfigIntoUI(ConfigParams params) {
@@ -302,7 +302,7 @@ public class ConfigLayout extends VerticalLayout {
 
     isUiLoading = false;
 
-    log.info("Config params [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
+    log.debug("Config params [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
   }
 
 }
