@@ -8,13 +8,13 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CE
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
-import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestValidationService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -50,6 +50,7 @@ public class RunLayout extends VerticalLayout {
   private final AppState appState;
   private final AstRequestService astRequestService;
   private final PreRequestService prerequestService;
+  private final RequestValidationService validationService;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -68,11 +69,13 @@ public class RunLayout extends VerticalLayout {
       StressTestService stressTestService,
       AppState appState,
       AstRequestService astRequestService,
-      PreRequestService prerequestService) {
+      PreRequestService prerequestService,
+      RequestValidationService validationService) {
     this.stressTestService = stressTestService;
     this.appState = appState;
     this.astRequestService = astRequestService;
     this.prerequestService = prerequestService;
+    this.validationService = validationService;
 
     setWidthFull();
     setSpacing(false);
@@ -222,20 +225,23 @@ public class RunLayout extends VerticalLayout {
     stopOnErrorCheckbox.setValue(params.isStopOnError());
 
     isUiLoading = false;
+    log.debug("Run params [{}] loaded into {}", params.getRequestId(), getClass().getSimpleName());
   }
 
   private void startStressTest() {
-    // TODO better validation -> dedicated service with ValidationResult return type
     var configParams = appState.getConfigParams();
-    if (!hasText(configParams.getUri())) {
-      WarnNotification.show("Please provide a valid URL");
+
+    var validationResult = validationService.validate(configParams);
+    if (!validationResult.success()) {
+      WarnNotification.show(validationResult.message());
       return;
     }
 
-    prerequestService.runAndApplyPreRequests();
-
+    log.debug("Starting requests");
     stopStressTest();
     startStressTestUI();
+
+    prerequestService.runAndApplyPreRequests();
 
     var selectedEnvironment = appState.getSelectedEnvironment();
     var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
@@ -288,12 +294,14 @@ public class RunLayout extends VerticalLayout {
       responseText.setValue(response.errorMessage());
 
       if (stopOnErrorCheckbox.getValue()) {
+        log.debug("Request [{}] failed", requestId);
         stopStressTest();
       }
     }
 
     // when stress test is completed, update UI to reflect it (this is janky)
     if (completedRequests + failedRequests == requestNumberField.getValue()) {
+      log.debug("Requests completed");
       stopStressTest();
     }
   }

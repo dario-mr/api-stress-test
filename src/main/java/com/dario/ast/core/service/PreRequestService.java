@@ -64,7 +64,7 @@ public class PreRequestService {
     return preRequestsParams.stream()
         .map(preRequestParams -> {
           var response = apiProxy.makeRequest(preRequestParams.toApiRequest());
-          if (response.statusCode().isError()) {
+          if (response.statusCode().isError() || response.responseBody() == null) {
             WarnNotification.show("Pre-request [%s] failed".formatted(preRequestParams.getRequestName()));
             return null;
           }
