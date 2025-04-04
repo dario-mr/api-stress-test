@@ -14,7 +14,7 @@ public class ConfigTabs extends VerticalLayout {
    */
   public ConfigTabs(Map<String, Component> tabsMap) {
     setSpacing(false);
-    getStyle().set("padding-left", "0").set("padding-right", "0");
+    setPadding(false);
 
     // tabs
     var tabs = new Tabs();

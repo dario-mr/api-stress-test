@@ -57,12 +57,11 @@ public class UserAvatar extends Div {
 
     var nameItem = new Span(currentUser.name());
     nameItem.getStyle()
-        .set("font-size", "0.95em")
         .set("font-weight", "bold");
 
     var emailItem = new Span(currentUser.email());
     emailItem.getStyle()
-        .set("font-size", "0.9em")
+        .set("font-size", "var(--lumo-font-size-s)")
         .set("color", "lightgray");
 
     var userInfoLayout = new VerticalLayout(avatar, nameItem, emailItem);

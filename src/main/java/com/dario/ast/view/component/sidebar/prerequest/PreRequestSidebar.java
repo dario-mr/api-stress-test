@@ -4,6 +4,7 @@ import static com.dario.ast.view.component.sidebar.MainSidebar.MAX_SIDEBAR_WIDTH
 import static com.dario.ast.view.component.sidebar.MainSidebar.MIN_SIDEBAR_WIDTH;
 
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -21,7 +22,10 @@ public class PreRequestSidebar extends VerticalLayout {
     setMinWidth(MIN_SIDEBAR_WIDTH);
     setMaxWidth(MAX_SIDEBAR_WIDTH);
 
-    add(createPreRequestButton, preRequestGrid);
+    var title = new H4("Pre-Requests");
+    title.getStyle().set("padding", "var(--lumo-space-m)");
+
+    add(title, createPreRequestButton, preRequestGrid);
   }
 
 }

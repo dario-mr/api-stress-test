@@ -3,9 +3,9 @@ package com.dario.ast.view.component.sidebar;
 import static com.dario.ast.core.domain.Section.ENVIRONMENTS;
 import static com.dario.ast.core.domain.Section.PRE_REQUESTS;
 import static com.dario.ast.core.domain.Section.REQUESTS;
-import static com.vaadin.flow.component.icon.VaadinIcon.CODE;
-import static com.vaadin.flow.component.icon.VaadinIcon.ENVELOPES;
-import static com.vaadin.flow.component.icon.VaadinIcon.GLOBE;
+import static com.vaadin.flow.component.icon.VaadinIcon.CUBES;
+import static com.vaadin.flow.component.icon.VaadinIcon.MAGIC;
+import static com.vaadin.flow.component.icon.VaadinIcon.PAPERPLANE;
 
 import com.dario.ast.core.domain.Section;
 import com.dario.ast.view.component.sidebar.environment.EnvSidebar;
@@ -46,19 +46,18 @@ public class MainSidebar extends HorizontalLayout {
     setSpacing(false);
     getStyle().set("gap", "var(--lumo-space-s)");
 
-    requestsTab = new SidebarTab(ENVELOPES, "Requests");
+    requestsTab = new SidebarTab(PAPERPLANE, "Requests");
     requestsTab.addClickListener(e -> selectTab(requestSidebar, requestsTab, REQUESTS));
 
-    envsTab = new SidebarTab(GLOBE, "Environments");
+    envsTab = new SidebarTab(CUBES, "Environments");
     envsTab.addClickListener(e -> selectTab(envSidebar, envsTab, ENVIRONMENTS));
 
-    preRequestsTab = new SidebarTab(CODE, "Pre-Requests");
+    preRequestsTab = new SidebarTab(MAGIC, "Pre-Requests");
     preRequestsTab.addClickListener(e -> selectTab(preRequestSidebar, preRequestsTab, PRE_REQUESTS));
 
     var sectionsLayout = new VerticalLayout(requestsTab, envsTab, preRequestsTab);
-    sectionsLayout.setPadding(false);
+    sectionsLayout.addClassNames("card-layout", "main-sidebar");
     sectionsLayout.setSpacing(false);
-    sectionsLayout.setMinWidth("110px");
 
     add(sectionsLayout, requestSidebar, envSidebar, preRequestSidebar);
 
@@ -66,7 +65,7 @@ public class MainSidebar extends HorizontalLayout {
     selectTab(requestSidebar, requestsTab, REQUESTS);
   }
 
-  private void selectTab(Component sidebarToShow, VerticalLayout selectedTab, Section section) {
+  private void selectTab(Component sidebarToShow, VerticalLayout selectedTab, Section selectedSection) {
     requestSidebar.setVisible(sidebarToShow == requestSidebar);
     envSidebar.setVisible(sidebarToShow == envSidebar);
     preRequestSidebar.setVisible(sidebarToShow == preRequestSidebar);
@@ -79,7 +78,7 @@ public class MainSidebar extends HorizontalLayout {
 
     // communicate to MainView what tab is selected
     if (selectionListener != null) {
-      selectionListener.accept(section);
+      selectionListener.accept(selectedSection);
     }
   }
 

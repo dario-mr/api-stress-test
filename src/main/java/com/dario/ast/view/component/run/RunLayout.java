@@ -117,9 +117,6 @@ public class RunLayout extends VerticalLayout {
 
     responseText.setReadOnly(true);
     responseText.setWidthFull();
-    responseText.getStyle()
-        .set("font-family", "monospace")
-        .set("font-size", "0.9em");
 
     var resultsLayout = new FlexLayout(completedText, failedText, responseText);
     resultsLayout.setWidthFull();

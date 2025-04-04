@@ -75,7 +75,7 @@ public class ConfigLayout extends VerticalLayout {
     this.astRequestService = astRequestService;
 
     setWidthFull();
-    setSpacing(false);
+    setSpacing(false); // todo spacing or not?
     addClassNames("card-layout", "config-layout");
 
     // name
@@ -105,12 +105,15 @@ public class ConfigLayout extends VerticalLayout {
 
     // request body
     requestBodyText.setWidthFull();
-    requestBodyText.getStyle().set("font-family", "monospace");
 
     // curl preview
     previewTextClipboard.wrap(previewText);
     previewTextClipboard.getStyle().set("width", "100%");
     var curlPreviewToggleLayout = new ToggleLayout("cURL preview", previewTextClipboard);
+
+    // config tabs
+    var configTabs = new ConfigTabs(tabsMap);
+    configTabs.getStyle().set("padding", "var(--lumo-space-s) 0"); // todo if spacing enabled, remove this
 
     // add listeners
     addListeners();
@@ -121,7 +124,7 @@ public class ConfigLayout extends VerticalLayout {
         new H4("Configure"),
         nameText,
         urlMethodLayout,
-        new ConfigTabs(tabsMap),
+        configTabs,
         curlPreviewToggleLayout
     );
   }

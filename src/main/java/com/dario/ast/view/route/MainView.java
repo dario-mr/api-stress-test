@@ -26,6 +26,7 @@ public class MainView extends VerticalLayout {
 
   // TODO folders
   // TODO refresh user session (remember-me)
+  // TODO move all color to themes
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;

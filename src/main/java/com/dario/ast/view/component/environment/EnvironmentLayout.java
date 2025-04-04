@@ -44,6 +44,7 @@ public class EnvironmentLayout extends VerticalLayout {
     this.appState = appState;
 
     addClassNames("card-layout", "env-layout");
+    setHeight("fit-content");
     setWidthFull();
 
     // name

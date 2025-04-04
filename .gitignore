@@ -13,3 +13,4 @@ frontend/index.html
 /webpack.config.js
 /webpack.generated.js
 vite.generated.ts
+src/main/bundles
