@@ -113,6 +113,7 @@ public class EntriesSection<V extends EntryValue> extends VerticalLayout {
     var entryField = new TextField();
     entryField.setPlaceholder(placeHolder);
     entryField.setValue(value);
+    entryField.setMinWidth("0");
 
     return entryField;
   }

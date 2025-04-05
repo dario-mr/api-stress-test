@@ -1,12 +1,21 @@
 /* Main sidebar */
 .main-sidebar {
-  background: #22472B;
+  background: var(--main-sidebar-background);
   padding: var(--lumo-space-m);
 }
 
-/* Secondary sidebars */
+.main-sidebar-tab {
+  width: 4.5rem !important;
+  height: 4.5rem;
+  border-radius: var(--card-border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Secondary sidebar */
 .sidebar-layout {
-  background: #2C4C3B;
+  background: var(--secondary-sidebar-background);
+  min-width: 20rem;
 }
 
 /* Sidebar grid */
@@ -22,18 +31,22 @@
 }
 
 .sidebar-grid::part(selected-row) {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--sidebar-grid-selected-row);
+}
+
+.sidebar-grid::part(row) {
+  transition: background-color 0.3s ease;
 }
 
 .sidebar-grid vaadin-grid-cell-content {
-  padding-left: var(--lumo-space-s);
-  padding-right: var(--lumo-space-s);
+  padding-left: var(--lumo-space-m);
+  padding-right: var(--lumo-space-m);
 }
 
 /* Create button */
 .create-button {
   margin: 0;
-  color: antiquewhite;
+  color: var(--create-button-color);
   background: transparent;
   font-size: var(--lumo-font-size-s);
 }
@@ -42,7 +55,7 @@
 .delete-button {
   padding: 0;
   margin: 0;
-  color: antiquewhite;
+  color: var(--delete-button-color);
   background: transparent;
 }
 

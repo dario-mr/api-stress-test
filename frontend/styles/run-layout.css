@@ -1,14 +1,14 @@
 .run-layout {
-    background: #344955;
+  background: var(--run-layout-background);
 }
 
 .start-stop-button {
-    width: 100%;
-    max-width: 15em;
-    height: 2.5em;
-    background-color: darkcyan;
+  width: 100%;
+  max-width: 15em;
+  height: 2.5em;
+  background-color: var(--start-stop-button-background);
 }
 
 .start-stop-button > vaadin-icon {
-    color: ghostwhite;
+  color: var(--start-stop-button-icon);
 }

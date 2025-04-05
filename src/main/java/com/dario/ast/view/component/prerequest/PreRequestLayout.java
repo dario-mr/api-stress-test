@@ -73,6 +73,7 @@ public class PreRequestLayout extends VerticalLayout {
 
     addClassNames("card-layout", "pre-request-layout");
     setHeight("fit-content");
+    setSpacing(false);
     setWidthFull();
 
     // name

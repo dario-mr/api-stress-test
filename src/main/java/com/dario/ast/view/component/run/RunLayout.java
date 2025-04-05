@@ -77,9 +77,9 @@ public class RunLayout extends VerticalLayout {
     this.prerequestService = prerequestService;
     this.validationService = validationService;
 
+    addClassNames("card-layout", "run-layout");
     setWidthFull();
     setSpacing(false);
-    addClassNames("card-layout", "run-layout");
 
     // requests + thread pool + stop on error
     requestNumberField.setWidthFull();

@@ -1,7 +1,7 @@
 .google-login-button {
   background-color: white;
   color: black;
-  border: 1px solid #757775;
+  border: 1px solid var(--google-button-border);
   font-size: var(--lumo-font-size-xs);
   padding: 23px 15px;
   border-radius: 999px;
@@ -12,5 +12,5 @@
 }
 
 .google-login-button:hover {
-  background-color: whitesmoke;
+  background-color: var(--google-button-hover);
 }

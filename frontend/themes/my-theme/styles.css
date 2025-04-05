@@ -1,3 +1,34 @@
+[theme~="dark"] {
+  --lumo-base-color: #163535;
+  --lumo-primary-color: #7EA094;
+  --lumo-primary-text-color: #9EC8B9;
+  --lumo-primary-color-10pct: transaprent;
+  --lumo-primary-color-50pct: #5C8374;
+
+  --headline-gradient-from: #9affb0;
+  --headline-gradient-to: #41d1ff;
+
+  --config-layout-background: #344955;
+  --env-layout-background: #344955;
+  --pre-request-layout-background: #344955;
+
+  --run-layout-background: #344955;
+  --start-stop-button-background: darkcyan;
+  --start-stop-button-icon: ghostwhite;
+
+  --main-sidebar-background: #22472B;
+  --secondary-sidebar-background: #2C4C3B;
+  --sidebar-grid-selected-row: rgba(255, 255, 255, 0.1);
+  --create-button-color: antiquewhite;
+  --delete-button-color: antiquewhite;
+
+  --google-button-border: #757775;
+  --google-button-hover: whitesmoke;
+}
+
+[theme~="light"] {
+}
+
 :root {
   --card-border-radius: 15px;
 
@@ -32,15 +63,4 @@
 vaadin-text-area {
   font-size: var(--lumo-font-size-s);
   font-family: monospace;
-}
-
-[theme~="dark"] {
-  --lumo-base-color: #163535;
-  --lumo-primary-color: #7EA094;
-  --lumo-primary-text-color: #9EC8B9;
-  --lumo-primary-color-10pct: #1B4242;
-  --lumo-primary-color-50pct: #5C8374;
-}
-
-[theme~="light"] {
 }
