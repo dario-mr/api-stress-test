@@ -1,5 +1,5 @@
 .run-layout {
-  background: var(--run-layout-background);
+  background: var(--primary-layout-background);
 }
 
 .start-stop-button {

@@ -13,12 +13,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @Theme(value = "my-theme", variant = Lumo.DARK)
 public class Application implements AppShellConfigurator {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class);
+  }
 
-    @Override
-    public void configurePage(AppShellSettings settings) {
-        settings.addFavIcon("icon", "/icons/favicon.png", "256x256");
-    }
+  @Override
+  public void configurePage(AppShellSettings settings) {
+    settings.addFavIcon("icon", "/icons/favicon.png", "256x256");
+  }
 }

@@ -1,19 +1,22 @@
 package com.dario.ast.view.route;
 
+import static com.dario.ast.core.domain.LocalSettings.THEME;
 import static com.dario.ast.core.domain.Section.ENVIRONMENTS;
-import static com.dario.ast.core.domain.Section.REQUESTS;
 import static com.dario.ast.core.domain.Section.PRE_REQUESTS;
+import static com.dario.ast.core.domain.Section.REQUESTS;
 
 import com.dario.ast.view.component.config.ConfigLayout;
 import com.dario.ast.view.component.environment.EnvironmentLayout;
 import com.dario.ast.view.component.headline.HeadlineLayout;
-import com.dario.ast.view.component.run.RunLayout;
 import com.dario.ast.view.component.prerequest.PreRequestLayout;
+import com.dario.ast.view.component.run.RunLayout;
 import com.dario.ast.view.component.sidebar.MainSidebar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.WebStorage;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.lumo.Lumo;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,6 @@ public class MainView extends VerticalLayout {
 
   // TODO folders
   // TODO refresh user session (remember-me)
-  // TODO move all color to themes
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;
@@ -37,6 +39,7 @@ public class MainView extends VerticalLayout {
 
   @PostConstruct
   public void init() {
+    setTheme();
     setSizeFull();
     getStyle()
         .set("gap", "var(--lumo-space-s)")
@@ -64,6 +67,15 @@ public class MainView extends VerticalLayout {
 
     // add all components
     add(headlineLayout, mainContent);
+  }
+
+  private void setTheme() {
+    WebStorage.getItem(THEME.getName(), value -> {
+      var theme = value != null ? value : THEME.getDefaultValue();
+      var js = "document.documentElement.setAttribute('theme', $0)";
+
+      getElement().executeJs(js, theme.equals("dark") ? Lumo.DARK : Lumo.LIGHT);
+    });
   }
 
 }

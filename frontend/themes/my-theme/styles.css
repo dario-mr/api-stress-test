@@ -1,32 +1,53 @@
 [theme~="dark"] {
-  --lumo-base-color: #163535;
-  --lumo-primary-color: #7EA094;
-  --lumo-primary-text-color: #9EC8B9;
-  --lumo-primary-color-10pct: transaprent;
-  --lumo-primary-color-50pct: #5C8374;
+  --lumo-base-color: #262A35;
+  --lumo-primary-color: #00C896;
+  --lumo-primary-text-color: #B4FFE3;
+  --lumo-primary-color-10pct: rgba(0, 209, 160, 0.1);
+  --lumo-primary-color-50pct: rgba(0, 209, 160, 0.5);
 
-  --headline-gradient-from: #9affb0;
-  --headline-gradient-to: #41d1ff;
+  --headline-gradient-from: #00FFA3;
+  --headline-gradient-to: #00B3FF;
 
-  --config-layout-background: #344955;
-  --env-layout-background: #344955;
-  --pre-request-layout-background: #344955;
+  --primary-layout-background: #333844;
 
-  --run-layout-background: #344955;
-  --start-stop-button-background: darkcyan;
-  --start-stop-button-icon: ghostwhite;
+  --start-stop-button-background: #00C896;
+  --start-stop-button-icon: #F4F4F4;
 
-  --main-sidebar-background: #22472B;
-  --secondary-sidebar-background: #2C4C3B;
-  --sidebar-grid-selected-row: rgba(255, 255, 255, 0.1);
-  --create-button-color: antiquewhite;
-  --delete-button-color: antiquewhite;
+  --main-sidebar-background: #2B2F39;
+  --selected-tab-background: rgba(255, 255, 255, 0.1);
+  --secondary-sidebar-background: #353B47;
+  --sidebar-grid-selected-row: rgba(255, 255, 255, 0.08);
+
+  --create-button-hover-color: rgba(0, 200, 150, 0.05);
 
   --google-button-border: #757775;
   --google-button-hover: whitesmoke;
 }
 
 [theme~="light"] {
+  --lumo-base-color: #f1f4f9;
+  --lumo-primary-color: #6366f1;
+  --lumo-primary-text-color: #3730a3;
+  --lumo-primary-color-10pct: rgba(99, 102, 241, 0.1);
+  --lumo-primary-color-50pct: rgba(99, 102, 241, 0.5);
+
+  --headline-gradient-from: #6366f1;
+  --headline-gradient-to: #ec4899;
+
+  --primary-layout-background: #e0e7ff;
+
+  --start-stop-button-background: #6366f1;
+  --start-stop-button-icon: #ffffff;
+
+  --main-sidebar-background: #c7d2fe;
+  --secondary-sidebar-background: #e9d5ff;
+  --selected-tab-background: rgba(99, 102, 241, 0.2);
+  --sidebar-grid-selected-row: rgba(0, 0, 0, 0.05);
+
+  --create-button-hover-color: rgba(99, 102, 241, 0.1);
+
+  --google-button-border: #c5c2c2;
+  --google-button-hover: #eaeaea;
 }
 
 :root {
