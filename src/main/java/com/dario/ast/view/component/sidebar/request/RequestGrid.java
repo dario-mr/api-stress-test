@@ -11,7 +11,6 @@ import com.dario.ast.event.AstRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -73,11 +72,11 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private void observeAppState() {
     appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams())))
+        dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams()))
     );
 
     appState.getRunParamsStream().subscribe(runParams ->
-        UI.getCurrent().access(() -> dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams)))
+        dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams))
     );
   }
 

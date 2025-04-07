@@ -26,7 +26,6 @@ import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H4;
@@ -146,15 +145,13 @@ public class ConfigLayout extends VerticalLayout {
   }
 
   private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams ->
-        UI.getCurrent().access(() -> {
-          loadConfigIntoUI(configParams);
-          generateCurlPreview();
-        })
-    );
+    appState.getConfigParamsStream().subscribe(configParams -> {
+      loadConfigIntoUI(configParams);
+      generateCurlPreview();
+    });
 
     appState.getSelectedEnvironmentStream().subscribe(environment ->
-        UI.getCurrent().access(this::generateCurlPreview)
+        generateCurlPreview()
     );
   }
 

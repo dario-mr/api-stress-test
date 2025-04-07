@@ -11,7 +11,6 @@ import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -71,16 +70,14 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void observeAppState() {
-    appState.getEnvironmentsStream().subscribe(environments ->
-        UI.getCurrent().access(() -> {
-          dataProvider = new ListDataProvider<>(environments);
-          setDataProvider(dataProvider);
+    appState.getEnvironmentsStream().subscribe(environments -> {
+      dataProvider = new ListDataProvider<>(environments);
+      setDataProvider(dataProvider);
 
-          if (selectedEnvironment != null) {
-            getSelectionModel().select(selectedEnvironment);
-          }
-        })
-    );
+      if (selectedEnvironment != null) {
+        getSelectionModel().select(selectedEnvironment);
+      }
+    });
   }
 
   private void addDeleteColumn() {

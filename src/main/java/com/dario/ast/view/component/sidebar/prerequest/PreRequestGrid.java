@@ -15,7 +15,6 @@ import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -92,16 +91,14 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   }
 
   private void observeAppState() {
-    appState.getPreRequestsParamsStream().subscribe(preRequestParams ->
-        UI.getCurrent().access(() -> {
-          dataProvider = new ListDataProvider<>(preRequestParams);
-          setDataProvider(dataProvider);
+    appState.getPreRequestsParamsStream().subscribe(preRequestParams -> {
+      dataProvider = new ListDataProvider<>(preRequestParams);
+      setDataProvider(dataProvider);
 
-          if (selectedPreRequestParams != null) {
-            getSelectionModel().select(selectedPreRequestParams);
-          }
-        })
-    );
+      if (selectedPreRequestParams != null) {
+        getSelectionModel().select(selectedPreRequestParams);
+      }
+    });
   }
 
   private void addDeleteColumn() {
