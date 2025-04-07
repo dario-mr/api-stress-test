@@ -12,6 +12,10 @@
   transition: background-color 0.3s ease;
 }
 
+.selected-tab {
+  background-color: var(--selected-tab-background);
+}
+
 /* Secondary sidebar */
 .sidebar-layout {
   background: var(--secondary-sidebar-background);
@@ -46,16 +50,19 @@
 /* Create button */
 .create-button {
   margin: 0;
-  color: var(--create-button-color);
   background: transparent;
   font-size: var(--lumo-font-size-s);
+  transition: background 0.3s ease;
+}
+
+.create-button:hover {
+  background: var(--create-button-hover-color);
 }
 
 /* Delete button */
 .delete-button {
   padding: 0;
   margin: 0;
-  color: var(--delete-button-color);
   background: transparent;
 }
 

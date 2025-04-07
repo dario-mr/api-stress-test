@@ -68,10 +68,11 @@ public class MainSidebar extends HorizontalLayout {
     preRequestSidebar.setVisible(sidebarToShow == preRequestSidebar);
 
     // reset tab background colors and highlight selected tab
-    requestsTab.getStyle().set("background-color", "transparent");
-    envsTab.getStyle().set("background-color", "transparent");
-    preRequestsTab.getStyle().set("background-color", "transparent");
-    selectedTab.getStyle().set("background-color", "rgba(255, 255, 255, 0.1)");
+    requestsTab.removeClassName("selected-tab");
+    envsTab.removeClassName("selected-tab");
+    preRequestsTab.removeClassName("selected-tab");
+
+    selectedTab.addClassName("selected-tab");
 
     // communicate to MainView what tab is selected
     if (selectionListener != null) {
