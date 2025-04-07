@@ -21,7 +21,6 @@ import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -153,9 +152,7 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void observeAppState() {
-    appState.getRunParamsStream().subscribe(runParams ->
-        UI.getCurrent().access(() -> loadRunParamsIntoUi(runParams))
-    );
+    appState.getRunParamsStream().subscribe(this::loadRunParamsIntoUi);
   }
 
   private void addListeners() {
