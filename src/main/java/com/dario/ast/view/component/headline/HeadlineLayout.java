@@ -42,9 +42,13 @@ public class HeadlineLayout extends HorizontalLayout {
   private void configureThemeIcons(Icon lightThemeIcon, Icon darkThemeIcon) {
     // by default, hide both icons
     lightThemeIcon.setVisible(false);
-    lightThemeIcon.getStyle().set("cursor", "pointer");
+    lightThemeIcon.getStyle()
+        .set("cursor", "pointer")
+        .set("flex-shrink", "0");
     darkThemeIcon.setVisible(false);
-    darkThemeIcon.getStyle().set("cursor", "pointer");
+    darkThemeIcon.getStyle()
+        .set("cursor", "pointer")
+        .set("flex-shrink", "0");
 
     // add listeners to switch theme
     lightThemeIcon.addClickListener(e -> {
