@@ -11,6 +11,7 @@ User-friendly app to perform stress test of your APIs.
 - `DB_PASSWORD`: database password (default: `null`)
 - `OAUTH_CLIENT_ID`: OAuth client ID (default: `null`)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret (default: `null`)
+- `DEV_REFRESH_TOKEN`: google refresh token, optional, only for `dev` profile (default: `null`)
 
 ## Run production build locally
 

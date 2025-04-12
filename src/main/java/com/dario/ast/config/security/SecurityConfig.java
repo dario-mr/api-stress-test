@@ -1,5 +1,6 @@
 package com.dario.ast.config.security;
 
+import com.dario.ast.config.oauth.OAuthTokenRefreshFilter;
 import com.dario.ast.repository.OAuthTokenRepository;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import jakarta.servlet.http.Cookie;
@@ -124,7 +125,7 @@ public class SecurityConfig extends VaadinWebSecurity {
         oauth2TokenRepository.save(userId, refreshToken.getTokenValue(), client.getAccessToken().getExpiresAt());
       }
 
-      response.sendRedirect("/");
+      response.sendRedirect(request.getContextPath() + "/");
     };
   }
 

@@ -1,4 +1,4 @@
-package com.dario.ast.config.security;
+package com.dario.ast.config.oauth;
 
 import com.dario.ast.core.service.oauth.AuthTokenManager;
 import jakarta.servlet.FilterChain;
