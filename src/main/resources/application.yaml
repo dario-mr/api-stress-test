@@ -15,5 +15,6 @@ spring.security.oauth2.client.registration.google:
 
 # Security
 security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**
+app.encryption.secret-key: ${ENCRYPTION_KEY}
 
 logging.level.com.dario.ast: DEBUG

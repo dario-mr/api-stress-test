@@ -1,7 +1,9 @@
 package com.dario.ast.core.service.oauth;
 
+import static com.dario.ast.core.domain.AppCookie.USER_ID;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
+import com.dario.ast.core.service.security.CookieService;
 import com.dario.ast.repository.OAuthTokenRepository;
 import com.dario.ast.repository.jpa.entity.OAuthTokenEntity;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,13 +24,13 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.SessionScope;
-import org.springframework.web.util.WebUtils;
 
 @Slf4j
 @Component
 @SessionScope
 @RequiredArgsConstructor
 public class AuthTokenManager {
+  // TODO refactor?
 
   private static final int REFRESH_TOKEN_EXPIRATION_IN_MINUTES = 5;
 
@@ -36,6 +38,8 @@ public class AuthTokenManager {
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final OAuthTokenRepository oauthTokenRepository;
   private final ClientRegistrationRepository clientRegistrationRepository;
+  private final CookieService cookieService;
+
   private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
   public void refreshTokenIfExpired(HttpServletRequest request, HttpServletResponse response) {
@@ -48,8 +52,9 @@ public class AuthTokenManager {
   }
 
   private void refreshByDb(HttpServletRequest request, HttpServletResponse response) {
-    var userId = extractUserIdFromCookie(request);
+    var userId = cookieService.getAndDecryptCookie(USER_ID, request);
     if (userId == null) {
+      log.info("No userId cookie found, skipping auth token refresh");
       return;
     }
 
@@ -103,6 +108,9 @@ public class AuthTokenManager {
 
     var userId = authToken.getName();
     var client = authorizedClientService.loadAuthorizedClient(authToken.getAuthorizedClientRegistrationId(), userId);
+    if (client == null) {
+      return;
+    }
 
     var accessToken = client.getAccessToken();
     if (accessToken == null || accessToken.getExpiresAt() == null
@@ -137,11 +145,6 @@ public class AuthTokenManager {
 
   private static boolean isAccessTokenStillValid(Instant accessTokenExpiresAt) {
     return accessTokenExpiresAt.isAfter(Instant.now().plus(REFRESH_TOKEN_EXPIRATION_IN_MINUTES, MINUTES));
-  }
-
-  private String extractUserIdFromCookie(HttpServletRequest request) {
-    var cookie = WebUtils.getCookie(request, "userId");
-    return cookie != null ? cookie.getValue() : null;
   }
 
 }

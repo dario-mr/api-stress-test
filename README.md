@@ -12,6 +12,9 @@ User-friendly app to perform stress test of your APIs.
 - `OAUTH_CLIENT_ID`: OAuth client ID (default: `null`)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret (default: `null`)
 - `DEV_REFRESH_TOKEN`: google refresh token, optional, only for `dev` profile (default: `null`)
+- `ENCRYPTION_KEY`: secret key to encrypt/decrypt sensitive data, e.g. cookies (default: `null`)
+    - format: base64 AES-256 key
+    - how to generate: `openssl rand -base64 32`
 
 ## Run production build locally
 
