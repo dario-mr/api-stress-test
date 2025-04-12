@@ -87,6 +87,10 @@ INSERT INTO my_schema.ast_env_variables (ast_environment_id, variable_key, varia
 VALUES (3, 'var1', 'QA value 1', '2025-03-02 12:00:00'),
        (3, 'var2', 'QA value 2', '2025-03-02 13:00:00');
 
+-- Insert oauth token
+INSERT INTO my_schema.oauth_token (user_id, refresh_token, last_updated, expires_at)
+VALUES ('111235512772934408325', 'fake_token', '2025-04-11 12:21:16', '2025-04-11 13:21:16');
+
 -- Adjust the auto-increment value to avoid PK constraint violation
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;
