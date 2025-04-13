@@ -5,7 +5,7 @@ import static com.dario.ast.core.domain.AppCookie.USER_ID;
 import com.dario.ast.core.domain.OAuthToken;
 import com.dario.ast.core.service.oauth.AuthTokenStorageService;
 import com.dario.ast.core.service.security.CookieService;
-import com.dario.ast.proxy.google.GoogleTokenRefreshService;
+import com.dario.ast.proxy.google.GoogleTokenProxy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -30,7 +30,7 @@ public class DatabaseTokenRefresher implements TokenRefreshStrategy {
   private final AuthTokenStorageService authTokenStorageService;
   private final CookieService cookieService;
   private final ClientRegistrationRepository clientRegistrationRepository;
-  private final GoogleTokenRefreshService googleTokenRefreshService;
+  private final GoogleTokenProxy googleTokenProxy;
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
@@ -52,13 +52,13 @@ public class DatabaseTokenRefresher implements TokenRefreshStrategy {
     }
 
     var clientRegistration = clientRegistrationRepository.findByRegistrationId("google");
-    var refreshedAccessToken = googleTokenRefreshService.getRefreshedAccessToken(storedRefreshToken);
+    var refreshedAccessToken = googleTokenProxy.getRefreshedAccessToken(storedRefreshToken);
 
     authTokenStorageService.save(userId,
         refreshedAccessToken.getRefreshToken().getTokenValue(),
         refreshedAccessToken.getAccessToken().getExpiresAt());
 
-    var userInfo = googleTokenRefreshService.fetchUserInfo(refreshedAccessToken.getAccessToken().getTokenValue());
+    var userInfo = googleTokenProxy.fetchUserInfo(refreshedAccessToken.getAccessToken().getTokenValue());
     var oAuth2User = new DefaultOAuth2User(List.of(new SimpleGrantedAuthority("ROLE_USER")), userInfo, "sub");
     var newAuthToken = new OAuth2AuthenticationToken(oAuth2User, oAuth2User.getAuthorities(), "google");
 

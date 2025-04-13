@@ -21,7 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleTokenRefreshService {
+public class GoogleTokenProxy {
 
   private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static final String USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";

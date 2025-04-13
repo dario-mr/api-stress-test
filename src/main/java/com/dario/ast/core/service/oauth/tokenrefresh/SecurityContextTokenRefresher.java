@@ -4,7 +4,7 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 import com.dario.ast.core.service.oauth.AuthTokenStorageService;
-import com.dario.ast.proxy.google.GoogleTokenRefreshService;
+import com.dario.ast.proxy.google.GoogleTokenProxy;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -25,7 +25,7 @@ public class SecurityContextTokenRefresher implements TokenRefreshStrategy {
 
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final AuthTokenStorageService authTokenStorageService;
-  private final GoogleTokenRefreshService googleTokenRefreshService;
+  private final GoogleTokenProxy googleTokenProxy;
 
   @Override
   public void refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -49,7 +49,7 @@ public class SecurityContextTokenRefresher implements TokenRefreshStrategy {
     }
 
     var refreshTokenValue = storedAuthTokenOptional.get().refreshToken();
-    var refreshedAccessToken = googleTokenRefreshService.getRefreshedAccessToken(refreshTokenValue);
+    var refreshedAccessToken = googleTokenProxy.getRefreshedAccessToken(refreshTokenValue);
 
     authTokenStorageService.save(userId,
         refreshedAccessToken.getRefreshToken().getTokenValue(),
