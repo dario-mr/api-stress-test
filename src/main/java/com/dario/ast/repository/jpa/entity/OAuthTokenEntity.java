@@ -21,14 +21,13 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OAuthTokenEntity {
-  // TODO encryption?
 
   @Id
   @Column(name = "user_id")
   private String userId; // google sub
 
   @Column(name = "refresh_token")
-  private String refreshToken;
+  private String refreshToken; // encrypted
 
   @Column(name = "expires_at")
   private Instant expiresAt;

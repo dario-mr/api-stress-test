@@ -3,9 +3,8 @@ package com.dario.ast.core.service.oauth;
 import static com.dario.ast.core.domain.AppCookie.USER_ID;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
+import com.dario.ast.core.domain.OAuthToken;
 import com.dario.ast.core.service.security.CookieService;
-import com.dario.ast.repository.OAuthTokenRepository;
-import com.dario.ast.repository.jpa.entity.OAuthTokenEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -36,7 +35,7 @@ public class AuthTokenManager {
 
   private final GoogleTokenRefreshService tokenRefreshService;
   private final OAuth2AuthorizedClientService authorizedClientService;
-  private final OAuthTokenRepository oauthTokenRepository;
+  private final AuthTokenService authTokenService;
   private final ClientRegistrationRepository clientRegistrationRepository;
   private final CookieService cookieService;
 
@@ -58,8 +57,8 @@ public class AuthTokenManager {
       return;
     }
 
-    var refreshToken = oauthTokenRepository.findByUserId(userId)
-        .map(OAuthTokenEntity::getRefreshToken)
+    var refreshToken = authTokenService.findByUserId(userId)
+        .map(OAuthToken::refreshToken)
         .orElse(null);
 
     if (refreshToken == null) {
@@ -69,7 +68,7 @@ public class AuthTokenManager {
 
     var clientRegistration = clientRegistrationRepository.findByRegistrationId("google");
     var refreshedToken = tokenRefreshService.getRefreshedAccessToken(refreshToken);
-    oauthTokenRepository.save(
+    authTokenService.save(
         userId,
         refreshedToken.getRefreshToken().getTokenValue(),
         refreshedToken.getAccessToken().getExpiresAt());
@@ -118,16 +117,16 @@ public class AuthTokenManager {
       return;
     }
 
-    var authTokenOptional = oauthTokenRepository.findByUserId(userId);
+    var authTokenOptional = authTokenService.findByUserId(userId);
     if (authTokenOptional.isEmpty()) {
       log.info("Empty auth token in DB for user {}", userId);
       return;
     }
 
-    var refreshTokenValue = authTokenOptional.get().getRefreshToken();
+    var refreshTokenValue = authTokenOptional.get().refreshToken();
     var refreshedTokenResponse = tokenRefreshService.getRefreshedAccessToken(refreshTokenValue);
 
-    oauthTokenRepository.save(
+    authTokenService.save(
         userId,
         refreshedTokenResponse.getRefreshToken().getTokenValue(),
         refreshedTokenResponse.getAccessToken().getExpiresAt());

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AppCookie {
 
-  USER_ID("userId");
+  USER_ID("userId"); // encrypted
 
   private final String name;
 }

@@ -13,6 +13,24 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service responsible for encrypting and decrypting sensitive string values using AES encryption with GCM
+ * (Galois/Counter Mode).
+ * <p>
+ * The encryption key is expected to be a 256-bit AES key provided securely via an environment variable,
+ * base64-encoded.
+ * <p>
+ * This service is useful for securing data such as tokens or identifiers stored in cookies or transient storage.
+ * <p>
+ * Notes:
+ * <ul>
+ *   <li>Uses AES/GCM/NoPadding for authenticated encryption.</li>
+ *   <li>Each encryption call generates a new random IV (12 bytes), which is
+ *       prepended to the ciphertext.</li>
+ *   <li>IV and ciphertext are Base64-encoded together into a single string
+ *       for storage or transport.</li>
+ * </ul>
+ */
 @Service
 public class EncryptionService {
 

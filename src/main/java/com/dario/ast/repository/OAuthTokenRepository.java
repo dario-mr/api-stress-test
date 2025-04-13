@@ -1,5 +1,6 @@
 package com.dario.ast.repository;
 
+import com.dario.ast.core.domain.OAuthToken;
 import com.dario.ast.repository.jpa.OAuthTokenJpaRepository;
 import com.dario.ast.repository.jpa.entity.OAuthTokenEntity;
 import java.time.Instant;
@@ -24,8 +25,18 @@ public class OAuthTokenRepository {
     jpaRepository.save(entity);
   }
 
-  public Optional<OAuthTokenEntity> findByUserId(String userId) {
-    return jpaRepository.findById(userId);
+  public Optional<OAuthToken> findByUserId(String userId) {
+    return jpaRepository.findById(userId)
+        .map(this::mapToDomain);
+  }
+
+  private OAuthToken mapToDomain(OAuthTokenEntity entity) {
+    return new OAuthToken(
+        entity.getUserId(),
+        entity.getRefreshToken(),
+        entity.getExpiresAt(),
+        entity.getLastUpdated()
+    );
   }
 
 }
