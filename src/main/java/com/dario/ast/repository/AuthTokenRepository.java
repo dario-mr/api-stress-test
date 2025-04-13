@@ -1,7 +1,7 @@
 package com.dario.ast.repository;
 
 import com.dario.ast.core.domain.OAuthToken;
-import com.dario.ast.repository.jpa.OAuthTokenJpaRepository;
+import com.dario.ast.repository.jpa.AuthTokenJpaRepository;
 import com.dario.ast.repository.jpa.entity.OAuthTokenEntity;
 import java.time.Instant;
 import java.util.Optional;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class OAuthTokenRepository {
+public class AuthTokenRepository {
 
-  private final OAuthTokenJpaRepository jpaRepository;
+  private final AuthTokenJpaRepository jpaRepository;
 
   public void save(String userId, String refreshToken, Instant expiresAt) {
     var entity = OAuthTokenEntity.builder()

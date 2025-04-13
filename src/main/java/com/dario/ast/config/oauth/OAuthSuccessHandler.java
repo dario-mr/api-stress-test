@@ -2,7 +2,7 @@ package com.dario.ast.config.oauth;
 
 import static com.dario.ast.core.domain.AppCookie.USER_ID;
 
-import com.dario.ast.core.service.oauth.AuthTokenService;
+import com.dario.ast.core.service.oauth.AuthTokenStorageService;
 import com.dario.ast.core.service.security.CookieService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
   private final OAuth2AuthorizedClientService authorizedClientService;
-  private final AuthTokenService authTokenService;
+  private final AuthTokenStorageService authTokenStorageService;
   private final CookieService cookieService;
 
   @Override
@@ -49,7 +49,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     var refreshToken = client.getRefreshToken();
     if (refreshToken != null) {
-      authTokenService.save(userId, refreshToken.getTokenValue(), client.getAccessToken().getExpiresAt());
+      authTokenStorageService.save(userId, refreshToken.getTokenValue(), client.getAccessToken().getExpiresAt());
     }
 
     response.sendRedirect(request.getContextPath() + "/");

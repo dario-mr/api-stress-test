@@ -1,6 +1,6 @@
 package com.dario.ast.config.oauth;
 
-import com.dario.ast.core.service.oauth.AuthTokenService;
+import com.dario.ast.core.service.oauth.AuthTokenStorageService;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +20,11 @@ public class RefreshTokenStartupLoader {
   @Value("${oauth.google.dev-refresh-token}")
   private String devRefreshToken;
 
-  private final AuthTokenService authTokenService;
+  private final AuthTokenStorageService authTokenStorageService;
 
   @PostConstruct
   public void loadRefreshTokenIntoH2() {
-    authTokenService.save("111235512772934408325", devRefreshToken, Instant.now());
+    authTokenStorageService.save("111235512772934408325", devRefreshToken, Instant.now());
   }
 
 }

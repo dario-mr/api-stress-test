@@ -1,11 +1,13 @@
 package com.dario.ast.core.service;
 
+import static com.dario.ast.core.domain.AppCookie.USER_ID;
+
 import com.dario.ast.core.domain.OAuthUser;
+import com.dario.ast.core.service.security.CookieService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +24,12 @@ public class UserSessionService implements Serializable {
 
   private static final String LOGOUT_SUCCESS_URL = "/";
 
+  private final CookieService cookieService;
+
   public OAuthUser getUser() {
     var auth = SecurityContextHolder.getContext().getAuthentication();
     if (!(auth instanceof OAuth2AuthenticationToken authToken)) {
-      throw new IllegalStateException("OAuth2 authentication not found in the session");
+      throw new IllegalStateException("OAuth2 authentication not found in the security context");
     }
 
     var principal = authToken.getPrincipal();
@@ -51,18 +55,11 @@ public class UserSessionService implements Serializable {
 
     // delete userId cookie
     var response = (HttpServletResponse) VaadinResponse.getCurrent();
-    deleteCookie(response, "userId");
+    cookieService.deleteCookie(USER_ID, response);
 
     // perform Spring Security logout
     var request = VaadinServletRequest.getCurrent().getHttpServletRequest();
     new SecurityContextLogoutHandler().logout(request, null, null);
-  }
-
-  private void deleteCookie(HttpServletResponse response, String cookieName) {
-    Cookie cookie = new Cookie(cookieName, null);
-    cookie.setMaxAge(0);
-    cookie.setPath("/");
-    response.addCookie(cookie);
   }
 
 }

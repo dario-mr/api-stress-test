@@ -37,4 +37,11 @@ public class CookieService {
     return encryptionService.decrypt(encryptedValue.getValue());
   }
 
+  public void deleteCookie(AppCookie appCookie, HttpServletResponse response) {
+    var cookie = new Cookie(appCookie.getName(), null);
+    cookie.setMaxAge(0);
+    cookie.setPath("/");
+    response.addCookie(cookie);
+  }
+
 }

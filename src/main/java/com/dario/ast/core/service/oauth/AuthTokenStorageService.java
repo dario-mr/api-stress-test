@@ -2,7 +2,7 @@ package com.dario.ast.core.service.oauth;
 
 import com.dario.ast.core.domain.OAuthToken;
 import com.dario.ast.core.service.security.EncryptionService;
-import com.dario.ast.repository.OAuthTokenRepository;
+import com.dario.ast.repository.AuthTokenRepository;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -10,18 +10,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AuthTokenService {
+public class AuthTokenStorageService {
 
-  private final OAuthTokenRepository oAuthTokenRepository;
+  private final AuthTokenRepository authTokenRepository;
   private final EncryptionService encryptionService;
 
   public void save(String userId, String refreshToken, Instant expiresAt) {
     var encryptedRefreshToken = encryptionService.encrypt(refreshToken);
-    oAuthTokenRepository.save(userId, encryptedRefreshToken, expiresAt);
+    authTokenRepository.save(userId, encryptedRefreshToken, expiresAt);
   }
 
   public Optional<OAuthToken> findByUserId(String userId) {
-    return oAuthTokenRepository.findByUserId(userId)
+    return authTokenRepository.findByUserId(userId)
         .map(oauthToken -> new OAuthToken(
             oauthToken.userId(),
             encryptionService.decrypt(oauthToken.refreshToken()),

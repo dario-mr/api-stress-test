@@ -16,7 +16,7 @@ import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestValidationService;
 import com.dario.ast.core.service.StressTestService;
-import com.dario.ast.proxy.ApiResponse;
+import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
 import com.fasterxml.jackson.databind.ObjectMapper;
