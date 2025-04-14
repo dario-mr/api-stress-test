@@ -78,5 +78,6 @@ CREATE TABLE my_schema.oauth_token
     user_id       TEXT PRIMARY KEY,
     refresh_token TEXT,
     expires_at    TIMESTAMPTZ,
-    last_updated  TIMESTAMPTZ
+    last_updated  TIMESTAMPTZ,
+    provider      VARCHAR(255) NOT NULL
 );

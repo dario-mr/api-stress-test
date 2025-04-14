@@ -4,7 +4,7 @@ import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 import com.dario.ast.core.service.oauth.AuthTokenStorageService;
-import com.dario.ast.proxy.google.GoogleTokenProxy;
+import com.dario.ast.core.service.oauth.provider.OAuthProviderRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -19,13 +19,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SecurityContextTokenRefresher implements TokenRefreshStrategy {
+public class SecurityContextTokenRefresher implements TokenRefresher {
 
   private static final int REFRESH_TOKEN_EXPIRATION_IN_MINUTES = 5;
 
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final AuthTokenStorageService authTokenStorageService;
-  private final GoogleTokenProxy googleTokenProxy;
+  private final OAuthProviderRegistry oauthProviderRegistry;
 
   @Override
   public void refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -48,11 +48,22 @@ public class SecurityContextTokenRefresher implements TokenRefreshStrategy {
       return;
     }
 
-    var refreshTokenValue = storedAuthTokenOptional.get().refreshToken();
-    var refreshedAccessToken = googleTokenProxy.getRefreshedAccessToken(refreshTokenValue);
+    var oAuthToken = storedAuthTokenOptional.get();
+    var refreshTokenValue = oAuthToken.refreshToken();
 
-    authTokenStorageService.save(userId,
+    if (refreshTokenValue == null) {
+      log.warn("Refresh token is null for user {}, skipping token refresh", userId);
+      return;
+    }
+
+    var provider = oAuthToken.provider();
+    var oauthProvider = oauthProviderRegistry.get(provider);
+    var refreshedAccessToken = oauthProvider.refreshAccessToken(refreshTokenValue);
+
+    authTokenStorageService.save(
+        userId,
         refreshedAccessToken.getRefreshToken().getTokenValue(),
+        provider,
         refreshedAccessToken.getAccessToken().getExpiresAt());
 
     var updatedClient = new OAuth2AuthorizedClient(
@@ -62,7 +73,12 @@ public class SecurityContextTokenRefresher implements TokenRefreshStrategy {
         refreshedAccessToken.getRefreshToken());
 
     authorizedClientService.saveAuthorizedClient(updatedClient, authToken);
-    log.debug("Refreshed token via security context");
+
+    var newPrincipal = oauthProvider.getUserPrincipal(refreshedAccessToken.getAccessToken().getTokenValue());
+    var securityContext = SecurityContextHolder.getContext();
+    securityContext.setAuthentication(newPrincipal);
+
+    log.debug("Refreshed token via security context for user {} (provider {})", userId, provider);
   }
 
   private static boolean isAccessTokenStillValid(Instant accessTokenExpiresAt) {

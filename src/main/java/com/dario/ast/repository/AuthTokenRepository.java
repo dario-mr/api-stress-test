@@ -14,10 +14,11 @@ public class AuthTokenRepository {
 
   private final AuthTokenJpaRepository jpaRepository;
 
-  public void save(String userId, String refreshToken, Instant expiresAt) {
+  public void save(String userId, String refreshToken, String provider, Instant expiresAt) {
     var entity = OAuthTokenEntity.builder()
         .userId(userId)
         .refreshToken(refreshToken)
+        .provider(provider)
         .expiresAt(expiresAt)
         .lastUpdated(Instant.now())
         .build();
@@ -35,7 +36,8 @@ public class AuthTokenRepository {
         entity.getUserId(),
         entity.getRefreshToken(),
         entity.getExpiresAt(),
-        entity.getLastUpdated()
+        entity.getLastUpdated(),
+        entity.getProvider()
     );
   }
 

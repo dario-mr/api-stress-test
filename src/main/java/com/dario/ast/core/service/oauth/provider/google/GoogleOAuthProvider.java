@@ -1,10 +1,12 @@
-package com.dario.ast.proxy.google;
+package com.dario.ast.core.service.oauth.provider.google;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType.BEARER;
 
 import com.dario.ast.core.exception.OAuthTokenRefreshException;
-import com.dario.ast.proxy.google.dto.GoogleTokenResponse;
+import com.dario.ast.core.service.oauth.provider.OAuthProvider;
+import com.dario.ast.core.service.oauth.provider.google.dto.GoogleTokenResponse;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -21,7 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleTokenProxy {
+public class GoogleOAuthProvider implements OAuthProvider {
 
   private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
   private static final String USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
@@ -34,7 +39,13 @@ public class GoogleTokenProxy {
 
   private final RestTemplate restTemplate;
 
-  public OAuth2AccessTokenResponse getRefreshedAccessToken(String refreshToken) {
+  @Override
+  public String getRegistrationId() {
+    return "google";
+  }
+
+  @Override
+  public OAuth2AccessTokenResponse refreshAccessToken(String refreshToken) {
     var request = buildTokenRequest(refreshToken);
     var response = restTemplate.postForEntity(TOKEN_URL, request, GoogleTokenResponse.class);
 
@@ -45,6 +56,7 @@ public class GoogleTokenProxy {
     return toOAuth2AccessTokenResponse(response.getBody(), refreshToken);
   }
 
+  @Override
   public Map<String, Object> fetchUserInfo(String accessToken) {
     var headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
@@ -73,6 +85,17 @@ public class GoogleTokenProxy {
     body.add("client_secret", clientSecret);
 
     return new HttpEntity<>(body, headers);
+  }
+
+  @Override
+  public OAuth2AuthenticationToken getUserPrincipal(String accessToken) {
+    var userInfo = fetchUserInfo(accessToken);
+    var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+
+    // Google uses "sub" as the unique ID claim
+    var user = new DefaultOAuth2User(authorities, userInfo, "sub");
+
+    return new OAuth2AuthenticationToken(user, authorities, getRegistrationId());
   }
 
   private OAuth2AccessTokenResponse toOAuth2AccessTokenResponse(GoogleTokenResponse response, String oldRefreshToken) {

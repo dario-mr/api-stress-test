@@ -2,6 +2,7 @@ package com.dario.ast.config.oauth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
  * <p>Only modifies the request when resolving without an explicit client registration ID;
  * otherwise delegates to the default behavior.
  */
+@Slf4j
 @Component
 public class OAuthRequestResolver implements OAuth2AuthorizationRequestResolver {
 
@@ -40,23 +42,35 @@ public class OAuthRequestResolver implements OAuth2AuthorizationRequestResolver 
   @Override
   public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
     var authRequest = defaultResolver.resolve(request);
-    if (authRequest == null) {
-      return null;
-    }
-
-    // asking Google OAuth2 to provide offline access, to generate a refresh_token
-    var additionalParams = new HashMap<>(authRequest.getAdditionalParameters());
-    additionalParams.put("prompt", "consent");
-    additionalParams.put("access_type", "offline");
-
-    return OAuth2AuthorizationRequest.from(authRequest)
-        .additionalParameters(additionalParams)
-        .build();
+    return customizeIfNeeded(authRequest);
   }
 
   @Override
   public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-    return defaultResolver.resolve(request, clientRegistrationId); // fallback to default behavior
+    var authRequest = defaultResolver.resolve(request, clientRegistrationId);
+    return customizeIfNeeded(authRequest);
+  }
+
+  private OAuth2AuthorizationRequest customizeIfNeeded(OAuth2AuthorizationRequest authRequest) {
+    if (authRequest == null) {
+      return null;
+    }
+
+    var registrationId = (String) authRequest.getAttribute("registration_id");
+    if ("google".equals(registrationId)) {
+      log.debug("Applying additional parameters for Google OAuth request");
+
+      var additionalParams = new HashMap<>(authRequest.getAdditionalParameters());
+      additionalParams.put("prompt", "consent");
+      additionalParams.put("access_type", "offline");
+
+      return OAuth2AuthorizationRequest.from(authRequest)
+          .additionalParameters(additionalParams)
+          .build();
+    }
+    
+    log.debug("No additional parameters applied for provider: {}", registrationId);
+    return authRequest; // leave other providers untouched
   }
 
 }

@@ -15,9 +15,9 @@ public class AuthTokenStorageService {
   private final AuthTokenRepository authTokenRepository;
   private final EncryptionService encryptionService;
 
-  public void save(String userId, String refreshToken, Instant expiresAt) {
+  public void save(String userId, String refreshToken, String provider, Instant expiresAt) {
     var encryptedRefreshToken = encryptionService.encrypt(refreshToken);
-    authTokenRepository.save(userId, encryptedRefreshToken, expiresAt);
+    authTokenRepository.save(userId, encryptedRefreshToken, provider, expiresAt);
   }
 
   public Optional<OAuthToken> findByUserId(String userId) {
@@ -26,7 +26,8 @@ public class AuthTokenStorageService {
             oauthToken.userId(),
             encryptionService.decrypt(oauthToken.refreshToken()),
             oauthToken.expiresAt(),
-            oauthToken.lastUpdated()
+            oauthToken.lastUpdated(),
+            oauthToken.provider()
         ));
   }
 

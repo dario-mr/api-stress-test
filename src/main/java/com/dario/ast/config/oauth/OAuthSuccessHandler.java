@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -27,9 +28,9 @@ import org.springframework.stereotype.Component;
  *
  * <p>Designed to support OAuth2 flows where long-term access is required using refresh tokens.
  *
- * <p>This implementation assumes the use of Google as the OAuth2 provider and that the user ID
- * is used as the lookup key for storing associated tokens.
+ * <p>This implementation assumes that the user ID is used as the lookup key for storing associated tokens.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
@@ -43,13 +44,21 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication) throws IOException {
     var oauthToken = (OAuth2AuthenticationToken) authentication;
     var userId = oauthToken.getName();
+    var provider = oauthToken.getAuthorizedClientRegistrationId();
+    log.debug("Authentication successful for user [{}], provider [{}]", userId, provider);
+
     cookieService.encryptAndSaveCookie(USER_ID, userId, response);
 
-    var client = authorizedClientService.loadAuthorizedClient(oauthToken.getAuthorizedClientRegistrationId(), userId);
+    var client = authorizedClientService.loadAuthorizedClient(provider, userId);
 
     var refreshToken = client.getRefreshToken();
     if (refreshToken != null) {
-      authTokenStorageService.save(userId, refreshToken.getTokenValue(), client.getAccessToken().getExpiresAt());
+      authTokenStorageService.save(userId, refreshToken.getTokenValue(), provider,
+          client.getAccessToken().getExpiresAt());
+      log.debug("Stored refresh token in DB for user [{}], access token expires at {}", userId,
+          client.getAccessToken().getExpiresAt());
+    } else {
+      log.warn("No refresh token received for user [{}] (provider [{}])", userId, provider);
     }
 
     response.sendRedirect(request.getContextPath() + "/");

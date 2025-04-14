@@ -6,7 +6,8 @@ public record OAuthToken(
     String userId,
     String refreshToken,
     Instant expiresAt,
-    Instant lastUpdated
+    Instant lastUpdated,
+    String provider
 ) {
 
 }

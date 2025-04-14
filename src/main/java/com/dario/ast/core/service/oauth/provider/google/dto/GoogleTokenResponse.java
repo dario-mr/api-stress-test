@@ -1,4 +1,4 @@
-package com.dario.ast.proxy.google.dto;
+package com.dario.ast.core.service.oauth.provider.google.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

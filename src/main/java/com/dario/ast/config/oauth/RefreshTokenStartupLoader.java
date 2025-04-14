@@ -24,7 +24,7 @@ public class RefreshTokenStartupLoader {
 
   @PostConstruct
   public void loadRefreshTokenIntoH2() {
-    authTokenStorageService.save("111235512772934408325", devRefreshToken, Instant.now());
+    authTokenStorageService.save("111235512772934408325", devRefreshToken, "google", Instant.now());
   }
 
 }

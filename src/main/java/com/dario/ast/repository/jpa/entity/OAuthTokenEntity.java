@@ -24,13 +24,16 @@ public class OAuthTokenEntity {
 
   @Id
   @Column(name = "user_id")
-  private String userId; // google sub
+  private String userId; // e.g. google sub
 
   @Column(name = "refresh_token")
   private String refreshToken; // encrypted
 
+  @Column(name = "provider")
+  private String provider; // e.g. "google", "github", "apple"
+
   @Column(name = "expires_at")
-  private Instant expiresAt;
+  private Instant expiresAt; // access token expiration (not refresh token!)
 
   @Column(name = "last_updated")
   private Instant lastUpdated;

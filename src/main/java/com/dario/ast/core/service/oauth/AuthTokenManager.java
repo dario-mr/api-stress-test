@@ -1,6 +1,6 @@
 package com.dario.ast.core.service.oauth;
 
-import com.dario.ast.core.service.oauth.tokenrefresh.TokenRefreshStrategy;
+import com.dario.ast.core.service.oauth.tokenrefresh.TokenRefresher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +13,8 @@ import org.springframework.web.context.annotation.SessionScope;
 @RequiredArgsConstructor
 public class AuthTokenManager {
 
-  private final TokenRefreshStrategy securityContextTokenRefresher;
-  private final TokenRefreshStrategy databaseTokenRefresher;
+  private final TokenRefresher securityContextTokenRefresher;
+  private final TokenRefresher databaseTokenRefresher;
 
   public void refreshTokenIfExpired(HttpServletRequest request, HttpServletResponse response) {
     var auth = SecurityContextHolder.getContext().getAuthentication();
