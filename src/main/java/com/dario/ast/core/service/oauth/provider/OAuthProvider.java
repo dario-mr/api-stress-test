@@ -3,6 +3,7 @@ package com.dario.ast.core.service.oauth.provider;
 import java.util.Map;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
 public interface OAuthProvider {
 
@@ -13,5 +14,9 @@ public interface OAuthProvider {
   Map<String, Object> fetchUserInfo(String accessToken);
 
   OAuth2AuthenticationToken getUserPrincipal(String accessToken);
+
+  default OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest request) {
+    return request;
+  }
 
 }

@@ -17,4 +17,11 @@ public class OAuthProviderRegistry {
         .orElseThrow(() -> new IllegalArgumentException("No provider for: " + registrationId));
   }
 
+  public OAuthProvider getOrNull(String registrationId) {
+    return providers.stream()
+        .filter(p -> p.getRegistrationId().equals(registrationId))
+        .findFirst()
+        .orElse(null);
+  }
+
 }

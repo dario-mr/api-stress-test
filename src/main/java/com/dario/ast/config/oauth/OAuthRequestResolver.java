@@ -1,7 +1,7 @@
 package com.dario.ast.config.oauth;
 
+import com.dario.ast.core.service.oauth.provider.OAuthProviderRegistry;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -33,10 +33,15 @@ import org.springframework.stereotype.Component;
 public class OAuthRequestResolver implements OAuth2AuthorizationRequestResolver {
 
   private final DefaultOAuth2AuthorizationRequestResolver defaultResolver;
+  private final OAuthProviderRegistry oauthProviderRegistry;
 
-  public OAuthRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+  public OAuthRequestResolver(
+      ClientRegistrationRepository clientRegistrationRepository,
+      OAuthProviderRegistry oauthProviderRegistry
+  ) {
     this.defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
         clientRegistrationRepository, "/oauth2/authorization");
+    this.oauthProviderRegistry = oauthProviderRegistry;
   }
 
   @Override
@@ -57,20 +62,19 @@ public class OAuthRequestResolver implements OAuth2AuthorizationRequestResolver 
     }
 
     var registrationId = (String) authRequest.getAttribute("registration_id");
-    if ("google".equals(registrationId)) {
-      log.debug("Applying additional parameters for Google OAuth request");
-
-      var additionalParams = new HashMap<>(authRequest.getAdditionalParameters());
-      additionalParams.put("prompt", "consent");
-      additionalParams.put("access_type", "offline");
-
-      return OAuth2AuthorizationRequest.from(authRequest)
-          .additionalParameters(additionalParams)
-          .build();
+    if (registrationId == null) {
+      log.warn("Authorization request missing registration_id attribute");
+      return authRequest;
     }
-    
-    log.debug("No additional parameters applied for provider: {}", registrationId);
-    return authRequest; // leave other providers untouched
+
+    var oauthProvider = oauthProviderRegistry.getOrNull(registrationId);
+    if (oauthProvider != null) {
+      log.debug("Applying additional parameters for provider [{}]", registrationId);
+      return oauthProvider.customizeAuthorizationRequest(authRequest);
+    }
+
+    log.debug("No additional parameters applied for provider [{}]", registrationId);
+    return authRequest;
   }
 
 }

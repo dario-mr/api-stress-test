@@ -55,7 +55,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
     if (refreshToken != null) {
       authTokenStorageService.save(userId, refreshToken.getTokenValue(), provider,
           client.getAccessToken().getExpiresAt());
-      log.debug("Stored refresh token in DB for user [{}], access token expires at {}", userId,
+      log.debug("Refresh token stored in DB for user [{}], access token expires at {}", userId,
           client.getAccessToken().getExpiresAt());
     } else {
       log.warn("No refresh token received for user [{}] (provider [{}])", userId, provider);

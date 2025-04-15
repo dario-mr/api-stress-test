@@ -6,6 +6,7 @@ import static org.springframework.security.oauth2.core.OAuth2AccessToken.TokenTy
 import com.dario.ast.core.exception.OAuthTokenRefreshException;
 import com.dario.ast.core.service.oauth.provider.OAuthProvider;
 import com.dario.ast.core.service.oauth.provider.google.dto.GoogleTokenResponse;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -74,6 +76,29 @@ public class GoogleOAuthProvider implements OAuthProvider {
     return response.getBody();
   }
 
+  @Override
+  public OAuth2AuthenticationToken getUserPrincipal(String accessToken) {
+    var userInfo = fetchUserInfo(accessToken);
+    var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+
+    // Google uses "sub" as the unique ID claim
+    var user = new DefaultOAuth2User(authorities, userInfo, "sub");
+
+    return new OAuth2AuthenticationToken(user, authorities, getRegistrationId());
+  }
+
+  @Override
+  public OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest request) {
+    // parameters required to make google generate a refresh token
+    var additionalParams = new HashMap<>(request.getAdditionalParameters());
+    additionalParams.put("prompt", "consent");
+    additionalParams.put("access_type", "offline");
+
+    return OAuth2AuthorizationRequest.from(request)
+        .additionalParameters(additionalParams)
+        .build();
+  }
+
   private HttpEntity<MultiValueMap<String, String>> buildTokenRequest(String refreshToken) {
     var headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -85,17 +110,6 @@ public class GoogleOAuthProvider implements OAuthProvider {
     body.add("client_secret", clientSecret);
 
     return new HttpEntity<>(body, headers);
-  }
-
-  @Override
-  public OAuth2AuthenticationToken getUserPrincipal(String accessToken) {
-    var userInfo = fetchUserInfo(accessToken);
-    var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-
-    // Google uses "sub" as the unique ID claim
-    var user = new DefaultOAuth2User(authorities, userInfo, "sub");
-
-    return new OAuth2AuthenticationToken(user, authorities, getRegistrationId());
   }
 
   private OAuth2AccessTokenResponse toOAuth2AccessTokenResponse(GoogleTokenResponse response, String oldRefreshToken) {
