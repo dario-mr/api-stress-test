@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 @CssImport(value = "./styles/login-layout.css")
 public class LoginView extends VerticalLayout {
 
-  public LoginView(@Value("${oath.url}") String oauthUrl) {
+  public LoginView(@Value("${oath.google.url}") String googleOAuthUrl) {
     setAlignItems(Alignment.CENTER);
 
     // dynamically get the context path
@@ -36,7 +36,7 @@ public class LoginView extends VerticalLayout {
     var loginButton = new Button(buttonContent);
     loginButton.addClassNames("google-login-button");
     loginButton.addClickListener(e -> getUI().ifPresent(ui ->
-        ui.getPage().executeJs("window.location.href = $0;", contextPath + oauthUrl)));
+        ui.getPage().executeJs("window.location.href = $0;", contextPath + googleOAuthUrl)));
 
     add(
         new Headline(),

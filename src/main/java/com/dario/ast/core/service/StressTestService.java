@@ -4,8 +4,8 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.proxy.ApiProxy;
-import com.dario.ast.proxy.ApiResponse;
+import com.dario.ast.proxy.api.ApiProxy;
+import com.dario.ast.proxy.api.dto.ApiResponse;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
