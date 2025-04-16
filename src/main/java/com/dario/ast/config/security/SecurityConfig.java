@@ -1,12 +1,15 @@
 package com.dario.ast.config.security;
 
+import com.dario.ast.config.oauth.OAuthRequestResolver;
+import com.dario.ast.config.oauth.OAuthSuccessHandler;
+import com.dario.ast.config.oauth.OAuthTokenRefreshFilter;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 /**
  * Configures Spring Security using VaadinWebSecurity helper.
@@ -16,7 +19,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  * authenticated user.
  * <p>
  */
-@Profile("!dev")
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends VaadinWebSecurity {
@@ -24,14 +26,26 @@ public class SecurityConfig extends VaadinWebSecurity {
   private static final String LOGIN_URL = "/login";
 
   private final String[] whitelistPatterns;
+  private final OAuthTokenRefreshFilter oauthTokenRefreshFilter;
+  private final OAuthRequestResolver oAuthRequestResolver;
+  private final OAuthSuccessHandler oauthSuccessHandler;
 
-  public SecurityConfig(@Value("${security.whitelist.ant-patterns}") final String whitelistPatterns) {
+  public SecurityConfig(
+      @Value("${security.whitelist.ant-patterns}") final String whitelistPatterns,
+      OAuthTokenRefreshFilter oauthTokenRefreshFilter,
+      OAuthRequestResolver oAuthRequestResolver,
+      OAuthSuccessHandler oauthSuccessHandler
+  ) {
     this.whitelistPatterns = whitelistPatterns.split("\\s*,\\s*");
+    this.oauthTokenRefreshFilter = oauthTokenRefreshFilter;
+    this.oAuthRequestResolver = oAuthRequestResolver;
+    this.oauthSuccessHandler = oauthSuccessHandler;
   }
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
+        .addFilterAfter(oauthTokenRefreshFilter, SecurityContextHolderFilter.class)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(whitelistPatterns).permitAll()
         )
@@ -42,7 +56,11 @@ public class SecurityConfig extends VaadinWebSecurity {
             .ignoringRequestMatchers("/h2-console/**") // disable CSRF for H2 Console
         )
         .oauth2Login(oauth2 -> oauth2
+            .authorizationEndpoint(authorization -> authorization
+                .authorizationRequestResolver(oAuthRequestResolver)
+            )
             .loginPage(LOGIN_URL).permitAll()
+            .successHandler(oauthSuccessHandler)
         );
 
     super.configure(http);

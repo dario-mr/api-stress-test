@@ -3,7 +3,7 @@ package com.dario.ast.core.domain;
 import static com.dario.ast.util.MapUtil.convertToMultiValueMap;
 import static com.dario.ast.util.MapUtil.flatEntryValueMap;
 
-import com.dario.ast.proxy.ApiRequest;
+import com.dario.ast.proxy.api.dto.ApiRequest;
 import com.dario.ast.util.jackson.HttpMethodDeserializer;
 import com.dario.ast.util.jackson.HttpMethodSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

@@ -8,12 +8,15 @@ spring:
   config.import: optional:file:.env[.properties] # enable scanning of .env file
 
 # Google OAuth
-oath.url: /oauth2/authorization/google
+oath.google.url: /oauth2/authorization/google
 spring.security.oauth2.client.registration.google:
   client-id: ${OAUTH_CLIENT_ID}
   client-secret: ${OAUTH_CLIENT_SECRET}
+  scope: openid, profile, email
+  authorization-grant-type: authorization_code
 
 # Security
 security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**
+app.encryption.secret-key: ${ENCRYPTION_KEY}
 
 logging.level.com.dario.ast: DEBUG

@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO folders
-  // TODO refresh user session (remember-me)
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;

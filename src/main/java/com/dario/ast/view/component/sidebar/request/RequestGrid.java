@@ -71,12 +71,18 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams ->
-        dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams()))
+    appState.getConfigParamsStream().subscribe(configParams -> {
+          if (dataProvider != null) {
+            dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams()));
+          }
+        }
     );
 
-    appState.getRunParamsStream().subscribe(runParams ->
-        dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams))
+    appState.getRunParamsStream().subscribe(runParams -> {
+          if (dataProvider != null) {
+            dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams));
+          }
+        }
     );
   }
 

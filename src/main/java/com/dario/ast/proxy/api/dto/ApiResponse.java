@@ -1,4 +1,4 @@
-package com.dario.ast.proxy;
+package com.dario.ast.proxy.api.dto;
 
 import org.springframework.http.HttpStatus;
 

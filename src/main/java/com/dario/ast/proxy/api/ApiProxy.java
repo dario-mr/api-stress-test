@@ -1,7 +1,9 @@
-package com.dario.ast.proxy;
+package com.dario.ast.proxy.api;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
+import com.dario.ast.proxy.api.dto.ApiRequest;
+import com.dario.ast.proxy.api.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
