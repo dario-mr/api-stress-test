@@ -38,7 +38,7 @@ public class CreateRequestButton extends Button {
     var currentUserId = appState.getCurrentUser().getId();
     var configParams = defaultConfigParams(currentUserId);
     var runParams = defaultRunParams();
-    var astRequest = new AstRequest(configParams, runParams);
+    var astRequest = new AstRequest(configParams, runParams, null);
 
     try {
       var astRequestId = astRequestService.create(astRequest);

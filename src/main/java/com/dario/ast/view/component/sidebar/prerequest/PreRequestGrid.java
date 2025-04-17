@@ -1,7 +1,6 @@
 package com.dario.ast.view.component.sidebar.prerequest;
 
 import static com.dario.ast.core.domain.RequestType.PRE_REQUEST;
-import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.EventUtil.applyPreRequest;
 import static com.dario.ast.util.EventUtil.focusPreRequestName;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
@@ -50,13 +49,13 @@ public class PreRequestGrid extends Grid<ConfigParams> {
         .setFlexGrow(1);
 
     // active column
-    addColumn(new ComponentRenderer<>(preRequestParams -> {
-      var checkbox = new Checkbox(preRequestParams.isActive());
+    addColumn(new ComponentRenderer<>(configParams -> {
+      var checkbox = new Checkbox(configParams.isActive());
       checkbox.addClassName("active-column");
       checkbox.addValueChangeListener(event -> {
-        preRequestParams.setActive(event.getValue());
-        astRequestService.update(new AstRequest(preRequestParams, defaultRunParams()));
-        preRequestService.updatePreRequestInAppState(preRequestParams);
+        configParams.setActive(event.getValue());
+        astRequestService.updateConfigParams(configParams);
+        preRequestService.updatePreRequestInAppState(configParams);
       });
       return checkbox;
     }))

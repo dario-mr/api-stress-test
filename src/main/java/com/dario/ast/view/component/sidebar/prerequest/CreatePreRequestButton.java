@@ -38,7 +38,7 @@ public class CreatePreRequestButton extends Button {
     var currentUserId = appState.getCurrentUser().getId();
     var configParams = defaultConfigParams(currentUserId);
     var runParams = defaultRunParams();
-    var preRequest = new AstRequest(configParams, runParams);
+    var preRequest = new AstRequest(configParams, runParams, null);
 
     try {
       var preRequestId = astRequestService.create(preRequest);

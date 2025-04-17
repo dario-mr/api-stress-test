@@ -3,13 +3,11 @@ package com.dario.ast.view.component.prerequest;
 import static com.dario.ast.core.domain.RequestHeader.defaultRequestHeader;
 import static com.dario.ast.core.domain.RequestQueryParam.defaultRequestQueryParam;
 import static com.dario.ast.core.domain.RequestUriVariable.defaultRequestUriVariable;
-import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
@@ -239,16 +237,15 @@ public class PreRequestLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var preRequest = new AstRequest(configParams, defaultRunParams());
 
     try {
-      astRequestService.update(preRequest);
+      astRequestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    prerequestService.updatePreRequestInAppState(preRequest.getConfigParams());
+    prerequestService.updatePreRequestInAppState(configParams);
   }
 
   private ConfigParams getConfigParams() {

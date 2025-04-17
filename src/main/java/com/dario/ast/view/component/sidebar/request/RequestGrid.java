@@ -6,6 +6,7 @@ import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.AstRequest;
+import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.event.AstRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -20,6 +21,7 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -73,14 +75,14 @@ public class RequestGrid extends Grid<AstRequest> {
   private void observeAppState() {
     appState.getConfigParamsStream().subscribe(configParams -> {
           if (dataProvider != null) {
-            dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams()));
+            dataProvider.refreshItem(new AstRequest(configParams, appState.getRunParams(), null)); // todo handle folder
           }
         }
     );
 
     appState.getRunParamsStream().subscribe(runParams -> {
           if (dataProvider != null) {
-            dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams));
+            dataProvider.refreshItem(new AstRequest(appState.getConfigParams(), runParams, null)); // todo handle folder
           }
         }
     );
@@ -99,6 +101,7 @@ public class RequestGrid extends Grid<AstRequest> {
   private void loadRequests() {
     var currentUserId = appState.getCurrentUser().getId();
     var userRequests = getUserRequests(currentUserId);
+    var userRequestsByFolder = getUserRequestsByFolder(currentUserId);
 
     dataProvider = new ListDataProvider<>(userRequests);
     setDataProvider(dataProvider);
@@ -107,6 +110,16 @@ public class RequestGrid extends Grid<AstRequest> {
   private ArrayList<AstRequest> getUserRequests(long currentUserId) {
     try {
       return new ArrayList<>(astRequestService.getByUserIdAndTypeAndStatus(currentUserId, REQUEST, true));
+    } catch (Exception ex) {
+      log.error("Error fetching requests for user [{}]", currentUserId, ex);
+      ErrorNotification.show("Error fetching requests");
+      throw ex;
+    }
+  }
+
+  private Map<Folder, List<AstRequest>> getUserRequestsByFolder(long currentUserId) {
+    try {
+      return astRequestService.getFoldersByUserIdAndTypeAndStatus(currentUserId, REQUEST, true);
     } catch (Exception ex) {
       log.error("Error fetching requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");

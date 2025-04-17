@@ -10,7 +10,6 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
@@ -197,11 +196,10 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void saveParams() {
-    var configParams = appState.getConfigParams();
     var runParams = getRunParams();
 
     try {
-      astRequestService.update(new AstRequest(configParams, runParams));
+      astRequestService.updateRunParams(runParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;

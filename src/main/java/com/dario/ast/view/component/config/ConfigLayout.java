@@ -10,7 +10,6 @@ import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
@@ -248,10 +247,9 @@ public class ConfigLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var runParams = appState.getRunParams();
 
     try {
-      astRequestService.update(new AstRequest(configParams, runParams));
+      astRequestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;

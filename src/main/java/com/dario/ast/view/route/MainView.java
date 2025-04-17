@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO folders
+  // TODO BUG: at every page reload, "Run params [1] loaded into RunLayout" is logged one more time for each reload, same for other state events
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;
