@@ -13,12 +13,14 @@ VALUES (1, 1, 'Request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'http
         '{ "key": "{{bodyValue}}" }', 1, 1, true, 'REQUEST', true, 1),
        (2, 1, 'Request 2', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
         NULL, 50, 5, true, 'REQUEST', true, null),
-       (3, 1, 'Pre-request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.example.com/', 'GET',
+       (3, 1, 'Request 3', '2024-02-24T13:00:00Z', '2024-02-24T13:00:00Z', 'https://example.com/api/test3', 'GET',
+        NULL, 50, 5, true, 'REQUEST', true, 1),
+       (4, 1, 'Pre-request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.example.com/', 'GET',
         '{ "key": "body pre-request 1" }', 1, 1, true, 'PRE_REQUEST', true, null),
-       (4, 1, 'AuthzToken', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z',
+       (5, 1, 'AuthzToken', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z',
         'http://localhost:8099/v1/authz-token?env={{env}}', 'GET', '{ "key": "body AuthzToken" }', 1, 1, true,
         'PRE_REQUEST', true, null),
-       (5, 1, 'Pre-request 3', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
+       (6, 1, 'Pre-request 3', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
         NULL, 1, 1, true, 'PRE_REQUEST', false, null);
 
 -- Insert headers for ast_request 1
@@ -95,7 +97,7 @@ VALUES (3, 'var1', 'QA value 1', '2025-03-02 12:00:00'),
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;
 ALTER TABLE my_schema.ast_request
-    ALTER COLUMN id RESTART WITH 7;
+    ALTER COLUMN id RESTART WITH 8;
 ALTER TABLE my_schema.ast_environment
     ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE my_schema.ast_request_folder

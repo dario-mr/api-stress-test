@@ -115,6 +115,10 @@ public class AstRequestRepository {
     jpaRepository.deleteById(id);
   }
 
+  public void deleteFolder(long folderId) {
+    jpaRepository.deleteRequestEntitiesByFolderId(folderId);
+  }
+
   private RequestEntity mapToEntity(AstRequest astRequest) {
     var configParams = astRequest.getConfigParams();
     var runParams = astRequest.getRunParams();

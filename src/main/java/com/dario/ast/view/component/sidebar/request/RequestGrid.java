@@ -14,12 +14,13 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +28,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UIScope
 @SpringComponent
-public class RequestGrid extends Grid<AstRequest> {
+public class RequestGrid extends TreeGrid<Object> {
 
   private final AstRequestService astRequestService;
   private final AppState appState;
 
-  private ListDataProvider<AstRequest> dataProvider;
+  private TreeDataProvider<Object> dataProvider;
 
   public RequestGrid(AstRequestService astRequestService, AppState appState) {
     this.astRequestService = astRequestService;
@@ -41,7 +42,15 @@ public class RequestGrid extends Grid<AstRequest> {
     addClassName("sidebar-grid");
 
     // name column
-    addColumn(astRequest -> astRequest.getConfigParams().getRequestName())
+    addComponentHierarchyColumn(item -> {
+      if (item instanceof Folder folder) {
+        return new Span(folder.getName());
+      }
+      if (item instanceof AstRequest request) {
+        return new Span(request.getConfigParams().getRequestName());
+      }
+      return new Span("⚠️ Unknown row type [%s]".formatted(item.getClass().getSimpleName()));
+    })
         .setAutoWidth(true)
         .setFlexGrow(1);
 
@@ -50,8 +59,15 @@ public class RequestGrid extends Grid<AstRequest> {
 
     // click listener to load request into UI
     addItemClickListener(event -> {
-      var astRequest = event.getItem();
-      selectItem(astRequest);
+      if (event.getItem() instanceof AstRequest request) {
+        selectItem(request);
+      } else if (event.getItem() instanceof Folder folder) {
+        if (isExpanded(folder)) {
+          collapse(folder);
+        } else {
+          expand(folder);
+        }
+      }
     });
 
     observeAppState();
@@ -65,7 +81,7 @@ public class RequestGrid extends Grid<AstRequest> {
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
-    // Listen for events indicating that a new AST request was created
+    // Listen for events indicating that a new request was created
     ComponentUtil.addListener(attachEvent.getUI(),
         AstRequestCreatedEvent.class,
         event -> addAstRequest(event.getAstRequestId())
@@ -89,8 +105,14 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void addDeleteColumn() {
-    addColumn(new ComponentRenderer<>(astRequest -> {
-      var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(astRequest));
+    addColumn(new ComponentRenderer<>(item -> {
+      var deleteButton = new Button(TRASH.create(), e -> {
+        if (item instanceof AstRequest request) {
+          deleteRequestDialog(request);
+        } else if (item instanceof Folder folder) {
+          deleteFolderDialog(folder);
+        }
+      });
       deleteButton.addClassName("delete-button");
       return deleteButton;
     }))
@@ -100,21 +122,20 @@ public class RequestGrid extends Grid<AstRequest> {
 
   private void loadRequests() {
     var currentUserId = appState.getCurrentUser().getId();
-    var userRequests = getUserRequests(currentUserId);
     var userRequestsByFolder = getUserRequestsByFolder(currentUserId);
 
-    dataProvider = new ListDataProvider<>(userRequests);
-    setDataProvider(dataProvider);
-  }
+    var treeData = new TreeData<>();
+    userRequestsByFolder.forEach((folder, requests) -> {
+      if (folder == null) {
+        requests.forEach(request -> treeData.addItem(null, request));
+      } else {
+        treeData.addItem(null, folder);
+        requests.forEach(request -> treeData.addItem(folder, request));
+      }
+    });
 
-  private ArrayList<AstRequest> getUserRequests(long currentUserId) {
-    try {
-      return new ArrayList<>(astRequestService.getByUserIdAndTypeAndStatus(currentUserId, REQUEST, true));
-    } catch (Exception ex) {
-      log.error("Error fetching requests for user [{}]", currentUserId, ex);
-      ErrorNotification.show("Error fetching requests");
-      throw ex;
-    }
+    dataProvider = new TreeDataProvider<>(treeData);
+    setDataProvider(dataProvider);
   }
 
   private Map<Folder, List<AstRequest>> getUserRequestsByFolder(long currentUserId) {
@@ -128,13 +149,21 @@ public class RequestGrid extends Grid<AstRequest> {
   }
 
   private void selectFirstItem() {
-    var astRequests = (List<AstRequest>) dataProvider.getItems();
-    if (astRequests.isEmpty()) {
+    var rootItems = dataProvider.getTreeData().getRootItems();
+    if (rootItems.isEmpty()) {
       return;
     }
 
-    var firstRequest = astRequests.getFirst();
-    selectItem(firstRequest);
+    var firstItem = rootItems.getFirst();
+    if (firstItem instanceof AstRequest request) {
+      selectItem(request);
+    } else if (firstItem instanceof Folder folder) {
+      var children = dataProvider.getTreeData().getChildren(folder);
+      if (!children.isEmpty() && children.getFirst() instanceof AstRequest request) {
+        selectItem(request);
+        expand(folder);
+      }
+    }
   }
 
   private void selectItem(AstRequest astRequest) {
@@ -152,21 +181,33 @@ public class RequestGrid extends Grid<AstRequest> {
 
     var newAstRequest = optAstRequest.get();
 
-    dataProvider.getItems().add(newAstRequest);
+    dataProvider.getTreeData().addRootItems(newAstRequest);
     dataProvider.refreshAll();
 
     selectItem(newAstRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout
   }
 
-  private void showDeleteDialog(AstRequest astRequest) {
+  private void deleteRequestDialog(AstRequest request) {
     var deleteDialog = new ConfirmDialog();
     deleteDialog.setHeader("Delete request?");
     deleteDialog.setCancelable(true);
     deleteDialog.setConfirmText("Delete");
     deleteDialog.setCancelText("Cancel");
     deleteDialog.setConfirmButtonTheme("error primary");
-    deleteDialog.addConfirmListener(event -> deleteAstRequest(astRequest));
+    deleteDialog.addConfirmListener(event -> deleteAstRequest(request));
+
+    deleteDialog.open();
+  }
+
+  private void deleteFolderDialog(Folder folder) {
+    var deleteDialog = new ConfirmDialog();
+    deleteDialog.setHeader("Delete folder?");
+    deleteDialog.setCancelable(true);
+    deleteDialog.setConfirmText("Delete");
+    deleteDialog.setCancelText("Cancel");
+    deleteDialog.setConfirmButtonTheme("error primary");
+    deleteDialog.addConfirmListener(event -> deleteFolder(folder));
 
     deleteDialog.open();
   }
@@ -182,13 +223,44 @@ public class RequestGrid extends Grid<AstRequest> {
 
     var selectedRequest = getSelectionModel().getFirstSelectedItem();
 
-    // update data provider
-    dataProvider.getItems().remove(toDelete);
+    dataProvider.getTreeData().removeItem(toDelete);
     dataProvider.refreshAll();
+    
+    // TODO fix: when deleted request was the last one of a folder, logic below does not work
 
     // if the deleted item was currently selected, select another one (first in data provider)
     if (selectedRequest.isPresent() && selectedRequest.get().equals(toDelete)) {
       selectFirstItem();
+    }
+  }
+
+  private void deleteFolder(Folder toDelete) {
+    try {
+      astRequestService.deleteFolder(toDelete.getId());
+    } catch (Exception ex) {
+      log.error("Error deleting folder {}", toDelete, ex);
+      ErrorNotification.show("Error deleting folder");
+      return;
+    }
+
+    var selectedItem = getSelectionModel().getFirstSelectedItem();
+
+    // Save requests of the deleted folder, to know if one of them was selected
+    var treeData = dataProvider.getTreeData();
+    var childrenRequests = treeData.getChildren(toDelete).stream()
+        .filter(item -> item instanceof AstRequest)
+        .map(item -> (AstRequest) item)
+        .toList();
+
+    // Remove the folder itself
+    treeData.removeItem(toDelete);
+    dataProvider.refreshAll();
+
+    // If one of the folder requests was deleted, select another item
+    if (selectedItem.isPresent() && selectedItem.get() instanceof AstRequest selectedRequest) {
+      if (childrenRequests.contains(selectedRequest)) {
+        selectFirstItem();
+      }
     }
   }
 

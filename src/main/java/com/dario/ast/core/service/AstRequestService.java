@@ -51,4 +51,8 @@ public class AstRequestService {
     astRequestRepository.delete(id);
   }
 
+  public void deleteFolder(long folderId) {
+    astRequestRepository.deleteFolder(folderId);
+  }
+
 }
