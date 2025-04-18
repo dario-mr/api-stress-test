@@ -141,19 +141,21 @@ public class RequestGrid extends TreeGrid<Object> {
   }
 
   private void selectFirstItem() {
-    var rootItems = dataProvider.getTreeData().getRootItems();
-    if (rootItems.isEmpty()) {
-      return;
-    }
-
-    var firstItem = rootItems.getFirst();
-    if (firstItem instanceof Request request) {
-      selectItem(request);
-    } else if (firstItem instanceof Folder folder) {
-      var children = dataProvider.getTreeData().getChildren(folder);
-      if (!children.isEmpty() && children.getFirst() instanceof Request request) {
+    for (Object rootItem : dataProvider.getTreeData().getRootItems()) {
+      if (rootItem instanceof Request request) {
         selectItem(request);
-        expand(folder);
+        return;
+      } else if (rootItem instanceof Folder folder) {
+        var firstRequest = dataProvider.getTreeData().getChildren(folder).stream()
+            .filter(Request.class::isInstance)
+            .map(Request.class::cast)
+            .findFirst();
+
+        if (firstRequest.isPresent()) {
+          expand(folder);
+          selectItem(firstRequest.get());
+          return;
+        }
       }
     }
   }
@@ -215,8 +217,6 @@ public class RequestGrid extends TreeGrid<Object> {
 
     dataProvider.getTreeData().removeItem(toDelete);
     dataProvider.refreshAll();
-
-    // TODO fix: when deleted request was the last one of a folder, logic below does not work
 
     // if the deleted item was currently selected, select another one (first in data provider)
     if (selectedRequest.isPresent() && selectedRequest.get().equals(toDelete)) {
