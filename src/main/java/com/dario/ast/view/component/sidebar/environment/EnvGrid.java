@@ -6,7 +6,7 @@ import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
@@ -27,14 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @SpringComponent
 public class EnvGrid extends Grid<Environment> {
 
-  private final AstEnvironmentService astEnvironmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
   private Environment selectedEnvironment;
 
-  public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
-    this.astEnvironmentService = astEnvironmentService;
+  public EnvGrid(EnvironmentService environmentService, AppState appState) {
+    this.environmentService = environmentService;
     this.appState = appState;
 
     addClassName("sidebar-grid");
@@ -99,7 +99,7 @@ public class EnvGrid extends Grid<Environment> {
 
   private ArrayList<Environment> getUserEnvironments(long currentUserId) {
     try {
-      return new ArrayList<>(astEnvironmentService.getByUserId(currentUserId)); // mutable list
+      return new ArrayList<>(environmentService.getByUserId(currentUserId)); // mutable list
     } catch (Exception ex) {
       log.error("Error fetching environments for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching environments");
@@ -124,7 +124,7 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void addEnv(Long envId) {
-    var optEnv = astEnvironmentService.getById(envId);
+    var optEnv = environmentService.getById(envId);
     if (optEnv.isEmpty()) {
       return;
     }
@@ -151,7 +151,7 @@ public class EnvGrid extends Grid<Environment> {
 
   private void deleteEnvironment(Environment toDelete) {
     try {
-      astEnvironmentService.delete(toDelete.getId());
+      environmentService.delete(toDelete.getId());
     } catch (Exception ex) {
       log.error("Error deleting environment {}", toDelete.getId(), ex);
       ErrorNotification.show("Error deleting environment");

@@ -4,7 +4,7 @@ import static com.dario.ast.util.EventUtil.environmentCreated;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -16,11 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 @SpringComponent
 public class CreateEnvButton extends Button {
 
-  private final AstEnvironmentService astEnvironmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
-  public CreateEnvButton(AstEnvironmentService astEnvironmentService, AppState appState) {
-    this.astEnvironmentService = astEnvironmentService;
+  public CreateEnvButton(EnvironmentService environmentService, AppState appState) {
+    this.environmentService = environmentService;
     this.appState = appState;
 
     addClassName("create-button");
@@ -35,7 +35,7 @@ public class CreateEnvButton extends Button {
     var newEnv = defaultEnv(currentUserId);
 
     try {
-      var envId = astEnvironmentService.create(newEnv);
+      var envId = environmentService.create(newEnv);
       environmentCreated(envId);
     } catch (Exception ex) {
       log.error("Error creating new Environment", ex);

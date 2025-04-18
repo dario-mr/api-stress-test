@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AstEnvironmentJpaRepository extends JpaRepository<EnvironmentEntity, Long> {
+public interface EnvironmentJpaRepository extends JpaRepository<EnvironmentEntity, Long> {
 
   List<EnvironmentEntity> findByUserIdOrderByCreatedOn(long userId);
 }

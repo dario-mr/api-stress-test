@@ -13,8 +13,8 @@ import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
@@ -44,8 +44,8 @@ import org.springframework.http.HttpMethod;
 @CssImport(value = "./styles/pre-request-layout.css")
 public class PreRequestLayout extends VerticalLayout {
 
-  private final AstRequestService astRequestService;
-  private final PreRequestService prerequestService;
+  private final RequestService requestService;
+  private final PreRequestService preRequestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -65,9 +65,9 @@ public class PreRequestLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public PreRequestLayout(AstRequestService astRequestService, PreRequestService prerequestService) {
-    this.astRequestService = astRequestService;
-    this.prerequestService = prerequestService;
+  public PreRequestLayout(RequestService requestService, PreRequestService preRequestService) {
+    this.requestService = requestService;
+    this.preRequestService = preRequestService;
 
     addClassNames("card-layout", "pre-request-layout");
     setHeight("fit-content");
@@ -239,13 +239,13 @@ public class PreRequestLayout extends VerticalLayout {
     var configParams = getConfigParams();
 
     try {
-      astRequestService.updateConfigParams(configParams);
+      requestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    prerequestService.updatePreRequestInAppState(configParams);
+    preRequestService.updatePreRequestInAppState(configParams);
   }
 
   private ConfigParams getConfigParams() {

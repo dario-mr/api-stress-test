@@ -6,9 +6,9 @@ import static com.dario.ast.util.EventUtil.preRequestCreated;
 import static org.springframework.http.HttpMethod.GET;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.domain.Request;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -20,11 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @SpringComponent
 public class CreatePreRequestButton extends Button {
 
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
   private final AppState appState;
 
-  public CreatePreRequestButton(AstRequestService astRequestService, AppState appState) {
-    this.astRequestService = astRequestService;
+  public CreatePreRequestButton(RequestService requestService, AppState appState) {
+    this.requestService = requestService;
     this.appState = appState;
 
     addClassName("create-button");
@@ -38,10 +38,10 @@ public class CreatePreRequestButton extends Button {
     var currentUserId = appState.getCurrentUser().getId();
     var configParams = defaultConfigParams(currentUserId);
     var runParams = defaultRunParams();
-    var preRequest = new AstRequest(configParams, runParams, null);
+    var preRequest = new Request(configParams, runParams, null);
 
     try {
-      var preRequestId = astRequestService.create(preRequest);
+      var preRequestId = requestService.create(preRequest);
       preRequestCreated(preRequestId);
     } catch (Exception ex) {
       log.error("Error creating Pre-request", ex);

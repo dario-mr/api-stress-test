@@ -6,10 +6,10 @@ import static com.dario.ast.util.EventUtil.focusPreRequestName;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.vaadin.flow.component.AttachEvent;
@@ -31,14 +31,14 @@ import lombok.extern.slf4j.Slf4j;
 @SpringComponent
 public class PreRequestGrid extends Grid<ConfigParams> {
 
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
   private final AppState appState;
 
   private ListDataProvider<ConfigParams> dataProvider;
   private ConfigParams selectedPreRequestParams;
 
-  public PreRequestGrid(AstRequestService astRequestService, AppState appState, PreRequestService preRequestService) {
-    this.astRequestService = astRequestService;
+  public PreRequestGrid(RequestService requestService, AppState appState, PreRequestService preRequestService) {
+    this.requestService = requestService;
     this.appState = appState;
 
     addClassName("sidebar-grid");
@@ -54,7 +54,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
       checkbox.addClassName("active-column");
       checkbox.addValueChangeListener(event -> {
         configParams.setActive(event.getValue());
-        astRequestService.updateConfigParams(configParams);
+        requestService.updateConfigParams(configParams);
         preRequestService.updatePreRequestInAppState(configParams);
       });
       return checkbox;
@@ -117,15 +117,15 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     appState.setPreRequestsParams(preRequestsParams);
   }
 
-  private List<ConfigParams> mapToConfigParams(List<AstRequest> preRequests) {
+  private List<ConfigParams> mapToConfigParams(List<Request> preRequests) {
     return preRequests.stream()
-        .map(AstRequest::getConfigParams)
+        .map(Request::getConfigParams)
         .toList();
   }
 
   private ArrayList<ConfigParams> getUserPreRequestsParams(long currentUserId) {
     try {
-      return new ArrayList<>(mapToConfigParams(astRequestService.getByUserIdAndType(currentUserId, PRE_REQUEST)));
+      return new ArrayList<>(mapToConfigParams(requestService.getByUserIdAndType(currentUserId, PRE_REQUEST)));
     } catch (Exception ex) {
       log.error("Error fetching pre-requests for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching requests");
@@ -150,7 +150,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   }
 
   private void addPreRequest(Long preRequestId) {
-    var optPreRequest = astRequestService.getById(preRequestId);
+    var optPreRequest = requestService.getById(preRequestId);
     if (optPreRequest.isEmpty()) {
       return;
     }
@@ -177,7 +177,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
 
   private void deletePreRequest(ConfigParams toDelete) {
     try {
-      astRequestService.delete(toDelete.getRequestId());
+      requestService.delete(toDelete.getRequestId());
     } catch (Exception ex) {
       log.error("Error deleting pre-request {}", toDelete.getRequestId(), ex);
       ErrorNotification.show("Error deleting request");

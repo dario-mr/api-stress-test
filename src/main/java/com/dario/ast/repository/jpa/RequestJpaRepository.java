@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AstRequestJpaRepository extends JpaRepository<RequestEntity, Long> {
+public interface RequestJpaRepository extends JpaRepository<RequestEntity, Long> {
 
   @Query("""
         SELECT r FROM RequestEntity r

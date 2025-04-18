@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class AstRequest {
+public final class Request {
 
   private ConfigParams configParams;
   private RunParams runParams;

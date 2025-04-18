@@ -2,7 +2,7 @@ package com.dario.ast.view.component.environment;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -12,12 +12,12 @@ import java.util.List;
 @SpringComponent
 public class EnvironmentCombo extends ComboBox<Environment> {
 
-  private final AstEnvironmentService environmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
   private boolean isReloadingEnvs = false;
 
-  public EnvironmentCombo(AstEnvironmentService environmentService, AppState appState) {
+  public EnvironmentCombo(EnvironmentService environmentService, AppState appState) {
     this.environmentService = environmentService;
     this.appState = appState;
 

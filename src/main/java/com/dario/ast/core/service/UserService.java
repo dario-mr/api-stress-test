@@ -1,7 +1,7 @@
 package com.dario.ast.core.service;
 
 import com.dario.ast.core.domain.User;
-import com.dario.ast.repository.AstUserRepository;
+import com.dario.ast.repository.UserRepository;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AstUserService {
+public class UserService {
 
-  private final AstUserRepository astUserRepository;
+  private final UserRepository userRepository;
   private final UserSessionService userSessionService;
 
   public User getCurrentUser() {
@@ -27,10 +27,10 @@ public class AstUserService {
   }
 
   private User getOrCreateUser(String userEmail) {
-    var optUser = astUserRepository.findByEmail(userEmail);
+    var optUser = userRepository.findByEmail(userEmail);
     if (optUser.isEmpty()) {
       log.info("User with email [{}] not found, creating new one", userEmail);
-      return astUserRepository.create(userEmail);
+      return userRepository.create(userEmail);
     }
 
     var user = optUser.get();

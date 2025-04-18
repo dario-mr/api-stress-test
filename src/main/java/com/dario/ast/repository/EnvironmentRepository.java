@@ -4,7 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.repository.jpa.AstEnvironmentJpaRepository;
+import com.dario.ast.repository.jpa.EnvironmentJpaRepository;
 import com.dario.ast.repository.jpa.entity.EnvVariableEntity;
 import com.dario.ast.repository.jpa.entity.EnvironmentEntity;
 import java.time.Instant;
@@ -18,9 +18,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AstEnvironmentRepository {
+public class EnvironmentRepository {
 
-  private final AstEnvironmentJpaRepository jpaRepository;
+  private final EnvironmentJpaRepository jpaRepository;
 
   public List<Environment> findByUserId(long userId) {
     return jpaRepository.findByUserIdOrderByCreatedOn(userId).stream()

@@ -6,12 +6,12 @@ import com.vaadin.flow.component.UI;
 import lombok.Getter;
 
 @Getter
-public class AstRequestCreatedEvent extends ComponentEvent<Component> {
+public class RequestCreatedEvent extends ComponentEvent<Component> {
 
-  private final Long astRequestId;
+  private final Long requestId;
 
-  public AstRequestCreatedEvent(Long astRequestId) {
+  public RequestCreatedEvent(Long requestId) {
     super(new UI(), false);
-    this.astRequestId = astRequestId;
+    this.requestId = requestId;
   }
 }

@@ -7,7 +7,7 @@ import static org.springframework.util.StringUtils.hasText;
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/env-layout.css")
 public class EnvironmentLayout extends VerticalLayout {
 
-  private final AstEnvironmentService astEnvironmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
   private final TextField nameText = new TextField();
@@ -39,8 +39,8 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment selectedEnvironment;
 
-  public EnvironmentLayout(AstEnvironmentService astEnvironmentService, AppState appState) {
-    this.astEnvironmentService = astEnvironmentService;
+  public EnvironmentLayout(EnvironmentService environmentService, AppState appState) {
+    this.environmentService = environmentService;
     this.appState = appState;
 
     addClassNames("card-layout", "env-layout");
@@ -122,13 +122,13 @@ public class EnvironmentLayout extends VerticalLayout {
     selectedEnvironment = getEnvParams();
 
     try {
-      astEnvironmentService.update(selectedEnvironment);
+      environmentService.update(selectedEnvironment);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving environment");
       throw ex;
     }
 
-    astEnvironmentService.updateEnvironmentInAppState(selectedEnvironment);
+    environmentService.updateEnvironmentInAppState(selectedEnvironment);
   }
 
   private Environment getEnvParams() {

@@ -4,7 +4,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CE
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.OAuthUser;
-import com.dario.ast.core.service.AstUserService;
+import com.dario.ast.core.service.UserService;
 import com.dario.ast.core.service.UserSessionService;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -21,14 +21,14 @@ import com.vaadin.flow.spring.annotation.UIScope;
 public class UserAvatar extends Div {
 
   private final UserSessionService userSessionService;
-  private final AstUserService astUserService;
+  private final UserService userService;
   private final AppState appState;
 
   public UserAvatar(UserSessionService userSessionService,
-      AstUserService astUserService,
+      UserService userService,
       AppState appState) {
     this.userSessionService = userSessionService;
-    this.astUserService = astUserService;
+    this.userService = userService;
     this.appState = appState;
     loadCurrentUser(); // this is the first bean that is loaded and that has a user session... not great, but it works
 
@@ -93,7 +93,7 @@ public class UserAvatar extends Div {
   }
 
   private void loadCurrentUser() {
-    var currentUser = astUserService.getCurrentUser();
+    var currentUser = userService.getCurrentUser();
     appState.setCurrentUser(currentUser);
   }
 

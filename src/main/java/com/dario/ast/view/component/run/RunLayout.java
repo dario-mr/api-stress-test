@@ -11,8 +11,8 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.core.service.RequestValidationService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.api.dto.ApiResponse;
@@ -46,7 +46,7 @@ public class RunLayout extends VerticalLayout {
 
   private final StressTestService stressTestService;
   private final AppState appState;
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
   private final PreRequestService prerequestService;
   private final RequestValidationService validationService;
 
@@ -66,12 +66,12 @@ public class RunLayout extends VerticalLayout {
   public RunLayout(
       StressTestService stressTestService,
       AppState appState,
-      AstRequestService astRequestService,
+      RequestService requestService,
       PreRequestService prerequestService,
       RequestValidationService validationService) {
     this.stressTestService = stressTestService;
     this.appState = appState;
-    this.astRequestService = astRequestService;
+    this.requestService = requestService;
     this.prerequestService = prerequestService;
     this.validationService = validationService;
 
@@ -151,7 +151,7 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void observeAppState() {
-    appState.getRunParamsStream().subscribe(this::loadRunParamsIntoUi);
+    appState.getSelectedParamsStream().subscribe(request -> loadRunParamsIntoUi(request.getRunParams()));
   }
 
   private void addListeners() {
@@ -199,13 +199,15 @@ public class RunLayout extends VerticalLayout {
     var runParams = getRunParams();
 
     try {
-      astRequestService.updateRunParams(runParams);
+      requestService.updateRunParams(runParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    appState.setRunParams(runParams);
+    var selectedRequest = appState.getSelectedRequest();
+    selectedRequest.setRunParams(runParams);
+    appState.setSelectedRequest(selectedRequest);
   }
 
   private void loadRunParamsIntoUi(RunParams params) {
@@ -221,7 +223,7 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void startStressTest() {
-    var configParams = appState.getConfigParams();
+    var configParams = appState.getSelectedRequest().getConfigParams();
 
     var validationResult = validationService.validate(configParams);
     if (!validationResult.success()) {

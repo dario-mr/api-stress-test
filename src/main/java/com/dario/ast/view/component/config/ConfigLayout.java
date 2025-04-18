@@ -15,7 +15,7 @@ import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
@@ -46,7 +46,7 @@ import org.vaadin.olli.ClipboardHelper;
 public class ConfigLayout extends VerticalLayout {
 
   private final AppState appState;
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -68,9 +68,9 @@ public class ConfigLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public ConfigLayout(AppState appState, AstRequestService astRequestService) {
+  public ConfigLayout(AppState appState, RequestService requestService) {
     this.appState = appState;
-    this.astRequestService = astRequestService;
+    this.requestService = requestService;
 
     setWidthFull();
     setSpacing(false);
@@ -144,8 +144,8 @@ public class ConfigLayout extends VerticalLayout {
   }
 
   private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams -> {
-      loadConfigIntoUI(configParams);
+    appState.getSelectedParamsStream().subscribe(request -> {
+      loadConfigIntoUI(request.getConfigParams());
       generateCurlPreview();
     });
 
@@ -249,13 +249,15 @@ public class ConfigLayout extends VerticalLayout {
     var configParams = getConfigParams();
 
     try {
-      astRequestService.updateConfigParams(configParams);
+      requestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    appState.setConfigParams(configParams);
+    var selectedRequest = appState.getSelectedRequest();
+    selectedRequest.setConfigParams(configParams);
+    appState.setSelectedRequest(selectedRequest);
   }
 
   private void generateCurlPreview() {

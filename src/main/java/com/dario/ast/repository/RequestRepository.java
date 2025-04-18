@@ -3,15 +3,15 @@ package com.dario.ast.repository;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Folder;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.repository.jpa.AstRequestJpaRepository;
+import com.dario.ast.repository.jpa.RequestJpaRepository;
 import com.dario.ast.repository.jpa.entity.RequestEntity;
 import com.dario.ast.repository.jpa.entity.RequestFolderEntity;
 import com.dario.ast.repository.jpa.entity.RequestHeaderEntity;
@@ -24,24 +24,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AstRequestRepository {
+public class RequestRepository {
 
-  private final AstRequestJpaRepository jpaRepository;
+  private final RequestJpaRepository jpaRepository;
 
-  public Map<Folder, List<AstRequest>> getFoldersByUserIdAndTypeAndStatus(
+  public Map<Folder, List<Request>> getFoldersByUserIdAndTypeAndStatus(
       long userId, RequestType requestType, boolean active) {
     return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(userId, requestType.toString(), active)
         .stream()
         .map(this::mapToDomain)
-        .collect(Collectors.toMap(
-            AstRequest::getFolder,
+        .collect(toMap(
+            Request::getFolder,
             request -> new ArrayList<>(singletonList(request)), // mutable list
             (list1, list2) -> {
               list1.addAll(list2);
@@ -51,29 +50,22 @@ public class AstRequestRepository {
         ));
   }
 
-  public List<AstRequest> findByUserIdAndTypeAndStatus(long userId, RequestType requestType, boolean active) {
-    return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(userId, requestType.toString(), active)
-        .stream()
-        .map(this::mapToDomain)
-        .toList();
-  }
-
-  public List<AstRequest> findByUserIdAndType(long userId, RequestType requestType) {
+  public List<Request> findByUserIdAndType(long userId, RequestType requestType) {
     return jpaRepository.findByUserIdAndRequestTypeOrderByCreatedOn(userId, requestType.toString())
         .stream()
         .map(this::mapToDomain)
         .toList();
   }
 
-  public Optional<AstRequest> findById(Long id) {
+  public Optional<Request> findById(Long id) {
     return jpaRepository.findById(id)
         .map(this::mapToDomain);
   }
 
-  public Long create(AstRequest astRequest) {
+  public Long create(Request request) {
     var now = Instant.now();
 
-    var entity = mapToEntity(astRequest);
+    var entity = mapToEntity(request);
     entity.setId(null);
     entity.setCreatedOn(now);
     entity.setModifiedOn(now);
@@ -119,9 +111,9 @@ public class AstRequestRepository {
     jpaRepository.deleteRequestEntitiesByFolderId(folderId);
   }
 
-  private RequestEntity mapToEntity(AstRequest astRequest) {
-    var configParams = astRequest.getConfigParams();
-    var runParams = astRequest.getRunParams();
+  private RequestEntity mapToEntity(Request request) {
+    var configParams = request.getConfigParams();
+    var runParams = request.getRunParams();
 
     return RequestEntity.builder()
         .id(configParams.getRequestId())
@@ -138,7 +130,7 @@ public class AstRequestRepository {
         .numRequests(runParams.getNumRequests())
         .threadPoolSize(runParams.getThreadPoolSize())
         .stopOnError(runParams.isStopOnError())
-        .folder(toEntity(astRequest.getFolder()))
+        .folder(toEntity(request.getFolder()))
         .build();
   }
 
@@ -195,8 +187,8 @@ public class AstRequestRepository {
             )));
   }
 
-  private AstRequest mapToDomain(RequestEntity entity) {
-    return new AstRequest(
+  private Request mapToDomain(RequestEntity entity) {
+    return new Request(
         mapToConfigParams(entity),
         mapToRunParams(entity),
         toDomain(entity.getFolder())
