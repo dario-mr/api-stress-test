@@ -25,7 +25,7 @@ public class RequestService {
 
   public Map<Folder, List<Request>> getFoldersByUserIdAndTypeAndStatus(
       long userId, RequestType requestType, boolean active) {
-    return requestRepository.getFoldersByUserIdAndTypeAndStatus(userId, requestType, active);
+    return requestRepository.getRequestsByUserIdAndTypeAndStatusGroupedByFolder(userId, requestType, active);
   }
 
   public Optional<Request> getById(Long id) {

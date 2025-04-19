@@ -4,6 +4,7 @@ import static com.vaadin.flow.component.ComponentUtil.fireEvent;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
+import com.dario.ast.core.domain.Folder;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
@@ -15,6 +16,10 @@ import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.event.RequestCreatedEvent;
+import com.dario.ast.event.folder.FocusFolderNameEvent;
+import com.dario.ast.event.folder.FolderCreatedEvent;
+import com.dario.ast.event.folder.FolderSelectedEvent;
+import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -64,4 +69,21 @@ public class EventUtil {
   public static void focusPreRequestName() {
     fireEvent(UI.getCurrent(), new FocusPreRequestNameEvent());
   }
+
+  public static void folderSelected(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderSelectedEvent(folder));
+  }
+
+  public static void folderUpdated(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderUpdatedEvent(folder));
+  }
+
+  public static void folderCreated(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderCreatedEvent(folder));
+  }
+
+  public static void focusFolderName() {
+    fireEvent(UI.getCurrent(), new FocusFolderNameEvent());
+  }
+
 }

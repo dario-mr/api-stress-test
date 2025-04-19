@@ -1,7 +1,9 @@
 package com.dario.ast.view.component.sidebar.request;
 
 import static com.dario.ast.core.domain.RequestType.REQUEST;
+import static com.dario.ast.util.EventUtil.focusFolderName;
 import static com.dario.ast.util.EventUtil.focusRequestName;
+import static com.dario.ast.util.EventUtil.folderSelected;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -9,11 +11,16 @@ import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.RequestCreatedEvent;
+import com.dario.ast.event.folder.FolderCreatedEvent;
+import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.folder.FolderLayout;
+import com.dario.ast.view.component.request.RequestLayout;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
@@ -28,16 +35,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UIScope
 @SpringComponent
+@CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
 public class RequestGrid extends TreeGrid<Object> {
+
+  // TODO drag and drop between folders
+  // TODO general refactor at the end
 
   private final RequestService requestService;
   private final AppState appState;
+  private final RequestLayout requestLayout;
+  private final FolderLayout folderLayout;
 
   private TreeDataProvider<Object> dataProvider;
 
-  public RequestGrid(RequestService requestService, AppState appState) {
+  public RequestGrid(
+      RequestService requestService,
+      AppState appState,
+      RequestLayout requestLayout,
+      FolderLayout folderLayout
+  ) {
     this.requestService = requestService;
     this.appState = appState;
+    this.requestLayout = requestLayout;
+    this.folderLayout = folderLayout;
 
     addClassName("sidebar-grid");
 
@@ -57,16 +77,23 @@ public class RequestGrid extends TreeGrid<Object> {
     // delete button
     addDeleteColumn();
 
-    // click listener to load request into UI
+    // allow only single selection
+    asSingleSelect().addValueChangeListener(event -> {
+      if (event.getValue() == null && event.getOldValue() != null) {
+        asSingleSelect().setValue(event.getOldValue());
+      }
+    });
+
+    // click listener to load request/folder into UI
     addItemClickListener(event -> {
       if (event.getItem() instanceof Request request) {
-        selectItem(request);
+        requestLayout.setVisible(true);
+        folderLayout.setVisible(false);
+        selectRequest(request);
       } else if (event.getItem() instanceof Folder folder) {
-        if (isExpanded(folder)) {
-          collapse(folder);
-        } else {
-          expand(folder);
-        }
+        requestLayout.setVisible(false);
+        folderLayout.setVisible(true);
+        folderSelected(folder);
       }
     });
 
@@ -85,6 +112,22 @@ public class RequestGrid extends TreeGrid<Object> {
     ComponentUtil.addListener(attachEvent.getUI(),
         RequestCreatedEvent.class,
         event -> addRequest(event.getRequestId())
+    );
+
+    // Listen for events indicating that a folder was updated
+    ComponentUtil.addListener(attachEvent.getUI(),
+        FolderUpdatedEvent.class,
+        event -> {
+          if (dataProvider != null) {
+            dataProvider.refreshItem(event.getFolder());
+          }
+        }
+    );
+
+    // Listen for events indicating that a folder was created
+    ComponentUtil.addListener(attachEvent.getUI(),
+        FolderCreatedEvent.class,
+        event -> addFolder(event.getFolder())
     );
   }
 
@@ -143,7 +186,7 @@ public class RequestGrid extends TreeGrid<Object> {
   private void selectFirstItem() {
     for (Object rootItem : dataProvider.getTreeData().getRootItems()) {
       if (rootItem instanceof Request request) {
-        selectItem(request);
+        selectRequest(request);
         return;
       } else if (rootItem instanceof Folder folder) {
         var firstRequest = dataProvider.getTreeData().getChildren(folder).stream()
@@ -153,16 +196,22 @@ public class RequestGrid extends TreeGrid<Object> {
 
         if (firstRequest.isPresent()) {
           expand(folder);
-          selectItem(firstRequest.get());
+          selectRequest(firstRequest.get());
           return;
         }
       }
     }
   }
 
-  private void selectItem(Request request) {
+  private void selectRequest(Request request) {
     appState.setSelectedRequest(request);
     getSelectionModel().select(request); // highlight item in the grid
+  }
+
+  private void selectFolder(Folder folder) {
+    getSelectionModel().select(folder); // highlight item in the grid
+    folderSelected(folder); // load folder into Folder Layout
+    focusFolderName(); // focus the folder name in Folder layout
   }
 
   private void addRequest(Long requestId) {
@@ -176,8 +225,21 @@ public class RequestGrid extends TreeGrid<Object> {
     dataProvider.getTreeData().addRootItems(newRequest);
     dataProvider.refreshAll();
 
-    selectItem(newRequest); // set new request as currently selected item
+    requestLayout.setVisible(true);
+    folderLayout.setVisible(false);
+
+    selectRequest(newRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout
+  }
+
+  private void addFolder(Folder folder) {
+    dataProvider.getTreeData().addRootItems(folder);
+    dataProvider.refreshAll();
+
+    requestLayout.setVisible(false);
+    folderLayout.setVisible(true);
+
+    selectFolder(folder);
   }
 
   private void deleteRequestDialog(Request request) {

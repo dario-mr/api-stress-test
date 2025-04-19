@@ -11,12 +11,14 @@ import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
 import com.dario.ast.core.domain.RunParams;
+import com.dario.ast.repository.jpa.FolderJpaRepository;
 import com.dario.ast.repository.jpa.RequestJpaRepository;
 import com.dario.ast.repository.jpa.entity.RequestEntity;
 import com.dario.ast.repository.jpa.entity.RequestFolderEntity;
 import com.dario.ast.repository.jpa.entity.RequestHeaderEntity;
 import com.dario.ast.repository.jpa.entity.RequestQueryParameterEntity;
 import com.dario.ast.repository.jpa.entity.RequestUriVariableEntity;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,11 +35,26 @@ import org.springframework.stereotype.Repository;
 public class RequestRepository {
 
   private final RequestJpaRepository jpaRepository;
+  private final FolderJpaRepository folderJpaRepository;
+  private final EntityManager entityManager;
 
-  public Map<Folder, List<Request>> getFoldersByUserIdAndTypeAndStatus(
+  public Map<Folder, List<Request>> getRequestsByUserIdAndTypeAndStatusGroupedByFolder(
       long userId, RequestType requestType, boolean active) {
-    return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(userId, requestType.toString(), active)
-        .stream()
+    var requestsGroupedByFolder = findRequestsGroupedByFolder(userId, requestType, active);
+    var foldersByUser = findFoldersByUser(userId);
+
+    // merge requests by folder + all folders (necessary for empty ones)
+    foldersByUser.forEach(folder ->
+        requestsGroupedByFolder.computeIfAbsent(folder, absentFolder -> new ArrayList<>())
+    );
+
+    return requestsGroupedByFolder;
+  }
+
+  private LinkedHashMap<Folder, List<Request>> findRequestsGroupedByFolder(
+      long userId, RequestType requestType, boolean active) {
+    return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(
+            userId, requestType.toString(), active).stream()
         .map(this::mapToDomain)
         .collect(toMap(
             Request::getFolder,
@@ -48,6 +65,12 @@ public class RequestRepository {
             },
             LinkedHashMap::new
         ));
+  }
+
+  private List<Folder> findFoldersByUser(long userId) {
+    return folderJpaRepository.findByUserIdOrderByCreatedOn(userId).stream()
+        .map(this::toDomain)
+        .toList();
   }
 
   public List<Request> findByUserIdAndType(long userId, RequestType requestType) {
@@ -130,17 +153,9 @@ public class RequestRepository {
         .numRequests(runParams.getNumRequests())
         .threadPoolSize(runParams.getThreadPoolSize())
         .stopOnError(runParams.isStopOnError())
-        .folder(toEntity(request.getFolder()))
+        .folder(request.getFolder() == null ? null
+            : entityManager.getReference(RequestFolderEntity.class, request.getFolder().getId()))
         .build();
-  }
-
-  private RequestFolderEntity toEntity(Folder folder) {
-    return folder == null ? null
-        : RequestFolderEntity.builder()
-            .id(folder.getId())
-            .name(folder.getName())
-            .createdOn(folder.getCreatedOn())
-            .build();
   }
 
   private static Map<String, RequestHeaderEntity> mapHeadersToEntity(Map<String, RequestHeader> headers) {
@@ -199,6 +214,7 @@ public class RequestRepository {
     return folderEntity == null ? null
         : new Folder(
             folderEntity.getId(),
+            folderEntity.getUserId(),
             folderEntity.getName(),
             folderEntity.getCreatedOn()
         );

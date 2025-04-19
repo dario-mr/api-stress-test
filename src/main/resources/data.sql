@@ -3,8 +3,8 @@ INSERT INTO my_schema.ast_user (id, email, created_on, active)
 VALUES (1, 'dario.mauri9@gmail.com', '2024-02-23T10:00:00Z', true);
 
 -- folders
-INSERT INTO my_schema.ast_request_folder (id, name, created_on)
-VALUES (1, 'folder 1', '2025-04-16 12:00:00');
+INSERT INTO my_schema.ast_request_folder (id, name, created_on, user_id)
+VALUES (1, 'folder 1', '2025-04-16 12:00:00', 1);
 
 -- requests
 INSERT INTO my_schema.ast_request (id, user_id, name, created_on, modified_on, uri, method, request_body, num_requests,

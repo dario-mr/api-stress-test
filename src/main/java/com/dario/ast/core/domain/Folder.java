@@ -15,7 +15,12 @@ import lombok.NoArgsConstructor;
 public final class Folder {
 
   private Long id;
+  private Long userId;
   private String name;
   private Instant createdOn;
+
+  public static Folder defaultFolder(long userId) {
+    return new Folder(null, userId, "New folder", Instant.now());
+  }
 
 }

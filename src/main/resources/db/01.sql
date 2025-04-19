@@ -88,5 +88,7 @@ CREATE TABLE my_schema.ast_request_folder
 (
     id         BIGSERIAL PRIMARY KEY,
     name       TEXT        NOT NULL,
-    created_on TIMESTAMPTZ NOT NULL
+    created_on TIMESTAMPTZ NOT NULL,
+    user_id    BIGINT      NOT NULL,
+    CONSTRAINT fk_ast_request_folder_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE
 );
