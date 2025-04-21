@@ -23,7 +23,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
@@ -43,7 +42,6 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   // TODO drag and drop between folders
   // TODO general refactor at the end
-  // TODO buttons take too much space (CSS class delete-button)
 
   private final RequestService requestService;
   private final AppState appState;
@@ -134,6 +132,36 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     );
   }
 
+  private void observeAppState() {
+    appState.getSelectedParamsStream().subscribe(updatedRequest -> {
+      try {
+        getUI().ifPresent(ui -> ui.access(() -> updateRequestInDataProvider(updatedRequest)));
+      } catch (Exception ex) {
+        log.error("Failed to update request in grid [{}]", getClass().getSimpleName(), ex);
+        ErrorNotification.show("Failed to update request in Requests list");
+      }
+    });
+  }
+
+  private void updateRequestInDataProvider(Request updatedRequest) {
+    var treeData = dataProvider.getTreeData();
+    var potentialParents = new ArrayList<>(treeData.getRootItems());
+    potentialParents.add(null); // root-level
+
+    for (var parent : potentialParents) {
+      for (var child : treeData.getChildren(parent)) {
+        if (child instanceof Request existingRequest && existingRequest.equals(updatedRequest)) {
+          existingRequest.setConfigParams(updatedRequest.getConfigParams());
+          existingRequest.setRunParams(updatedRequest.getRunParams());
+          existingRequest.setFolder(updatedRequest.getFolder());
+
+          dataProvider.refreshItem(existingRequest);
+          return;
+        }
+      }
+    }
+  }
+
   private void updateFolderInDataProvider(Folder updatedFolder) {
     var treeData = dataProvider.getTreeData();
 
@@ -157,43 +185,6 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     }
   }
 
-  private void observeAppState() {
-    appState.getSelectedParamsStream().subscribe(updatedRequest ->
-        getUI().ifPresent(ui -> ui.access(() -> {
-          try {
-            updateRequestInDataProvider(updatedRequest);
-          } catch (Exception ex) {
-            log.error("Failed to update request in {}", getClass().getSimpleName(), ex);
-            Notification.show("Failed to update request in Requests list");
-          }
-        }))
-    );
-  }
-
-  private void updateRequestInDataProvider(Request updatedRequest) {
-    var treeData = dataProvider.getTreeData();
-
-    for (var parent : treeData.getRootItems()) {
-      // Include root (null) as a parent in case requests are not in a folder
-      var potentialParents = new ArrayList<RequestOrFolder>();
-      potentialParents.add(null); // for root-level items
-      potentialParents.add(parent);
-
-      for (var currentParent : potentialParents) {
-        for (var child : treeData.getChildren(currentParent)) {
-          if (child instanceof Request existingRequest && existingRequest.equals(updatedRequest)) {
-            existingRequest.setConfigParams(updatedRequest.getConfigParams());
-            existingRequest.setRunParams(updatedRequest.getRunParams());
-            existingRequest.setFolder(updatedRequest.getFolder());
-
-            dataProvider.refreshAll();
-            return;
-          }
-        }
-      }
-    }
-  }
-
   private void addCreateRequestColumn() {
     addColumn(new ComponentRenderer<>(item -> {
       if (item instanceof Folder folder) {
@@ -203,10 +194,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         return createButton;
       }
 
-      // TODO this takes space without need
-      var nothingButton = new Button();
-      nothingButton.setVisible(false);
-      return nothingButton;
+      var noAction = new Button();
+      noAction.setVisible(false);
+      return noAction;
     }))
         .setAutoWidth(true)
         .setFlexGrow(0);
