@@ -85,7 +85,7 @@ public class RequestRepository {
         .map(this::mapToDomain);
   }
 
-  public Long create(Request request) {
+  public Request create(Request request) {
     var now = Instant.now();
 
     var entity = mapToEntity(request);
@@ -93,7 +93,7 @@ public class RequestRepository {
     entity.setCreatedOn(now);
     entity.setModifiedOn(now);
 
-    return jpaRepository.save(entity).getId();
+    return mapToDomain(jpaRepository.save(entity));
   }
 
   public void updateConfigParams(ConfigParams configParams) {
@@ -153,9 +153,17 @@ public class RequestRepository {
         .numRequests(runParams.getNumRequests())
         .threadPoolSize(runParams.getThreadPoolSize())
         .stopOnError(runParams.isStopOnError())
-        .folder(request.getFolder() == null ? null
-            : entityManager.getReference(RequestFolderEntity.class, request.getFolder().getId()))
+        .folder(request.getFolder() == null ? null : folderJpaRepository.save(mapFolderToEntity(request.getFolder())))
         .build();
+  }
+
+  private RequestFolderEntity mapFolderToEntity(Folder folder) {
+    return new RequestFolderEntity(
+        folder.getId(),
+        folder.getName(),
+        folder.getCreatedOn(),
+        folder.getUserId()
+    );
   }
 
   private static Map<String, RequestHeaderEntity> mapHeadersToEntity(Map<String, RequestHeader> headers) {
@@ -237,38 +245,41 @@ public class RequestRepository {
   }
 
   private static LinkedHashMap<String, RequestHeader> mapHeadersToDomain(Map<String, RequestHeaderEntity> headers) {
-    return headers.entrySet().stream()
-        .collect(toMap(
-            Entry::getKey,
-            entry -> new RequestHeader(
-                entry.getValue().getValue(),
-                entry.getValue().getCreatedOn()),
-            (e1, e2) -> e1,
-            LinkedHashMap::new));
+    return headers == null ? new LinkedHashMap<>()
+        : headers.entrySet().stream()
+            .collect(toMap(
+                Entry::getKey,
+                entry -> new RequestHeader(
+                    entry.getValue().getValue(),
+                    entry.getValue().getCreatedOn()),
+                (e1, e2) -> e1,
+                LinkedHashMap::new));
   }
 
   private static LinkedHashMap<String, RequestUriVariable> mapUriVariablesToDomain(
       Map<String, RequestUriVariableEntity> uriVariables) {
-    return uriVariables.entrySet().stream()
-        .collect(toMap(
-            Entry::getKey,
-            entry -> new RequestUriVariable(
-                entry.getValue().getValue(),
-                entry.getValue().getCreatedOn()),
-            (e1, e2) -> e1,
-            LinkedHashMap::new));
+    return uriVariables == null ? new LinkedHashMap<>()
+        : uriVariables.entrySet().stream()
+            .collect(toMap(
+                Entry::getKey,
+                entry -> new RequestUriVariable(
+                    entry.getValue().getValue(),
+                    entry.getValue().getCreatedOn()),
+                (e1, e2) -> e1,
+                LinkedHashMap::new));
   }
 
   private static LinkedHashMap<String, RequestQueryParam> mapQueryParamsToDomain(
       Map<String, RequestQueryParameterEntity> uriVariables) {
-    return uriVariables.entrySet().stream()
-        .collect(toMap(
-            Entry::getKey,
-            entry -> new RequestQueryParam(
-                entry.getValue().getValue(),
-                entry.getValue().getCreatedOn()),
-            (e1, e2) -> e1,
-            LinkedHashMap::new));
+    return uriVariables == null ? new LinkedHashMap<>()
+        : uriVariables.entrySet().stream()
+            .collect(toMap(
+                Entry::getKey,
+                entry -> new RequestQueryParam(
+                    entry.getValue().getValue(),
+                    entry.getValue().getCreatedOn()),
+                (e1, e2) -> e1,
+                LinkedHashMap::new));
   }
 
   private RunParams mapToRunParams(RequestEntity requestEntity) {
@@ -279,4 +290,5 @@ public class RequestRepository {
         .stopOnError(requestEntity.isStopOnError())
         .build();
   }
+
 }

@@ -41,7 +41,7 @@ public class CreatePreRequestButton extends Button {
     var preRequest = new Request(configParams, runParams, null);
 
     try {
-      var preRequestId = requestService.create(preRequest);
+      var preRequestId = requestService.create(preRequest).getConfigParams().getRequestId();
       preRequestCreated(preRequestId);
     } catch (Exception ex) {
       log.error("Error creating Pre-request", ex);

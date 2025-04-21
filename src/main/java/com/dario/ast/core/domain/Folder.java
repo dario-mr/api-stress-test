@@ -1,5 +1,6 @@
 package com.dario.ast.core.domain;
 
+import com.dario.ast.view.component.sidebar.request.RequestOrFolder;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public final class Folder {
+public final class Folder implements RequestOrFolder {
 
   private Long id;
   private Long userId;

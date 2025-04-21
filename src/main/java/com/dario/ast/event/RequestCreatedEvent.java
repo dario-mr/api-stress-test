@@ -1,5 +1,6 @@
 package com.dario.ast.event;
 
+import com.dario.ast.core.domain.Request;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
@@ -8,10 +9,10 @@ import lombok.Getter;
 @Getter
 public class RequestCreatedEvent extends ComponentEvent<Component> {
 
-  private final Long requestId;
+  private final Request request;
 
-  public RequestCreatedEvent(Long requestId) {
+  public RequestCreatedEvent(Request request) {
     super(new UI(), false);
-    this.requestId = requestId;
+    this.request = request;
   }
 }

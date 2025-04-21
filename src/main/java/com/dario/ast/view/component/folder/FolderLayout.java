@@ -105,8 +105,17 @@ public class FolderLayout extends VerticalLayout {
       throw ex;
     }
 
+    updateFolderInSelectedRequest(folder);
     folderUpdated(folder);
-    // TODO do I need to update folder in appState.selectedRequest?
+  }
+
+  // TODO not clear if this is necessary
+  private void updateFolderInSelectedRequest(Folder folder) {
+//    if (appState.getSelectedRequest().getFolder().getId().equals(folder.getId())) {
+//      var selectedRequest = appState.getSelectedRequest();
+//      selectedRequest.setFolder(folder);
+//      appState.setSelectedRequest(selectedRequest);
+//    }
   }
 
   private Folder getFolderFromUi() {

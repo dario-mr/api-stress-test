@@ -1,16 +1,12 @@
 package com.dario.ast.view.component.sidebar.request;
 
 import static com.dario.ast.core.domain.Folder.defaultFolder;
-import static com.dario.ast.core.domain.RequestType.REQUEST;
-import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.EventUtil.folderCreated;
-import static com.dario.ast.util.EventUtil.requestCreated;
+import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
+import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_ADD;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
-import static org.springframework.http.HttpMethod.GET;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.ConfigParams;
-import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.service.FolderService;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -43,13 +39,14 @@ public class CreateLayout extends HorizontalLayout {
     var title = new H4("Requests");
     title.getStyle().set("padding", "var(--lumo-space-m)");
 
-    var createRequestButton = new Button("\uD83D\uDCE8");
+    // TODO better icons
+    var createRequestButton = new Button(FILE_ADD.create());
     createRequestButton.setTooltipText("Create request");
     createRequestButton.addClassName("create-button");
     createRequestButton.setHeightFull();
     createRequestButton.addClickListener(event -> createRequest());
 
-    var createFolderButton = new Button("\uD83D\uDCC1");
+    var createFolderButton = new Button(FOLDER_ADD.create());
     createFolderButton.setTooltipText("Create folder");
     createFolderButton.addClassName("create-button");
     createFolderButton.setHeightFull();
@@ -62,33 +59,16 @@ public class CreateLayout extends HorizontalLayout {
     add(title, buttons);
   }
 
-  // TODO if folder is selected, request should have it as parent
   private void createRequest() {
     var currentUserId = appState.getCurrentUser().getId();
-    var configParams = defaultConfigParams(currentUserId);
-    var runParams = defaultRunParams();
-    var request = new Request(configParams, runParams, null);
 
     try {
-      var requestId = requestService.create(request);
-      requestCreated(requestId);
+      requestService.createDefaultRequestAndNotify(currentUserId, null);
     } catch (Exception ex) {
       log.error("Error creating request", ex);
       ErrorNotification.show("Error creating request");
       throw ex;
     }
-  }
-
-  private static ConfigParams defaultConfigParams(Long userId) {
-    return ConfigParams.builder()
-        .requestName("New Request")
-        .userId(userId)
-        .uri("")
-        .method(GET)
-        .requestBody("")
-        .requestType(REQUEST)
-        .active(true)
-        .build();
   }
 
   private void createFolder() {

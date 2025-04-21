@@ -4,6 +4,7 @@ import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.focusFolderName;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.dario.ast.util.EventUtil.folderSelected;
+import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -22,12 +23,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -36,17 +39,18 @@ import lombok.extern.slf4j.Slf4j;
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
-public class RequestGrid extends TreeGrid<Object> {
+public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   // TODO drag and drop between folders
   // TODO general refactor at the end
+  // TODO buttons take too much space (CSS class delete-button)
 
   private final RequestService requestService;
   private final AppState appState;
   private final RequestLayout requestLayout;
   private final FolderLayout folderLayout;
 
-  private TreeDataProvider<Object> dataProvider;
+  private TreeDataProvider<RequestOrFolder> dataProvider;
 
   public RequestGrid(
       RequestService requestService,
@@ -73,6 +77,9 @@ public class RequestGrid extends TreeGrid<Object> {
     })
         .setAutoWidth(true)
         .setFlexGrow(1);
+
+    // create request button
+    addCreateRequestColumn();
 
     // delete button
     addDeleteColumn();
@@ -111,17 +118,13 @@ public class RequestGrid extends TreeGrid<Object> {
     // Listen for events indicating that a new request was created
     ComponentUtil.addListener(attachEvent.getUI(),
         RequestCreatedEvent.class,
-        event -> addRequest(event.getRequestId())
+        event -> addRequest(event.getRequest())
     );
 
     // Listen for events indicating that a folder was updated
     ComponentUtil.addListener(attachEvent.getUI(),
         FolderUpdatedEvent.class,
-        event -> {
-          if (dataProvider != null) {
-            dataProvider.refreshItem(event.getFolder());
-          }
-        }
+        event -> updateFolderInDataProvider(event.getFolder())
     );
 
     // Listen for events indicating that a folder was created
@@ -131,12 +134,94 @@ public class RequestGrid extends TreeGrid<Object> {
     );
   }
 
+  private void updateFolderInDataProvider(Folder updatedFolder) {
+    var treeData = dataProvider.getTreeData();
+
+    // find the parent (null if it's a root item)
+    var parent = treeData.getRootItems().stream()
+        .filter(item -> item instanceof Folder && ((Folder) item).getId().equals(updatedFolder.getId()))
+        .findAny()
+        .map(treeData::getParent)
+        .orElse(null);
+
+    // find the original item by ID
+    var oldFolderOpt = treeData.getChildren(parent).stream()
+        .filter(item -> item instanceof Folder && ((Folder) item).getId().equals(updatedFolder.getId()))
+        .findFirst();
+
+    if (oldFolderOpt.isPresent()) {
+      var oldFolder = (Folder) oldFolderOpt.get();
+      oldFolder.setName(updatedFolder.getName());
+
+      dataProvider.refreshItem(updatedFolder);
+    }
+  }
+
   private void observeAppState() {
-    appState.getSelectedParamsStream().subscribe(request -> {
-      if (dataProvider != null) {
-        dataProvider.refreshItem(request);
+    appState.getSelectedParamsStream().subscribe(updatedRequest ->
+        getUI().ifPresent(ui -> ui.access(() -> {
+          try {
+            updateRequestInDataProvider(updatedRequest);
+          } catch (Exception ex) {
+            log.error("Failed to update request in {}", getClass().getSimpleName(), ex);
+            Notification.show("Failed to update request in Requests list");
+          }
+        }))
+    );
+  }
+
+  private void updateRequestInDataProvider(Request updatedRequest) {
+    var treeData = dataProvider.getTreeData();
+
+    for (var parent : treeData.getRootItems()) {
+      // Include root (null) as a parent in case requests are not in a folder
+      var potentialParents = new ArrayList<RequestOrFolder>();
+      potentialParents.add(null); // for root-level items
+      potentialParents.add(parent);
+
+      for (var currentParent : potentialParents) {
+        for (var child : treeData.getChildren(currentParent)) {
+          if (child instanceof Request existingRequest && existingRequest.equals(updatedRequest)) {
+            existingRequest.setConfigParams(updatedRequest.getConfigParams());
+            existingRequest.setRunParams(updatedRequest.getRunParams());
+            existingRequest.setFolder(updatedRequest.getFolder());
+
+            dataProvider.refreshAll();
+            return;
+          }
+        }
       }
-    });
+    }
+  }
+
+  private void addCreateRequestColumn() {
+    addColumn(new ComponentRenderer<>(item -> {
+      if (item instanceof Folder folder) {
+        // TODO better icon
+        var createButton = new Button(FILE_ADD.create(), e -> createRequest(folder));
+        createButton.addClassName("delete-button");
+        return createButton;
+      }
+
+      // TODO this takes space without need
+      var nothingButton = new Button();
+      nothingButton.setVisible(false);
+      return nothingButton;
+    }))
+        .setAutoWidth(true)
+        .setFlexGrow(0);
+  }
+
+  private void createRequest(Folder parentFolder) {
+    var currentUserId = appState.getCurrentUser().getId();
+
+    try {
+      requestService.createDefaultRequestAndNotify(currentUserId, parentFolder);
+    } catch (Exception ex) {
+      log.error("Error creating request", ex);
+      ErrorNotification.show("Error creating request");
+      throw ex;
+    }
   }
 
   private void addDeleteColumn() {
@@ -159,7 +244,7 @@ public class RequestGrid extends TreeGrid<Object> {
     var currentUserId = appState.getCurrentUser().getId();
     var userRequestsByFolder = getUserRequestsByFolder(currentUserId);
 
-    var treeData = new TreeData<>();
+    var treeData = new TreeData<RequestOrFolder>();
     userRequestsByFolder.forEach((folder, requests) -> {
       if (folder == null) {
         requests.forEach(request -> treeData.addItem(null, request));
@@ -214,19 +299,16 @@ public class RequestGrid extends TreeGrid<Object> {
     focusFolderName(); // focus the folder name in Folder layout
   }
 
-  private void addRequest(Long requestId) {
-    var optRequest = requestService.getById(requestId);
-    if (optRequest.isEmpty()) {
-      return;
-    }
-
-    var newRequest = optRequest.get();
-
-    dataProvider.getTreeData().addRootItems(newRequest);
+  private void addRequest(Request newRequest) {
+    dataProvider.getTreeData().addItem(newRequest.getFolder(), newRequest);
     dataProvider.refreshAll();
 
     requestLayout.setVisible(true);
     folderLayout.setVisible(false);
+
+    if (newRequest.getFolder() != null) {
+      expand(newRequest.getFolder());
+    }
 
     selectRequest(newRequest); // set new request as currently selected item
     focusRequestName(); // focus the request name in Config layout

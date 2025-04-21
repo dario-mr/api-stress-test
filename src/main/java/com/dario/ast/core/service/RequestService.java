@@ -1,5 +1,9 @@
 package com.dario.ast.core.service;
 
+import static com.dario.ast.core.domain.ConfigParams.defaultConfigParams;
+import static com.dario.ast.core.domain.RunParams.defaultRunParams;
+import static com.dario.ast.util.EventUtil.requestCreated;
+
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.domain.Request;
@@ -17,7 +21,6 @@ import org.springframework.stereotype.Service;
 public class RequestService {
 
   private final RequestRepository requestRepository;
-
 
   public List<Request> getByUserIdAndType(long userId, RequestType requestType) {
     return requestRepository.findByUserIdAndType(userId, requestType);
@@ -40,8 +43,17 @@ public class RequestService {
     requestRepository.updateRunParams(runParams);
   }
 
-  public Long create(Request request) {
+  public Request create(Request request) {
     return requestRepository.create(request);
+  }
+
+  public void createDefaultRequestAndNotify(long userId, Folder parentFolder) {
+    var configParams = defaultConfigParams(userId);
+    var runParams = defaultRunParams();
+    var request = new Request(configParams, runParams, parentFolder);
+
+    var newRequest = create(request);
+    requestCreated(newRequest);
   }
 
   public void delete(long id) {

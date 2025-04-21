@@ -5,6 +5,7 @@ import static com.vaadin.flow.component.ComponentUtil.fireEvent;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.Folder;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
@@ -30,8 +31,8 @@ public class EventUtil {
     fireEvent(UI.getCurrent(), new ConfigEntriesUpdatedEvent());
   }
 
-  public static void requestCreated(Long requestId) {
-    fireEvent(UI.getCurrent(), new RequestCreatedEvent(requestId));
+  public static void requestCreated(Request request) {
+    fireEvent(UI.getCurrent(), new RequestCreatedEvent(request));
   }
 
   public static void preRequestCreated(Long requestId) {
