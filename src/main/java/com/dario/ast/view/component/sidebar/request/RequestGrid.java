@@ -145,16 +145,14 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   private void updateRequestInDataProvider(Request updatedRequest) {
     var treeData = dataProvider.getTreeData();
+
     var potentialParents = new ArrayList<>(treeData.getRootItems());
     potentialParents.add(null); // root-level
 
     for (var parent : potentialParents) {
       for (var child : treeData.getChildren(parent)) {
         if (child instanceof Request existingRequest && existingRequest.equals(updatedRequest)) {
-          existingRequest.setConfigParams(updatedRequest.getConfigParams());
-          existingRequest.setRunParams(updatedRequest.getRunParams());
-          existingRequest.setFolder(updatedRequest.getFolder());
-
+          existingRequest.updateFrom(updatedRequest);
           dataProvider.refreshItem(existingRequest);
           return;
         }
@@ -167,21 +165,20 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     // find the parent (null if it's a root item)
     var parent = treeData.getRootItems().stream()
-        .filter(item -> item instanceof Folder && ((Folder) item).getId().equals(updatedFolder.getId()))
+        .filter(item -> item instanceof Folder folder && folder.getId().equals(updatedFolder.getId()))
         .findAny()
         .map(treeData::getParent)
         .orElse(null);
 
     // find the original item by ID
-    var oldFolderOpt = treeData.getChildren(parent).stream()
-        .filter(item -> item instanceof Folder && ((Folder) item).getId().equals(updatedFolder.getId()))
+    var existingFolderOpt = treeData.getChildren(parent).stream()
+        .filter(item -> item instanceof Folder folder && folder.getId().equals(updatedFolder.getId()))
         .findFirst();
 
-    if (oldFolderOpt.isPresent()) {
-      var oldFolder = (Folder) oldFolderOpt.get();
-      oldFolder.setName(updatedFolder.getName());
-
-      dataProvider.refreshItem(updatedFolder);
+    if (existingFolderOpt.isPresent()) {
+      var existingFolder = (Folder) existingFolderOpt.get();
+      existingFolder.updateFrom(updatedFolder);
+      dataProvider.refreshItem(existingFolder);
     }
   }
 

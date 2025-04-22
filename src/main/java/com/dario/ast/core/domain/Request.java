@@ -15,4 +15,11 @@ public final class Request implements RequestOrFolder {
   private ConfigParams configParams;
   private RunParams runParams;
   private Folder folder;
+
+  public void updateFrom(Request other) {
+    this.configParams = other.configParams;
+    this.runParams = other.runParams;
+    this.folder = other.folder;
+  }
+
 }

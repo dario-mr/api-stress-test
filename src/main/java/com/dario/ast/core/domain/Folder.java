@@ -24,4 +24,11 @@ public final class Folder implements RequestOrFolder {
     return new Folder(null, userId, "New folder", Instant.now());
   }
 
+  public void updateFrom(Folder other) {
+    this.id = other.id;
+    this.userId = other.userId;
+    this.name = other.name;
+    this.createdOn = other.createdOn;
+  }
+
 }
