@@ -43,6 +43,10 @@ public class RequestService {
     requestRepository.updateRunParams(runParams);
   }
 
+  public void updateFolder(long requestId, Folder folder) {
+    requestRepository.updateFolder(requestId, folder);
+  }
+
   public Request create(Request request) {
     return requestRepository.create(request);
   }

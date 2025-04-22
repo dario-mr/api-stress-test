@@ -126,6 +126,16 @@ public class RequestRepository {
     jpaRepository.save(currentRequest);
   }
 
+  public void updateFolder(long requestId, Folder folder) {
+    var currentRequest = jpaRepository.findById(requestId).orElseThrow();
+
+    // only update folder in request
+    currentRequest.setFolder(mapFolderToEntity(folder));
+    currentRequest.setModifiedOn(Instant.now());
+
+    jpaRepository.save(currentRequest);
+  }
+
   public void delete(long id) {
     jpaRepository.deleteById(id);
   }
