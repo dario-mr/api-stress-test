@@ -14,6 +14,8 @@ import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -23,12 +25,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/env-layout.css")
-public class EnvironmentLayout extends VerticalLayout {
+public class EnvironmentLayout extends VerticalLayout implements ReactiveBinderSupport {
 
   private final EnvironmentService environmentService;
   private final AppState appState;
@@ -54,7 +57,6 @@ public class EnvironmentLayout extends VerticalLayout {
     nameText.setMinWidth("0");
 
     addListeners();
-    observeAppState();
 
     add(
         new H4("Environment"),
@@ -67,6 +69,8 @@ public class EnvironmentLayout extends VerticalLayout {
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
+
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
 
     // Listen for events that should trigger applying the env params in the UI
     ComponentUtil.addListener(attachEvent.getUI(),
@@ -87,13 +91,15 @@ public class EnvironmentLayout extends VerticalLayout {
     );
   }
 
-  private void observeAppState() {
-    // if the environment currently loaded in the UI was updated, update it in the UI
-    appState.getSelectedEnvironmentStream().subscribe(selectedEnvironment -> {
-      if (selectedEnvironment.equals(this.selectedEnvironment)) {
-        loadEnvironmentIntoUi(selectedEnvironment);
-      }
-    });
+  @ReactiveSubscription
+  public Flux<Environment> onEnvironmentChange() {
+    return appState.getSelectedEnvironmentStream();
+  }
+
+  public void handle(Environment selectedEnvironment) {
+    if (selectedEnvironment.equals(this.selectedEnvironment)) {
+      loadEnvironmentIntoUi(selectedEnvironment);
+    }
   }
 
   private void loadEnvironmentIntoUi(Environment environment) {

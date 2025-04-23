@@ -99,7 +99,7 @@ public class AppState {
     }));
   }
 
-  public Flux<Request> getSelectedParamsStream() {
+  public Flux<Request> getSelectedRequestStream() {
     return selectedRequestSink.asFlux();
   }
 

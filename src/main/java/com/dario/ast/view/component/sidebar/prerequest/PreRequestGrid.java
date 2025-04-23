@@ -12,6 +12,8 @@ import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -25,11 +27,12 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
-public class PreRequestGrid extends Grid<ConfigParams> {
+public class PreRequestGrid extends Grid<ConfigParams> implements ReactiveBinderSupport {
 
   private final RequestService requestService;
   private final AppState appState;
@@ -71,13 +74,14 @@ public class PreRequestGrid extends Grid<ConfigParams> {
       selectItem(preRequestParams);
     });
 
-    observeAppState();
     loadRequests();
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
+
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
 
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
@@ -89,15 +93,18 @@ public class PreRequestGrid extends Grid<ConfigParams> {
     );
   }
 
-  private void observeAppState() {
-    appState.getPreRequestsParamsStream().subscribe(preRequestParams -> {
-      dataProvider = new ListDataProvider<>(preRequestParams);
-      setDataProvider(dataProvider);
+  @ReactiveSubscription
+  public Flux<List<ConfigParams>> onPreRequestsChanged() {
+    return appState.getPreRequestsParamsStream();
+  }
 
-      if (selectedPreRequestParams != null) {
-        getSelectionModel().select(selectedPreRequestParams);
-      }
-    });
+  public void handle(List<ConfigParams> preRequestParams) {
+    dataProvider = new ListDataProvider<>(preRequestParams);
+    setDataProvider(dataProvider);
+
+    if (selectedPreRequestParams != null) {
+      getSelectionModel().select(selectedPreRequestParams);
+    }
   }
 
   private void addDeleteColumn() {

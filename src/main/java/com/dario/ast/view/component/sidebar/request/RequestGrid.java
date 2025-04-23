@@ -16,14 +16,18 @@ import com.dario.ast.event.RequestCreatedEvent;
 import com.dario.ast.event.folder.FolderCreatedEvent;
 import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.dario.ast.view.component.folder.FolderLayout;
 import com.dario.ast.view.component.request.RequestLayout;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.grid.ItemClickEvent;
+import com.vaadin.flow.component.grid.dnd.GridDragStartEvent;
+import com.vaadin.flow.component.grid.dnd.GridDropEvent;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
@@ -35,15 +39,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
-public class RequestGrid extends TreeGrid<RequestOrFolder> {
+public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBinderSupport {
 
-  // TODO drag and drop between folders
-  // TODO general refactor at the end
+  // TODO general refactor
 
   private final RequestService requestService;
   private final AppState appState;
@@ -94,51 +98,20 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       }
     });
 
-    // click listener to load request/folder into UI
-    addItemClickListener(event -> {
-      if (event.getItem() instanceof Request request) {
-        requestLayout.setVisible(true);
-        folderLayout.setVisible(false);
-        selectRequest(request);
-      } else if (event.getItem() instanceof Folder folder) {
-        requestLayout.setVisible(false);
-        folderLayout.setVisible(true);
-        folderSelected(folder);
-      }
-    });
-
-    addDragStartListener(event -> {
-      var draggedItem = event.getDraggedItems().stream().findFirst().orElse(null);
-      if (draggedItem instanceof Request request) {
-        currentlyDraggedRequest = request;
-      } else {
-        currentlyDraggedRequest = null;
-      }
-    });
-
+    // listeners
+    addItemClickListener(this::handleItemClick);
+    addDragStartListener(this::handleDragStart);
     addDragEndListener(event -> currentlyDraggedRequest = null);
+    addDropListener(this::handleDrop);
 
-    addDropListener(event -> {
-      var dropTarget = event.getDropTargetItem().orElse(null);
-
-      if (currentlyDraggedRequest == null) {
-        return;
-      }
-      if (!(dropTarget instanceof Folder targetFolder)) {
-        return;
-      }
-
-      moveRequestToFolder(currentlyDraggedRequest, targetFolder);
-      currentlyDraggedRequest = null;
-    });
-
-    observeAppState();
     loadRequests();
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
+
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
 
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> {
@@ -168,50 +141,13 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     );
   }
 
-  private void observeAppState() {
-    appState.getSelectedParamsStream().subscribe(updatedRequest -> {
-      var ui = getUI().orElse(null);
-      if (ui == null) {
-        log.warn("observeAppState -> getSelectedParamsStream(): UI is null!");
-        return;
-      }
-      if (!ui.isAttached()) {
-        log.warn("observeAppState -> getSelectedParamsStream(): UI is not attached!");
-        return;
-      }
-
-      try {
-        ui.accessSynchronously(() -> updateRequestInDataProvider(updatedRequest));
-      } catch (UIDetachedException e) {
-        log.warn("UI was detached during accessSync in observeAppState()", e);
-      } catch (Exception ex) {
-        log.error("Failed to update request in grid [{}]", getClass().getSimpleName(), ex);
-        ErrorNotification.show("Failed to update request in Requests list");
-      }
-    });
+  @ReactiveSubscription
+  public Flux<Request> onRequestChange() {
+    return appState.getSelectedRequestStream();
   }
 
-  private void moveRequestToFolder(Request request, Folder newFolder) {
-    try {
-      // Update in backend
-      requestService.updateFolder(request.getConfigParams().getRequestId(), newFolder);
-
-      // Update UI
-      var treeData = dataProvider.getTreeData();
-
-      // TODO update without removing, if possible
-      treeData.removeItem(request);
-      request.setFolder(newFolder);
-      treeData.addItem(newFolder, request);
-
-      dataProvider.refreshAll();
-
-      expand(newFolder);
-      selectRequest(request);
-    } catch (Exception ex) {
-      log.error("Failed to move request to folder", ex);
-      ErrorNotification.show("Failed to move request to folder");
-    }
+  public void handle(Request updatedRequest) {
+    updateRequestInDataProvider(updatedRequest);
   }
 
   private void updateRequestInDataProvider(Request updatedRequest) {
@@ -453,6 +389,60 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       if (childrenRequests.contains(selectedRequest)) {
         selectFirstItem();
       }
+    }
+  }
+
+  private void handleItemClick(ItemClickEvent<RequestOrFolder> event) {
+    if (event.getItem() instanceof Request request) {
+      requestLayout.setVisible(true);
+      folderLayout.setVisible(false);
+      selectRequest(request);
+    } else if (event.getItem() instanceof Folder folder) {
+      requestLayout.setVisible(false);
+      folderLayout.setVisible(true);
+      folderSelected(folder);
+    }
+  }
+
+  private void handleDragStart(GridDragStartEvent<RequestOrFolder> event) {
+    var draggedItem = event.getDraggedItems().stream().findFirst().orElse(null);
+    if (draggedItem instanceof Request request) {
+      currentlyDraggedRequest = request;
+    } else {
+      currentlyDraggedRequest = null;
+    }
+  }
+
+  private void handleDrop(GridDropEvent<RequestOrFolder> event) {
+    if (currentlyDraggedRequest == null) {
+      return;
+    }
+
+    var dropTarget = event.getDropTargetItem().orElse(null);
+
+    if (dropTarget instanceof Folder targetFolder) {
+      moveRequestToFolder(currentlyDraggedRequest, targetFolder);
+    }
+  }
+
+  private void moveRequestToFolder(Request request, Folder newFolder) {
+    try {
+      // Update in backend
+      requestService.updateFolder(request.getConfigParams().getRequestId(), newFolder);
+
+      // Update UI
+      var treeData = dataProvider.getTreeData();
+      treeData.removeItem(request);
+      request.setFolder(newFolder);
+      treeData.addItem(newFolder, request);
+
+      dataProvider.refreshAll();
+
+      expand(newFolder);
+      selectRequest(request);
+    } catch (Exception ex) {
+      log.error("Failed to move request to folder", ex);
+      ErrorNotification.show("Failed to move request to folder");
     }
   }
 

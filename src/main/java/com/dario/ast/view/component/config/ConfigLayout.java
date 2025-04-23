@@ -11,6 +11,8 @@ import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.Environment;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
@@ -22,6 +24,8 @@ import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -38,12 +42,13 @@ import java.util.LinkedHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/config-layout.css")
-public class ConfigLayout extends VerticalLayout {
+public class ConfigLayout extends VerticalLayout implements ReactiveBinderSupport {
 
   private final AppState appState;
   private final RequestService requestService;
@@ -114,7 +119,6 @@ public class ConfigLayout extends VerticalLayout {
 
     // add listeners
     addListeners();
-    observeAppState();
 
     // add all components
     add(
@@ -130,6 +134,8 @@ public class ConfigLayout extends VerticalLayout {
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
+
     // Listen for events indicating that config entries (EntriesSection class) were updated
     ComponentUtil.addListener(attachEvent.getUI(),
         ConfigEntriesUpdatedEvent.class,
@@ -143,15 +149,23 @@ public class ConfigLayout extends VerticalLayout {
     );
   }
 
-  private void observeAppState() {
-    appState.getSelectedParamsStream().subscribe(request -> {
-      loadConfigIntoUI(request.getConfigParams());
-      generateCurlPreview();
-    });
+  @ReactiveSubscription
+  public Flux<Request> onRequestChange() {
+    return appState.getSelectedRequestStream();
+  }
 
-    appState.getSelectedEnvironmentStream().subscribe(environment ->
-        generateCurlPreview()
-    );
+  public void handle(Request request) {
+    loadConfigIntoUI(request.getConfigParams());
+    generateCurlPreview();
+  }
+
+  @ReactiveSubscription
+  public Flux<Environment> onEnvironmentChange() {
+    return appState.getSelectedEnvironmentStream();
+  }
+
+  public void handle(Environment environment) {
+    generateCurlPreview();
   }
 
   private ConfigParams getConfigParams() {

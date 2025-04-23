@@ -9,6 +9,8 @@ import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -21,11 +23,12 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
-public class EnvGrid extends Grid<Environment> {
+public class EnvGrid extends Grid<Environment> implements ReactiveBinderSupport {
 
   private final EnvironmentService environmentService;
   private final AppState appState;
@@ -51,13 +54,14 @@ public class EnvGrid extends Grid<Environment> {
       selectItem(env);
     });
 
-    observeAppState();
     loadEnvs();
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
+
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
 
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
@@ -69,15 +73,18 @@ public class EnvGrid extends Grid<Environment> {
     );
   }
 
-  private void observeAppState() {
-    appState.getEnvironmentsStream().subscribe(environments -> {
-      dataProvider = new ListDataProvider<>(environments);
-      setDataProvider(dataProvider);
+  @ReactiveSubscription
+  public Flux<List<Environment>> onEnvironmentsChanged() {
+    return appState.getEnvironmentsStream();
+  }
 
-      if (selectedEnvironment != null) {
-        getSelectionModel().select(selectedEnvironment);
-      }
-    });
+  public void handle(List<Environment> environments) {
+    dataProvider = new ListDataProvider<>(environments);
+    setDataProvider(dataProvider);
+
+    if (selectedEnvironment != null) {
+      getSelectionModel().select(selectedEnvironment);
+    }
   }
 
   private void addDeleteColumn() {

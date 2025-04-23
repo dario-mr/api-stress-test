@@ -3,14 +3,18 @@ package com.dario.ast.view.component.environment;
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.EnvironmentService;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.List;
+import reactor.core.publisher.Flux;
 
 @UIScope
 @SpringComponent
-public class EnvironmentCombo extends ComboBox<Environment> {
+public class EnvironmentCombo extends ComboBox<Environment> implements ReactiveBinderSupport {
 
   private final EnvironmentService environmentService;
   private final AppState appState;
@@ -21,7 +25,6 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     this.environmentService = environmentService;
     this.appState = appState;
 
-    observeAppState();
     loadEnvironments();
     addValueChangeListener(event -> {
       if (!isReloadingEnvs) {
@@ -30,8 +33,20 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     });
   }
 
-  private void observeAppState() {
-    appState.getEnvironmentsStream().subscribe(this::reloadEnvironments);
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    super.onAttach(attachEvent);
+
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
+  }
+
+  @ReactiveSubscription
+  public Flux<List<Environment>> onEnvironmentsChanged() {
+    return appState.getEnvironmentsStream();
+  }
+
+  public void handle(List<Environment> environments) {
+    reloadEnvironments(environments);
   }
 
   private void loadEnvironments() {

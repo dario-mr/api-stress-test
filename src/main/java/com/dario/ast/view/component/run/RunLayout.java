@@ -10,6 +10,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestService;
@@ -18,8 +19,11 @@ import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
+import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -33,12 +37,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/run-layout.css")
-public class RunLayout extends VerticalLayout {
+public class RunLayout extends VerticalLayout implements ReactiveBinderSupport {
 
   private static final ObjectMapper JSON_FORMATTER = new ObjectMapper()
       .enable(SerializationFeature.INDENT_OUTPUT);
@@ -124,7 +129,6 @@ public class RunLayout extends VerticalLayout {
 
     // add listeners
     addListeners();
-    observeAppState();
 
     // add all components
     add(
@@ -137,7 +141,13 @@ public class RunLayout extends VerticalLayout {
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
 
-  public RunParams getRunParams() {
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    super.onAttach(attachEvent);
+    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
+  }
+
+  private RunParams getRunParams() {
     var numRequests = requestNumberField.getValue();
     var threadPoolSize = threadPoolSizeField.getValue();
     var stopOnError = stopOnErrorCheckbox.getValue();
@@ -150,9 +160,15 @@ public class RunLayout extends VerticalLayout {
         .build();
   }
 
-  private void observeAppState() {
-    appState.getSelectedParamsStream().subscribe(request -> loadRunParamsIntoUi(request.getRunParams()));
+  @ReactiveSubscription
+  public Flux<Request> onRequestChange() {
+    return appState.getSelectedRequestStream();
   }
+
+  public void handle(Request request) {
+    loadRunParamsIntoUi(request.getRunParams());
+  }
+
 
   private void addListeners() {
     // name
