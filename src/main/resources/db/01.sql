@@ -21,7 +21,7 @@ CREATE TABLE my_schema.ast_request
     thread_pool_size INT           NOT NULL,
     stop_on_error    BOOLEAN       NOT NULL,
     user_id          BIGINT        NOT NULL,
-    folder_id        BIGINT        NOT NULL,
+    folder_id        BIGINT,
     CONSTRAINT fk_ast_request_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE,
     CONSTRAINT fk_ast_request_folder FOREIGN KEY (folder_id) REFERENCES my_schema.ast_request_folder (id) ON DELETE CASCADE
 );
