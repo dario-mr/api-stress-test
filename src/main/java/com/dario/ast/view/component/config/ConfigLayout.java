@@ -24,8 +24,9 @@ import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -42,13 +43,13 @@ import java.util.LinkedHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.vaadin.olli.ClipboardHelper;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/config-layout.css")
-public class ConfigLayout extends VerticalLayout implements ReactiveBinderSupport {
+@ReactiveComponent
+public class ConfigLayout extends VerticalLayout {
 
   private final AppState appState;
   private final RequestService requestService;
@@ -134,8 +135,6 @@ public class ConfigLayout extends VerticalLayout implements ReactiveBinderSuppor
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-
     // Listen for events indicating that config entries (EntriesSection class) were updated
     ComponentUtil.addListener(attachEvent.getUI(),
         ConfigEntriesUpdatedEvent.class,
@@ -149,22 +148,14 @@ public class ConfigLayout extends VerticalLayout implements ReactiveBinderSuppor
     );
   }
 
-  @ReactiveSubscription
-  public Flux<Request> onRequestChange() {
-    return appState.getSelectedRequestStream();
-  }
-
-  public void handle(Request request) {
+  @ReactiveHandler(ReactiveType.REQUEST)
+  public void onSelectedRequestChange(Request request) {
     loadConfigIntoUI(request.getConfigParams());
     generateCurlPreview();
   }
 
-  @ReactiveSubscription
-  public Flux<Environment> onEnvironmentChange() {
-    return appState.getSelectedEnvironmentStream();
-  }
-
-  public void handle(Environment environment) {
+  @ReactiveHandler(ReactiveType.ENVIRONMENT)
+  public void onEnvironmentChange(Environment environment) {
     generateCurlPreview();
   }
 

@@ -4,7 +4,6 @@ import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.EnvironmentService;
@@ -14,8 +13,9 @@ import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -25,16 +25,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/env-layout.css")
-public class EnvironmentLayout extends VerticalLayout implements ReactiveBinderSupport {
+@ReactiveComponent
+public class EnvironmentLayout extends VerticalLayout {
 
   private final EnvironmentService environmentService;
-  private final AppState appState;
 
   private final TextField nameText = new TextField();
   private final EntriesSection<EnvVariable> variablesSection = new EntriesSection<>(
@@ -42,9 +41,8 @@ public class EnvironmentLayout extends VerticalLayout implements ReactiveBinderS
 
   private Environment selectedEnvironment;
 
-  public EnvironmentLayout(EnvironmentService environmentService, AppState appState) {
+  public EnvironmentLayout(EnvironmentService environmentService) {
     this.environmentService = environmentService;
-    this.appState = appState;
 
     addClassNames("card-layout", "env-layout");
     setHeight("fit-content");
@@ -70,8 +68,6 @@ public class EnvironmentLayout extends VerticalLayout implements ReactiveBinderS
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-
     // Listen for events that should trigger applying the env params in the UI
     ComponentUtil.addListener(attachEvent.getUI(),
         ApplyEnvironmentEvent.class,
@@ -91,12 +87,8 @@ public class EnvironmentLayout extends VerticalLayout implements ReactiveBinderS
     );
   }
 
-  @ReactiveSubscription
-  public Flux<Environment> onEnvironmentChange() {
-    return appState.getSelectedEnvironmentStream();
-  }
-
-  public void handle(Environment selectedEnvironment) {
+  @ReactiveHandler(ReactiveType.ENVIRONMENT)
+  public void onSelectedEnvironmentChange(Environment selectedEnvironment) {
     if (selectedEnvironment.equals(this.selectedEnvironment)) {
       loadEnvironmentIntoUi(selectedEnvironment);
     }

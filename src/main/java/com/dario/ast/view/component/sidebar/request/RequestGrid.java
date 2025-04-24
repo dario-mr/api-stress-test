@@ -16,8 +16,9 @@ import com.dario.ast.event.RequestCreatedEvent;
 import com.dario.ast.event.folder.FolderCreatedEvent;
 import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.dario.ast.view.component.folder.FolderLayout;
 import com.dario.ast.view.component.request.RequestLayout;
 import com.vaadin.flow.component.AttachEvent;
@@ -39,13 +40,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
+@ReactiveComponent
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
-public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBinderSupport {
+public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   // TODO general refactor
 
@@ -111,8 +112,6 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBi
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-
     // Ensure the event is fired only after the UI is fully initialized
     getUI().ifPresent(ui -> {
       if (ui.isAttached()) {
@@ -141,12 +140,8 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBi
     );
   }
 
-  @ReactiveSubscription
-  public Flux<Request> onRequestChange() {
-    return appState.getSelectedRequestStream();
-  }
-
-  public void handle(Request updatedRequest) {
+  @ReactiveHandler(ReactiveType.REQUEST)
+  public void onSelectedRequestChange(Request updatedRequest) {
     updateRequestInDataProvider(updatedRequest);
   }
 
@@ -194,6 +189,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBi
       if (item instanceof Folder folder) {
         // TODO better icon
         var createButton = new Button(FILE_ADD.create(), e -> createRequest(folder));
+        createButton.setTooltipText("Create request");
         createButton.addClassName("delete-button");
         return createButton;
       }
@@ -228,6 +224,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> implements ReactiveBi
         }
       });
       deleteButton.addClassName("delete-button");
+      deleteButton.setTooltipText("Delete request");
       return deleteButton;
     }))
         .setAutoWidth(true)

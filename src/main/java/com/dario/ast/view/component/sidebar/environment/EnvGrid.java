@@ -9,8 +9,9 @@ import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -23,18 +24,19 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
-public class EnvGrid extends Grid<Environment> implements ReactiveBinderSupport {
+@ReactiveComponent
+public class EnvGrid extends Grid<Environment> {
 
   private final EnvironmentService environmentService;
   private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
   private Environment selectedEnvironment;
+  private boolean firstLoad = true;
 
   public EnvGrid(EnvironmentService environmentService, AppState appState) {
     this.environmentService = environmentService;
@@ -61,11 +63,6 @@ public class EnvGrid extends Grid<Environment> implements ReactiveBinderSupport 
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-
-    // Ensure the event is fired only after the UI is fully initialized
-    getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
-
     // Listen for events indicating that a new Environment was created
     ComponentUtil.addListener(attachEvent.getUI(),
         EnvironmentCreatedEvent.class,
@@ -73,17 +70,17 @@ public class EnvGrid extends Grid<Environment> implements ReactiveBinderSupport 
     );
   }
 
-  @ReactiveSubscription
-  public Flux<List<Environment>> onEnvironmentsChanged() {
-    return appState.getEnvironmentsStream();
-  }
-
-  public void handle(List<Environment> environments) {
+  @ReactiveHandler(ReactiveType.ENVIRONMENTS_LIST)
+  public void onEnvironmentsChanged(List<Environment> environments) {
     dataProvider = new ListDataProvider<>(environments);
     setDataProvider(dataProvider);
 
     if (selectedEnvironment != null) {
       getSelectionModel().select(selectedEnvironment);
+    }
+    if (firstLoad) {
+      firstLoad = false;
+      selectFirstItem();
     }
   }
 

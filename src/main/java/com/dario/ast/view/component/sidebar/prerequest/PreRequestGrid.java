@@ -12,8 +12,9 @@ import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -27,18 +28,19 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
-public class PreRequestGrid extends Grid<ConfigParams> implements ReactiveBinderSupport {
+@ReactiveComponent
+public class PreRequestGrid extends Grid<ConfigParams> {
 
   private final RequestService requestService;
   private final AppState appState;
 
   private ListDataProvider<ConfigParams> dataProvider;
   private ConfigParams selectedPreRequestParams;
+  private boolean firstLoad = true;
 
   public PreRequestGrid(RequestService requestService, AppState appState, PreRequestService preRequestService) {
     this.requestService = requestService;
@@ -81,11 +83,6 @@ public class PreRequestGrid extends Grid<ConfigParams> implements ReactiveBinder
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
 
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-
-    // Ensure the event is fired only after the UI is fully initialized
-    getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
-
     // Listen for events indicating that a new pre-request was created
     ComponentUtil.addListener(attachEvent.getUI(),
         PreRequestCreatedEvent.class,
@@ -93,17 +90,17 @@ public class PreRequestGrid extends Grid<ConfigParams> implements ReactiveBinder
     );
   }
 
-  @ReactiveSubscription
-  public Flux<List<ConfigParams>> onPreRequestsChanged() {
-    return appState.getPreRequestsParamsStream();
-  }
-
-  public void handle(List<ConfigParams> preRequestParams) {
+  @ReactiveHandler(ReactiveType.CONFIG_PARAMS_LIST)
+  public void onPreRequestsChanged(List<ConfigParams> preRequestParams) {
     dataProvider = new ListDataProvider<>(preRequestParams);
     setDataProvider(dataProvider);
 
     if (selectedPreRequestParams != null) {
       getSelectionModel().select(selectedPreRequestParams);
+    }
+    if (firstLoad) {
+      firstLoad = false;
+      selectFirstItem();
     }
   }
 

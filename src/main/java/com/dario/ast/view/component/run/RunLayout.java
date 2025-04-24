@@ -19,11 +19,11 @@ import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
-import com.dario.ast.view.component.common.reactive.ReactiveBinderSupport;
-import com.dario.ast.view.component.common.reactive.ReactiveSubscription;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -37,13 +37,13 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 
 @Slf4j
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/run-layout.css")
-public class RunLayout extends VerticalLayout implements ReactiveBinderSupport {
+@ReactiveComponent
+public class RunLayout extends VerticalLayout {
 
   private static final ObjectMapper JSON_FORMATTER = new ObjectMapper()
       .enable(SerializationFeature.INDENT_OUTPUT);
@@ -141,12 +141,6 @@ public class RunLayout extends VerticalLayout implements ReactiveBinderSupport {
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
 
-  @Override
-  protected void onAttach(AttachEvent attachEvent) {
-    super.onAttach(attachEvent);
-    getUI().ifPresent(ui -> bindReactiveSubscriptions(this, ui));
-  }
-
   private RunParams getRunParams() {
     var numRequests = requestNumberField.getValue();
     var threadPoolSize = threadPoolSizeField.getValue();
@@ -160,15 +154,10 @@ public class RunLayout extends VerticalLayout implements ReactiveBinderSupport {
         .build();
   }
 
-  @ReactiveSubscription
-  public Flux<Request> onRequestChange() {
-    return appState.getSelectedRequestStream();
-  }
-
-  public void handle(Request request) {
+  @ReactiveHandler(ReactiveType.REQUEST)
+  public void onSelectedRequestChange(Request request) {
     loadRunParamsIntoUi(request.getRunParams());
   }
-
 
   private void addListeners() {
     // name
