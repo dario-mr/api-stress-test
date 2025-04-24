@@ -18,7 +18,6 @@ import com.dario.ast.repository.jpa.entity.RequestFolderEntity;
 import com.dario.ast.repository.jpa.entity.RequestHeaderEntity;
 import com.dario.ast.repository.jpa.entity.RequestQueryParameterEntity;
 import com.dario.ast.repository.jpa.entity.RequestUriVariableEntity;
-import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,7 +35,6 @@ public class RequestRepository {
 
   private final RequestJpaRepository jpaRepository;
   private final FolderJpaRepository folderJpaRepository;
-  private final EntityManager entityManager;
 
   public Map<Folder, List<Request>> getRequestsByUserIdAndTypeAndStatusGroupedByFolder(
       long userId, RequestType requestType, boolean active) {
@@ -140,7 +138,7 @@ public class RequestRepository {
     jpaRepository.deleteById(id);
   }
 
-  public void deleteFolder(long folderId) {
+  public void deleteByFolderId(long folderId) {
     jpaRepository.deleteRequestEntitiesByFolderId(folderId);
   }
 

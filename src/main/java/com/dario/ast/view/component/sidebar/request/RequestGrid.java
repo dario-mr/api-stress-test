@@ -11,6 +11,7 @@ import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.domain.Request;
+import com.dario.ast.core.service.FolderService;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.RequestCreatedEvent;
 import com.dario.ast.event.folder.FolderCreatedEvent;
@@ -48,78 +49,37 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
 public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
-  // TODO general refactor
+  private static final String DELETE_BUTTON_CLASS = "delete-button";
 
   private final RequestService requestService;
   private final AppState appState;
   private final RequestLayout requestLayout;
   private final FolderLayout folderLayout;
+  private final FolderService folderService;
 
-  private TreeDataProvider<RequestOrFolder> dataProvider;
+  private TreeDataProvider<RequestOrFolder> dataProvider = new TreeDataProvider<>(new TreeData<>());
   private Request currentlyDraggedRequest;
 
   public RequestGrid(
       RequestService requestService,
       AppState appState,
       RequestLayout requestLayout,
-      FolderLayout folderLayout
-  ) {
+      FolderLayout folderLayout,
+      FolderService folderService) {
     this.requestService = requestService;
     this.appState = appState;
     this.requestLayout = requestLayout;
     this.folderLayout = folderLayout;
 
-    addClassName("sidebar-grid");
-    setRowsDraggable(true);
-    setDropMode(ON_TOP);
-
-    // name column
-    addComponentHierarchyColumn(item -> {
-      if (item instanceof Folder folder) {
-        return new Span(folder.getName());
-      }
-      if (item instanceof Request request) {
-        return new Span(request.getConfigParams().getRequestName());
-      }
-      return new Span("⚠️ Unknown row type [%s]".formatted(item.getClass().getSimpleName()));
-    })
-        .setAutoWidth(true)
-        .setFlexGrow(1);
-
-    // create request button
-    addCreateRequestColumn();
-
-    // delete button
-    addDeleteColumn();
-
-    // allow only single selection
-    asSingleSelect().addValueChangeListener(event -> {
-      if (event.getValue() == null && event.getOldValue() != null) {
-        asSingleSelect().setValue(event.getOldValue());
-      }
-    });
-
-    // listeners
-    addItemClickListener(this::handleItemClick);
-    addDragStartListener(this::handleDragStart);
-    addDragEndListener(event -> currentlyDraggedRequest = null);
-    addDropListener(this::handleDrop);
-
+    configureGrid();
+    registerListeners();
     loadRequests();
+    this.folderService = folderService;
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
-
-    // Ensure the event is fired only after the UI is fully initialized
-    getUI().ifPresent(ui -> {
-      if (ui.isAttached()) {
-        ui.access(this::selectFirstItem);
-      } else {
-        log.warn("onAttach -> selectFirstItem: UI is not attached!");
-      }
-    });
 
     // Listen for events indicating that a new request was created
     ComponentUtil.addListener(attachEvent.getUI(),
@@ -143,6 +103,45 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   @ReactiveHandler(ReactiveType.REQUEST)
   public void onSelectedRequestChange(Request updatedRequest) {
     updateRequestInDataProvider(updatedRequest);
+  }
+
+  private void configureGrid() {
+    addClassName("sidebar-grid");
+    setRowsDraggable(true);
+    setDropMode(ON_TOP);
+
+    // name column
+    addComponentHierarchyColumn(item -> {
+      if (item instanceof Folder folder) {
+        return new Span(folder.getName());
+      }
+      if (item instanceof Request request) {
+        return new Span(request.getConfigParams().getRequestName());
+      }
+      return new Span("⚠️ Unknown row type [%s]".formatted(item.getClass().getSimpleName()));
+    })
+        .setAutoWidth(true)
+        .setFlexGrow(1);
+
+    // create request button
+    addCreateRequestColumn();
+
+    // delete button
+    addDeleteButtonColumn();
+  }
+
+  private void registerListeners() {
+    // allow only single selection
+    asSingleSelect().addValueChangeListener(event -> {
+      if (event.getValue() == null && event.getOldValue() != null) {
+        asSingleSelect().setValue(event.getOldValue());
+      }
+    });
+
+    addItemClickListener(this::handleItemClick);
+    addDragStartListener(this::handleDragStart);
+    addDragEndListener(event -> currentlyDraggedRequest = null);
+    addDropListener(this::handleDropEvent);
   }
 
   private void updateRequestInDataProvider(Request updatedRequest) {
@@ -190,7 +189,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         // TODO better icon
         var createButton = new Button(FILE_ADD.create(), e -> createRequest(folder));
         createButton.setTooltipText("Create request");
-        createButton.addClassName("delete-button");
+        createButton.addClassName(DELETE_BUTTON_CLASS);
         return createButton;
       }
 
@@ -214,17 +213,17 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     }
   }
 
-  private void addDeleteColumn() {
+  private void addDeleteButtonColumn() {
     addColumn(new ComponentRenderer<>(item -> {
       var deleteButton = new Button(TRASH.create(), e -> {
         if (item instanceof Request request) {
-          deleteRequestDialog(request);
+          showDeleteDialog("Delete request?", () -> deleteRequest(request));
         } else if (item instanceof Folder folder) {
-          deleteFolderDialog(folder);
+          showDeleteDialog("Delete folder?", () -> deleteFolder(folder));
         }
       });
-      deleteButton.addClassName("delete-button");
-      deleteButton.setTooltipText("Delete request");
+      deleteButton.addClassName(DELETE_BUTTON_CLASS);
+      deleteButton.setTooltipText("Delete item");
       return deleteButton;
     }))
         .setAutoWidth(true)
@@ -247,6 +246,8 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     dataProvider = new TreeDataProvider<>(treeData);
     setDataProvider(dataProvider);
+
+    selectFirstRequest();
   }
 
   private Map<Folder, List<Request>> getUserRequestsByFolder(long currentUserId) {
@@ -259,8 +260,8 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     }
   }
 
-  private void selectFirstItem() {
-    for (Object rootItem : dataProvider.getTreeData().getRootItems()) {
+  private void selectFirstRequest() {
+    for (var rootItem : dataProvider.getTreeData().getRootItems()) {
       if (rootItem instanceof Request request) {
         selectRequest(request);
         return;
@@ -315,28 +316,15 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     selectFolder(folder);
   }
 
-  private void deleteRequestDialog(Request request) {
-    var deleteDialog = new ConfirmDialog();
-    deleteDialog.setHeader("Delete request?");
-    deleteDialog.setCancelable(true);
-    deleteDialog.setConfirmText("Delete");
-    deleteDialog.setCancelText("Cancel");
-    deleteDialog.setConfirmButtonTheme("error primary");
-    deleteDialog.addConfirmListener(event -> deleteRequest(request));
-
-    deleteDialog.open();
-  }
-
-  private void deleteFolderDialog(Folder folder) {
-    var deleteDialog = new ConfirmDialog();
-    deleteDialog.setHeader("Delete folder?");
-    deleteDialog.setCancelable(true);
-    deleteDialog.setConfirmText("Delete");
-    deleteDialog.setCancelText("Cancel");
-    deleteDialog.setConfirmButtonTheme("error primary");
-    deleteDialog.addConfirmListener(event -> deleteFolder(folder));
-
-    deleteDialog.open();
+  private void showDeleteDialog(String title, Runnable onConfirm) {
+    var dialog = new ConfirmDialog();
+    dialog.setHeader(title);
+    dialog.setCancelable(true);
+    dialog.setConfirmText("Delete");
+    dialog.setCancelText("Cancel");
+    dialog.setConfirmButtonTheme("error primary");
+    dialog.addConfirmListener(e -> onConfirm.run());
+    dialog.open();
   }
 
   private void deleteRequest(Request toDelete) {
@@ -355,13 +343,13 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     // if the deleted item was currently selected, select another one (first in data provider)
     if (selectedRequest.isPresent() && selectedRequest.get().equals(toDelete)) {
-      selectFirstItem();
+      selectFirstRequest();
     }
   }
 
   private void deleteFolder(Folder toDelete) {
     try {
-      requestService.deleteFolder(toDelete.getId());
+      folderService.delete(toDelete.getId());
     } catch (Exception ex) {
       log.error("Error deleting folder {}", toDelete, ex);
       ErrorNotification.show("Error deleting folder");
@@ -384,24 +372,26 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     // If one of the folder requests was deleted, select another item
     if (selectedItem.isPresent() && selectedItem.get() instanceof Request selectedRequest) {
       if (childrenRequests.contains(selectedRequest)) {
-        selectFirstItem();
+        selectFirstRequest();
       }
     }
   }
 
   private void handleItemClick(ItemClickEvent<RequestOrFolder> event) {
+    requestLayout.setVisible(false);
+    folderLayout.setVisible(false);
+
     if (event.getItem() instanceof Request request) {
       requestLayout.setVisible(true);
-      folderLayout.setVisible(false);
       selectRequest(request);
     } else if (event.getItem() instanceof Folder folder) {
-      requestLayout.setVisible(false);
       folderLayout.setVisible(true);
       folderSelected(folder);
     }
   }
 
   private void handleDragStart(GridDragStartEvent<RequestOrFolder> event) {
+    // only allow dragging requests
     var draggedItem = event.getDraggedItems().stream().findFirst().orElse(null);
     if (draggedItem instanceof Request request) {
       currentlyDraggedRequest = request;
@@ -410,7 +400,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     }
   }
 
-  private void handleDrop(GridDropEvent<RequestOrFolder> event) {
+  private void handleDropEvent(GridDropEvent<RequestOrFolder> event) {
     if (currentlyDraggedRequest == null) {
       return;
     }

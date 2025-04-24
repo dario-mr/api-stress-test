@@ -17,6 +17,10 @@ public class FolderRepository {
     return toDomain(entity);
   }
 
+  public void delete(long id) {
+    jpaRepository.deleteById(id);
+  }
+
   private RequestFolderEntity toEntity(Folder folder) {
     return RequestFolderEntity.builder()
         .id(folder.getId())

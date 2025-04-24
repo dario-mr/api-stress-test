@@ -64,8 +64,4 @@ public class RequestService {
     requestRepository.delete(id);
   }
 
-  public void deleteFolder(long folderId) {
-    requestRepository.deleteFolder(folderId);
-  }
-
 }

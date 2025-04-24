@@ -19,7 +19,7 @@
 /* Secondary sidebar */
 .sidebar-layout {
   background: var(--secondary-sidebar-background);
-  min-width: 20rem;
+  min-width: 22rem;
 }
 
 /* Sidebar grid */
