@@ -8,4 +8,4 @@ RUN mvn package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-cp", "app.jar", "org.springframework.boot.loader.JarLauncher"]
