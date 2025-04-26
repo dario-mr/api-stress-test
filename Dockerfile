@@ -5,7 +5,7 @@ COPY . .
 RUN mvn -B -q package -DskipTests -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Denforcer.skip=true -Dmdep.analyze.skip=true
 
 # Stage 2: Create a minimal runtime image
-FROM eclipse-temurin:21-jre-jammy
+FROM gcr.io/distroless/java21-debian12
 WORKDIR /app
 COPY --from=build /app/target/app.jar app.jar
 
