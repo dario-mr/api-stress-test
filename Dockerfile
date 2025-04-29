@@ -8,5 +8,7 @@ RUN mvn -B -q package -DskipTests -Dmaven.javadoc.skip=true -Dcheckstyle.skip=tr
 FROM gcr.io/distroless/java21-debian12
 WORKDIR /app
 COPY --from=build /app/target/app.jar app.jar
+# Check jar validity
+RUN unzip -t app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
