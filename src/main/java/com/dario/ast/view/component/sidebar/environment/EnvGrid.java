@@ -6,9 +6,12 @@ import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.button.Button;
@@ -25,16 +28,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UIScope
 @SpringComponent
+@ReactiveComponent
 public class EnvGrid extends Grid<Environment> {
 
-  private final AstEnvironmentService astEnvironmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
   private ListDataProvider<Environment> dataProvider;
   private Environment selectedEnvironment;
+  private boolean firstLoad = true;
 
-  public EnvGrid(AstEnvironmentService astEnvironmentService, AppState appState) {
-    this.astEnvironmentService = astEnvironmentService;
+  public EnvGrid(EnvironmentService environmentService, AppState appState) {
+    this.environmentService = environmentService;
     this.appState = appState;
 
     addClassName("sidebar-grid");
@@ -51,16 +56,12 @@ public class EnvGrid extends Grid<Environment> {
       selectItem(env);
     });
 
-    observeAppState();
     loadEnvs();
   }
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     super.onAttach(attachEvent);
-
-    // Ensure the event is fired only after the UI is fully initialized
-    getUI().ifPresent(ui -> ui.access(this::selectFirstItem));
 
     // Listen for events indicating that a new Environment was created
     ComponentUtil.addListener(attachEvent.getUI(),
@@ -69,15 +70,18 @@ public class EnvGrid extends Grid<Environment> {
     );
   }
 
-  private void observeAppState() {
-    appState.getEnvironmentsStream().subscribe(environments -> {
-      dataProvider = new ListDataProvider<>(environments);
-      setDataProvider(dataProvider);
+  @ReactiveHandler(ReactiveType.ENVIRONMENTS_LIST)
+  public void onEnvironmentsChanged(List<Environment> environments) {
+    dataProvider = new ListDataProvider<>(environments);
+    setDataProvider(dataProvider);
 
-      if (selectedEnvironment != null) {
-        getSelectionModel().select(selectedEnvironment);
-      }
-    });
+    if (selectedEnvironment != null) {
+      getSelectionModel().select(selectedEnvironment);
+    }
+    if (firstLoad) {
+      firstLoad = false;
+      selectFirstItem();
+    }
   }
 
   private void addDeleteColumn() {
@@ -99,7 +103,7 @@ public class EnvGrid extends Grid<Environment> {
 
   private ArrayList<Environment> getUserEnvironments(long currentUserId) {
     try {
-      return new ArrayList<>(astEnvironmentService.getByUserId(currentUserId)); // mutable list
+      return new ArrayList<>(environmentService.getByUserId(currentUserId)); // mutable list
     } catch (Exception ex) {
       log.error("Error fetching environments for user [{}]", currentUserId, ex);
       ErrorNotification.show("Error fetching environments");
@@ -124,7 +128,7 @@ public class EnvGrid extends Grid<Environment> {
   }
 
   private void addEnv(Long envId) {
-    var optEnv = astEnvironmentService.getById(envId);
+    var optEnv = environmentService.getById(envId);
     if (optEnv.isEmpty()) {
       return;
     }
@@ -151,7 +155,7 @@ public class EnvGrid extends Grid<Environment> {
 
   private void deleteEnvironment(Environment toDelete) {
     try {
-      astEnvironmentService.delete(toDelete.getId());
+      environmentService.delete(toDelete.getId());
     } catch (Exception ex) {
       log.error("Error deleting environment {}", toDelete.getId(), ex);
       ErrorNotification.show("Error deleting environment");

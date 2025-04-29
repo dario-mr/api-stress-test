@@ -24,7 +24,7 @@ public class PreRequestService {
 
   private final AppState appState;
   private final ApiProxy apiProxy;
-  private final AstEnvironmentService astEnvironmentService;
+  private final EnvironmentService environmentService;
 
   public void updatePreRequestInAppState(ConfigParams updatedPreRequestParams) {
     var currentPreRequestsParams = new ArrayList<>(appState.getPreRequestsParams());
@@ -84,8 +84,8 @@ public class PreRequestService {
           envVariable.setValue(preRequestsResults.get(requestName).responseBody());
         });
 
-    astEnvironmentService.update(environment);
-    astEnvironmentService.updateEnvironmentInAppState(environment);
+    environmentService.update(environment);
+    environmentService.updateEnvironmentInAppState(environment);
   }
 
 }

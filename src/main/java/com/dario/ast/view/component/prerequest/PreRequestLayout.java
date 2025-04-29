@@ -3,20 +3,18 @@ package com.dario.ast.view.component.prerequest;
 import static com.dario.ast.core.domain.RequestHeader.defaultRequestHeader;
 import static com.dario.ast.core.domain.RequestQueryParam.defaultRequestQueryParam;
 import static com.dario.ast.core.domain.RequestUriVariable.defaultRequestUriVariable;
-import static com.dario.ast.core.domain.RunParams.defaultRunParams;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
@@ -46,8 +44,8 @@ import org.springframework.http.HttpMethod;
 @CssImport(value = "./styles/pre-request-layout.css")
 public class PreRequestLayout extends VerticalLayout {
 
-  private final AstRequestService astRequestService;
-  private final PreRequestService prerequestService;
+  private final RequestService requestService;
+  private final PreRequestService preRequestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -67,9 +65,9 @@ public class PreRequestLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public PreRequestLayout(AstRequestService astRequestService, PreRequestService prerequestService) {
-    this.astRequestService = astRequestService;
-    this.prerequestService = prerequestService;
+  public PreRequestLayout(RequestService requestService, PreRequestService preRequestService) {
+    this.requestService = requestService;
+    this.preRequestService = preRequestService;
 
     addClassNames("card-layout", "pre-request-layout");
     setHeight("fit-content");
@@ -239,16 +237,15 @@ public class PreRequestLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var preRequest = new AstRequest(configParams, defaultRunParams());
 
     try {
-      astRequestService.update(preRequest);
+      requestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    prerequestService.updatePreRequestInAppState(preRequest.getConfigParams());
+    preRequestService.updatePreRequestInAppState(configParams);
   }
 
   private ConfigParams getConfigParams() {

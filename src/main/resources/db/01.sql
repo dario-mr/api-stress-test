@@ -21,7 +21,9 @@ CREATE TABLE my_schema.ast_request
     thread_pool_size INT           NOT NULL,
     stop_on_error    BOOLEAN       NOT NULL,
     user_id          BIGINT        NOT NULL,
-    CONSTRAINT fk_ast_request_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE
+    folder_id        BIGINT,
+    CONSTRAINT fk_ast_request_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE,
+    CONSTRAINT fk_ast_request_folder FOREIGN KEY (folder_id) REFERENCES my_schema.ast_request_folder (id) ON DELETE CASCADE
 );
 
 CREATE TABLE my_schema.ast_request_headers
@@ -56,7 +58,7 @@ CREATE TABLE my_schema.ast_request_query_params
 
 CREATE TABLE my_schema.ast_environment
 (
-    id         SERIAL PRIMARY KEY,
+    id         BIGSERIAL PRIMARY KEY,
     name       VARCHAR(255) NOT NULL,
     created_on TIMESTAMP    NOT NULL,
     user_id    BIGINT       NOT NULL,
@@ -80,4 +82,13 @@ CREATE TABLE my_schema.oauth_token
     expires_at    TIMESTAMPTZ,
     last_updated  TIMESTAMPTZ,
     provider      VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE my_schema.ast_request_folder
+(
+    id         BIGSERIAL PRIMARY KEY,
+    name       TEXT        NOT NULL,
+    created_on TIMESTAMPTZ NOT NULL,
+    user_id    BIGINT      NOT NULL,
+    CONSTRAINT fk_ast_request_folder_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE
 );

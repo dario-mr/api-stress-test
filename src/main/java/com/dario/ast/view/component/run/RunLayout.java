@@ -10,15 +10,18 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.AstRequestService;
 import com.dario.ast.core.service.PreRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.core.service.RequestValidationService;
 import com.dario.ast.core.service.StressTestService;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.vaadin.flow.component.button.Button;
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/run-layout.css")
+@ReactiveComponent
 public class RunLayout extends VerticalLayout {
 
   private static final ObjectMapper JSON_FORMATTER = new ObjectMapper()
@@ -47,7 +51,7 @@ public class RunLayout extends VerticalLayout {
 
   private final StressTestService stressTestService;
   private final AppState appState;
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
   private final PreRequestService prerequestService;
   private final RequestValidationService validationService;
 
@@ -67,12 +71,12 @@ public class RunLayout extends VerticalLayout {
   public RunLayout(
       StressTestService stressTestService,
       AppState appState,
-      AstRequestService astRequestService,
+      RequestService requestService,
       PreRequestService prerequestService,
       RequestValidationService validationService) {
     this.stressTestService = stressTestService;
     this.appState = appState;
-    this.astRequestService = astRequestService;
+    this.requestService = requestService;
     this.prerequestService = prerequestService;
     this.validationService = validationService;
 
@@ -125,7 +129,6 @@ public class RunLayout extends VerticalLayout {
 
     // add listeners
     addListeners();
-    observeAppState();
 
     // add all components
     add(
@@ -138,7 +141,7 @@ public class RunLayout extends VerticalLayout {
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
 
-  public RunParams getRunParams() {
+  private RunParams getRunParams() {
     var numRequests = requestNumberField.getValue();
     var threadPoolSize = threadPoolSizeField.getValue();
     var stopOnError = stopOnErrorCheckbox.getValue();
@@ -151,8 +154,9 @@ public class RunLayout extends VerticalLayout {
         .build();
   }
 
-  private void observeAppState() {
-    appState.getRunParamsStream().subscribe(this::loadRunParamsIntoUi);
+  @ReactiveHandler(ReactiveType.REQUEST)
+  public void onSelectedRequestChange(Request request) {
+    loadRunParamsIntoUi(request.getRunParams());
   }
 
   private void addListeners() {
@@ -197,17 +201,18 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void saveParams() {
-    var configParams = appState.getConfigParams();
     var runParams = getRunParams();
 
     try {
-      astRequestService.update(new AstRequest(configParams, runParams));
+      requestService.updateRunParams(runParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    appState.setRunParams(runParams);
+    var selectedRequest = appState.getSelectedRequest();
+    selectedRequest.setRunParams(runParams);
+    appState.setSelectedRequest(selectedRequest);
   }
 
   private void loadRunParamsIntoUi(RunParams params) {
@@ -223,7 +228,7 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void startStressTest() {
-    var configParams = appState.getConfigParams();
+    var configParams = appState.getSelectedRequest().getConfigParams();
 
     var validationResult = validationService.validate(configParams);
     if (!validationResult.success()) {

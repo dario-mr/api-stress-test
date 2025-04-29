@@ -1,17 +1,18 @@
 package com.dario.ast.event;
 
+import com.dario.ast.core.domain.Request;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
 import lombok.Getter;
 
 @Getter
-public class AstRequestCreatedEvent extends ComponentEvent<Component> {
+public class RequestCreatedEvent extends ComponentEvent<Component> {
 
-  private final Long astRequestId;
+  private final Request request;
 
-  public AstRequestCreatedEvent(Long astRequestId) {
+  public RequestCreatedEvent(Request request) {
     super(new UI(), false);
-    this.astRequestId = astRequestId;
+    this.request = request;
   }
 }

@@ -10,19 +10,23 @@ import static org.springframework.http.HttpMethod.values;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.AstRequest;
 import com.dario.ast.core.domain.ConfigParams;
+import com.dario.ast.core.domain.Environment;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RequestHeader;
 import com.dario.ast.core.domain.RequestQueryParam;
 import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RequestUriVariable;
-import com.dario.ast.core.service.AstRequestService;
+import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.ConfigTabs;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -44,10 +48,11 @@ import org.vaadin.olli.ClipboardHelper;
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/config-layout.css")
+@ReactiveComponent
 public class ConfigLayout extends VerticalLayout {
 
   private final AppState appState;
-  private final AstRequestService astRequestService;
+  private final RequestService requestService;
 
   private final TextField nameText = new TextField();
   private final TextField urlText = new TextField();
@@ -69,9 +74,9 @@ public class ConfigLayout extends VerticalLayout {
 
   private boolean isUiLoading = false;
 
-  public ConfigLayout(AppState appState, AstRequestService astRequestService) {
+  public ConfigLayout(AppState appState, RequestService requestService) {
     this.appState = appState;
-    this.astRequestService = astRequestService;
+    this.requestService = requestService;
 
     setWidthFull();
     setSpacing(false);
@@ -115,7 +120,6 @@ public class ConfigLayout extends VerticalLayout {
 
     // add listeners
     addListeners();
-    observeAppState();
 
     // add all components
     add(
@@ -144,15 +148,15 @@ public class ConfigLayout extends VerticalLayout {
     );
   }
 
-  private void observeAppState() {
-    appState.getConfigParamsStream().subscribe(configParams -> {
-      loadConfigIntoUI(configParams);
-      generateCurlPreview();
-    });
+  @ReactiveHandler(ReactiveType.REQUEST)
+  public void onSelectedRequestChange(Request request) {
+    loadConfigIntoUI(request.getConfigParams());
+    generateCurlPreview();
+  }
 
-    appState.getSelectedEnvironmentStream().subscribe(environment ->
-        generateCurlPreview()
-    );
+  @ReactiveHandler(ReactiveType.ENVIRONMENT)
+  public void onEnvironmentChange(Environment environment) {
+    generateCurlPreview();
   }
 
   private ConfigParams getConfigParams() {
@@ -248,16 +252,17 @@ public class ConfigLayout extends VerticalLayout {
 
   private void saveParams() {
     var configParams = getConfigParams();
-    var runParams = appState.getRunParams();
 
     try {
-      astRequestService.update(new AstRequest(configParams, runParams));
+      requestService.updateConfigParams(configParams);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving parameters");
       throw ex;
     }
 
-    appState.setConfigParams(configParams);
+    var selectedRequest = appState.getSelectedRequest();
+    selectedRequest.setConfigParams(configParams);
+    appState.setSelectedRequest(selectedRequest);
   }
 
   private void generateCurlPreview() {
