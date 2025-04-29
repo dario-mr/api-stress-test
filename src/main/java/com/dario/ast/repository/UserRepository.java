@@ -1,7 +1,7 @@
 package com.dario.ast.repository;
 
 import com.dario.ast.core.domain.User;
-import com.dario.ast.repository.jpa.AstUserJpaRepository;
+import com.dario.ast.repository.jpa.UserJpaRepository;
 import com.dario.ast.repository.jpa.entity.UserEntity;
 import java.time.Instant;
 import java.util.Optional;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class AstUserRepository {
+public class UserRepository {
 
-  private final AstUserJpaRepository jpaRepository;
+  private final UserJpaRepository jpaRepository;
 
   public Optional<User> findByEmail(String email) {
     return jpaRepository.findByEmailAndActiveIsTrue(email)

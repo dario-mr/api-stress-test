@@ -34,7 +34,7 @@ public class UserSessionService implements Serializable {
 
     var principal = authToken.getPrincipal();
 
-    // TODO attributes might differ for other auth providers: abstract this
+    // TODO check if attributes might differ for other auth providers; if so, abstract this
     return new OAuthUser(
         principal.getAttribute("given_name"),
         principal.getAttribute("family_name"),

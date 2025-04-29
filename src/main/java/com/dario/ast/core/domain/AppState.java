@@ -9,43 +9,31 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 /**
- * Holds the current state of the application, including configuration parameters, run parameters, and the selected
- * environment.
+ * Holds the current state of the application.
  * <p>
  * This shared state is used to maintain and manage settings across different components of the application.
  */
 @Component
 public class AppState {
 
-  private ConfigParams configParams; // config params of the currently selected request
-  private RunParams runParams; // run params of the currently selected request
-  private Environment selectedEnvironment; // currently selected environment
-  private User currentUser; // current user
+  private Request selectedRequest;
+  private Environment selectedEnvironment;
+  private User currentUser;
   private List<ConfigParams> preRequestsParams; // pre-request params of the current user
   private List<Environment> environments; // environments of the current user
 
-  private final Sinks.Many<ConfigParams> configParamsSink = Sinks.many().replay().latest();
-  private final Sinks.Many<RunParams> runParamsSink = Sinks.many().replay().latest();
+  private final Sinks.Many<Request> selectedRequestSink = Sinks.many().replay().latest();
   private final Sinks.Many<Environment> selectedEnvironmentSink = Sinks.many().replay().latest();
   private final Sinks.Many<List<ConfigParams>> preRequestsParamsSink = Sinks.many().replay().latest();
   private final Sinks.Many<List<Environment>> environmentsSink = Sinks.many().replay().latest();
 
-  public ConfigParams getConfigParams() {
-    return deepCopy(configParams, ConfigParams.class);
+  public Request getSelectedRequest() {
+    return deepCopy(selectedRequest, Request.class);
   }
 
-  public void setConfigParams(ConfigParams configParams) {
-    this.configParams = deepCopy(configParams, ConfigParams.class);
-    configParamsSink.tryEmitNext(configParams);
-  }
-
-  public RunParams getRunParams() {
-    return deepCopy(runParams, RunParams.class);
-  }
-
-  public void setRunParams(RunParams runParams) {
-    this.runParams = runParams;
-    runParamsSink.tryEmitNext(runParams);
+  public void setSelectedRequest(Request selectedRequest) {
+    this.selectedRequest = deepCopy(selectedRequest, Request.class);
+    selectedRequestSink.tryEmitNext(selectedRequest);
   }
 
   public Environment getSelectedEnvironment() {
@@ -53,7 +41,7 @@ public class AppState {
   }
 
   public void setSelectedEnvironment(Environment selectedEnvironment) {
-    this.selectedEnvironment = selectedEnvironment;
+    this.selectedEnvironment = deepCopy(selectedEnvironment, Environment.class);
     selectedEnvironmentSink.tryEmitNext(selectedEnvironment);
   }
 
@@ -111,12 +99,8 @@ public class AppState {
     }));
   }
 
-  public Flux<ConfigParams> getConfigParamsStream() {
-    return configParamsSink.asFlux();
-  }
-
-  public Flux<RunParams> getRunParamsStream() {
-    return runParamsSink.asFlux();
+  public Flux<Request> getSelectedRequestStream() {
+    return selectedRequestSink.asFlux();
   }
 
   public Flux<Environment> getSelectedEnvironmentStream() {

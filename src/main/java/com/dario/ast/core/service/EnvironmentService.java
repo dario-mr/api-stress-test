@@ -2,7 +2,7 @@ package com.dario.ast.core.service;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.repository.AstEnvironmentRepository;
+import com.dario.ast.repository.EnvironmentRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,29 +12,29 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AstEnvironmentService {
+public class EnvironmentService {
 
-  private final AstEnvironmentRepository astEnvironmentRepository;
+  private final EnvironmentRepository environmentRepository;
   private final AppState appState;
 
   public List<Environment> getByUserId(long userId) {
-    return astEnvironmentRepository.findByUserId(userId);
+    return environmentRepository.findByUserId(userId);
   }
 
   public Optional<Environment> getById(Long id) {
-    return astEnvironmentRepository.findById(id);
+    return environmentRepository.findById(id);
   }
 
   public Long create(Environment environment) {
-    return astEnvironmentRepository.create(environment);
+    return environmentRepository.create(environment);
   }
 
   public void update(Environment environment) {
-    astEnvironmentRepository.update(environment);
+    environmentRepository.update(environment);
   }
 
   public void delete(long id) {
-    astEnvironmentRepository.delete(id);
+    environmentRepository.delete(id);
   }
 
   public void updateEnvironmentInAppState(Environment updatedEnvironment) {

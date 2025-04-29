@@ -1,6 +1,7 @@
 package com.dario.ast.repository.jpa.entity;
 
 import static jakarta.persistence.FetchType.EAGER;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 import jakarta.persistence.CollectionTable;
@@ -10,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -60,6 +62,11 @@ public class RequestEntity {
 
   @Column(name = "active", nullable = false)
   private Boolean active;
+
+  @ManyToOne(fetch = LAZY)
+  @JoinColumn(name = "folder_id")
+  @ToString.Exclude
+  private RequestFolderEntity folder;
 
   @ElementCollection(fetch = EAGER)
   @MapKeyColumn(name = "header_key")

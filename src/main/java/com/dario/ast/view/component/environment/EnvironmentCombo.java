@@ -2,7 +2,10 @@ package com.dario.ast.view.component.environment;
 
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -10,18 +13,18 @@ import java.util.List;
 
 @UIScope
 @SpringComponent
+@ReactiveComponent
 public class EnvironmentCombo extends ComboBox<Environment> {
 
-  private final AstEnvironmentService environmentService;
+  private final EnvironmentService environmentService;
   private final AppState appState;
 
   private boolean isReloadingEnvs = false;
 
-  public EnvironmentCombo(AstEnvironmentService environmentService, AppState appState) {
+  public EnvironmentCombo(EnvironmentService environmentService, AppState appState) {
     this.environmentService = environmentService;
     this.appState = appState;
 
-    observeAppState();
     loadEnvironments();
     addValueChangeListener(event -> {
       if (!isReloadingEnvs) {
@@ -30,8 +33,9 @@ public class EnvironmentCombo extends ComboBox<Environment> {
     });
   }
 
-  private void observeAppState() {
-    appState.getEnvironmentsStream().subscribe(this::reloadEnvironments);
+  @ReactiveHandler(ReactiveType.ENVIRONMENTS_LIST)
+  public void onEnvironmentsChanged(List<Environment> environments) {
+    reloadEnvironments(environments);
   }
 
   private void loadEnvironments() {

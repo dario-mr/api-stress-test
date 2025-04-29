@@ -4,9 +4,10 @@ import static com.vaadin.flow.component.ComponentUtil.fireEvent;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
+import com.dario.ast.core.domain.Folder;
+import com.dario.ast.core.domain.Request;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.ApplyPreRequestEvent;
-import com.dario.ast.event.AstRequestCreatedEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
 import com.dario.ast.event.EnvironmentCreatedEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
@@ -15,6 +16,11 @@ import com.dario.ast.event.FocusPreRequestNameEvent;
 import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.event.PreRequestCreatedEvent;
+import com.dario.ast.event.RequestCreatedEvent;
+import com.dario.ast.event.folder.FocusFolderNameEvent;
+import com.dario.ast.event.folder.FolderCreatedEvent;
+import com.dario.ast.event.folder.FolderSelectedEvent;
+import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -25,12 +31,12 @@ public class EventUtil {
     fireEvent(UI.getCurrent(), new ConfigEntriesUpdatedEvent());
   }
 
-  public static void astRequestCreated(Long astRequestId) {
-    fireEvent(UI.getCurrent(), new AstRequestCreatedEvent(astRequestId));
+  public static void requestCreated(Request request) {
+    fireEvent(UI.getCurrent(), new RequestCreatedEvent(request));
   }
 
-  public static void preRequestCreated(Long astRequestId) {
-    fireEvent(UI.getCurrent(), new PreRequestCreatedEvent(astRequestId));
+  public static void preRequestCreated(Long requestId) {
+    fireEvent(UI.getCurrent(), new PreRequestCreatedEvent(requestId));
   }
 
   public static void applyPreRequest(ConfigParams preRequestConfigParams) {
@@ -64,4 +70,21 @@ public class EventUtil {
   public static void focusPreRequestName() {
     fireEvent(UI.getCurrent(), new FocusPreRequestNameEvent());
   }
+
+  public static void folderSelected(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderSelectedEvent(folder));
+  }
+
+  public static void folderUpdated(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderUpdatedEvent(folder));
+  }
+
+  public static void folderCreated(Folder folder) {
+    fireEvent(UI.getCurrent(), new FolderCreatedEvent(folder));
+  }
+
+  public static void focusFolderName() {
+    fireEvent(UI.getCurrent(), new FocusFolderNameEvent());
+  }
+
 }

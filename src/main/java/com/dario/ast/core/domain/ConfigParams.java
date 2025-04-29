@@ -1,7 +1,9 @@
 package com.dario.ast.core.domain;
 
+import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.MapUtil.convertToMultiValueMap;
 import static com.dario.ast.util.MapUtil.flatEntryValueMap;
+import static org.springframework.http.HttpMethod.GET;
 
 import com.dario.ast.proxy.api.dto.ApiRequest;
 import com.dario.ast.util.jackson.HttpMethodDeserializer;
@@ -47,6 +49,18 @@ public final class ConfigParams {
         convertToMultiValueMap(flatEntryValueMap(queryParams)),
         requestBody
     );
+  }
+
+  public static ConfigParams defaultConfigParams(Long userId) {
+    return ConfigParams.builder()
+        .requestName("New Request")
+        .userId(userId)
+        .uri("")
+        .method(GET)
+        .requestBody("")
+        .requestType(REQUEST)
+        .active(true)
+        .build();
   }
 
 }

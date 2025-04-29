@@ -1,0 +1,11 @@
+/*
+    This makes TreeGrid expand/collapse rows only when clicking the > toggle.
+    It allows to attach an itemClickListener on the whole row.
+ */
+:host {
+    pointer-events: none;
+}
+
+[part="toggle"] {
+    pointer-events: auto;
+}

@@ -4,16 +4,18 @@ import static com.dario.ast.core.domain.EnvVariable.defaultEnvVariable;
 import static com.dario.ast.util.MapUtil.removeGenericEmptyEntries;
 import static org.springframework.util.StringUtils.hasText;
 
-import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.EnvVariable;
 import com.dario.ast.core.domain.Environment;
-import com.dario.ast.core.service.AstEnvironmentService;
+import com.dario.ast.core.service.EnvironmentService;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.EnvironmentEntriesUpdatedEvent;
 import com.dario.ast.event.FocusEnvNameEvent;
 import com.dario.ast.util.EventUtil;
 import com.dario.ast.view.component.common.entries.EntriesSection;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
+import com.dario.ast.view.component.common.reactive.ReactiveComponent;
+import com.dario.ast.view.component.common.reactive.ReactiveHandler;
+import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -28,10 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/env-layout.css")
+@ReactiveComponent
 public class EnvironmentLayout extends VerticalLayout {
 
-  private final AstEnvironmentService astEnvironmentService;
-  private final AppState appState;
+  private final EnvironmentService environmentService;
 
   private final TextField nameText = new TextField();
   private final EntriesSection<EnvVariable> variablesSection = new EntriesSection<>(
@@ -39,9 +41,8 @@ public class EnvironmentLayout extends VerticalLayout {
 
   private Environment selectedEnvironment;
 
-  public EnvironmentLayout(AstEnvironmentService astEnvironmentService, AppState appState) {
-    this.astEnvironmentService = astEnvironmentService;
-    this.appState = appState;
+  public EnvironmentLayout(EnvironmentService environmentService) {
+    this.environmentService = environmentService;
 
     addClassNames("card-layout", "env-layout");
     setHeight("fit-content");
@@ -54,7 +55,6 @@ public class EnvironmentLayout extends VerticalLayout {
     nameText.setMinWidth("0");
 
     addListeners();
-    observeAppState();
 
     add(
         new H4("Environment"),
@@ -87,13 +87,11 @@ public class EnvironmentLayout extends VerticalLayout {
     );
   }
 
-  private void observeAppState() {
-    // if the environment currently loaded in the UI was updated, update it in the UI
-    appState.getSelectedEnvironmentStream().subscribe(selectedEnvironment -> {
-      if (selectedEnvironment.equals(this.selectedEnvironment)) {
-        loadEnvironmentIntoUi(selectedEnvironment);
-      }
-    });
+  @ReactiveHandler(ReactiveType.ENVIRONMENT)
+  public void onSelectedEnvironmentChange(Environment selectedEnvironment) {
+    if (selectedEnvironment.equals(this.selectedEnvironment)) {
+      loadEnvironmentIntoUi(selectedEnvironment);
+    }
   }
 
   private void loadEnvironmentIntoUi(Environment environment) {
@@ -122,13 +120,13 @@ public class EnvironmentLayout extends VerticalLayout {
     selectedEnvironment = getEnvParams();
 
     try {
-      astEnvironmentService.update(selectedEnvironment);
+      environmentService.update(selectedEnvironment);
     } catch (Exception ex) {
       ErrorNotification.show("Error saving environment");
       throw ex;
     }
 
-    astEnvironmentService.updateEnvironmentInAppState(selectedEnvironment);
+    environmentService.updateEnvironmentInAppState(selectedEnvironment);
   }
 
   private Environment getEnvParams() {
