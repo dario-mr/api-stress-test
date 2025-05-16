@@ -70,11 +70,11 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     this.appState = appState;
     this.requestLayout = requestLayout;
     this.folderLayout = folderLayout;
+    this.folderService = folderService;
 
     configureGrid();
     registerListeners();
     loadRequests();
-    this.folderService = folderService;
   }
 
   @Override
@@ -120,8 +120,8 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       }
       return new Span("⚠️ Unknown row type [%s]".formatted(item.getClass().getSimpleName()));
     })
-        .setAutoWidth(true)
-        .setFlexGrow(1);
+        .setFlexGrow(1)
+        .setResizable(true);
 
     // create request button
     addCreateRequestColumn();

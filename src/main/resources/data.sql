@@ -9,7 +9,8 @@ VALUES (1, 'folder 1', '2025-04-16 12:00:00', 1);
 -- requests
 INSERT INTO my_schema.ast_request (id, user_id, name, created_on, modified_on, uri, method, request_body, num_requests,
                                    thread_pool_size, stop_on_error, request_type, active, folder_id)
-VALUES (1, 1, 'Request 1', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z', 'https://www.google.{domain}/', 'GET',
+VALUES (1, 1, 'Request 1 with a very long nameeeeeeeeeeeeeee', '2024-02-23T12:00:00Z', '2024-02-23T12:00:00Z',
+        'https://www.google.{domain}/', 'GET',
         '{ "key": "{{bodyValue}}" }', 1, 1, true, 'REQUEST', true, 1),
        (2, 1, 'Request 2', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
         NULL, 50, 5, true, 'REQUEST', true, null),

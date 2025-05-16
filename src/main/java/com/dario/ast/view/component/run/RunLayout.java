@@ -290,7 +290,7 @@ public class RunLayout extends VerticalLayout {
     } else {
       failedRequests++;
       failedText.setValue(String.valueOf(failedRequests));
-      responseText.setValue(response.errorMessage());
+      responseText.setValue(formatJson(response.errorMessage()));
 
       if (stopOnErrorCheckbox.getValue()) {
         log.debug("Request [{}] failed", requestId);
