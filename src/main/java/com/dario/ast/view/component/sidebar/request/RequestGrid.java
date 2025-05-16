@@ -6,6 +6,7 @@ import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.dario.ast.util.EventUtil.folderSelected;
 import static com.vaadin.flow.component.grid.dnd.GridDropMode.ON_TOP;
 import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
+import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_OPEN_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
 import com.dario.ast.core.domain.AppState;
@@ -31,6 +32,7 @@ import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.grid.dnd.GridDragStartEvent;
 import com.vaadin.flow.component.grid.dnd.GridDropEvent;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
@@ -113,7 +115,11 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     // name column
     addComponentHierarchyColumn(item -> {
       if (item instanceof Folder folder) {
-        return new Span(folder.getName());
+        var icon = new Icon(FOLDER_OPEN_O);
+        var name = new Span(folder.getName());
+        name.getStyle().set("margin-left", "var(--lumo-space-s)");
+
+        return new Span(icon, name);
       }
       if (item instanceof Request request) {
         return new Span(request.getConfigParams().getRequestName());
