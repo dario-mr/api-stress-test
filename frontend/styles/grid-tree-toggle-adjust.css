@@ -3,9 +3,10 @@
     It allows to attach an itemClickListener on the whole row.
  */
 :host {
-    pointer-events: none;
+  pointer-events: none;
+  --vaadin-grid-tree-toggle-level-offset: 10px;
 }
 
 [part="toggle"] {
-    pointer-events: auto;
+  pointer-events: auto;
 }

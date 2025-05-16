@@ -27,6 +27,9 @@ import lombok.RequiredArgsConstructor;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
+  // TODO button to duplicate requests
+  // TODO bug: when creating a new key in EntriesSection, sometimes focus is lost
+
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;
   private final RequestLayout requestLayout;

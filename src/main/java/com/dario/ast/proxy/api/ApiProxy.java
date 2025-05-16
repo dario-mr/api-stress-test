@@ -34,7 +34,7 @@ public class ApiProxy {
       return new ApiResponse(statusCode, statusCode.getReasonPhrase(), response.getBody());
     } catch (HttpStatusCodeException e) {
       var statusCode = (HttpStatus) e.getStatusCode();
-      return new ApiResponse(statusCode, statusCode.getReasonPhrase(), null);
+      return new ApiResponse(statusCode, e.getResponseBodyAsString(), null);
     } catch (Exception e) {
       return new ApiResponse(INTERNAL_SERVER_ERROR, e.getMessage(), null);
     }

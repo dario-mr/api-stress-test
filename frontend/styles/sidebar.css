@@ -43,8 +43,7 @@
 }
 
 .sidebar-grid vaadin-grid-cell-content {
-  padding-left: var(--lumo-space-m);
-  padding-right: var(--lumo-space-m);
+  padding: var(--lumo-space-xxs) var(--lumo-space-s);
 }
 
 /* Create button */
