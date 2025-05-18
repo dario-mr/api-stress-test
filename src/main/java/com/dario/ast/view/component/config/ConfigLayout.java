@@ -85,7 +85,6 @@ public class ConfigLayout extends VerticalLayout {
     // name
     nameText.setPlaceholder("Request name");
     nameText.setWidthFull();
-    nameText.setMaxWidth("30em");
     nameText.setMinWidth("0");
     nameText.getStyle().set("padding-top", "var(--lumo-space-m)");
 
@@ -306,7 +305,7 @@ public class ConfigLayout extends VerticalLayout {
 
     isUiLoading = false;
 
-    log.debug("Config params [{}] loaded into {}", params.getRequestName(), getClass().getSimpleName());
+    log.debug("Config params [{}] loaded into {}", params.getRequestId(), getClass().getSimpleName());
   }
 
 }

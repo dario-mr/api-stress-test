@@ -77,7 +77,6 @@ public class PreRequestLayout extends VerticalLayout {
     // name
     nameText.setPlaceholder("Pre-request name, used as environment variable");
     nameText.setWidthFull();
-    nameText.setMaxWidth("30em");
     nameText.setMinWidth("0");
     nameText.getStyle().set("padding-top", "var(--lumo-space-m)");
 
