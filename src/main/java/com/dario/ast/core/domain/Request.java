@@ -1,5 +1,7 @@
 package com.dario.ast.core.domain;
 
+import static com.dario.ast.util.CopyUtil.deepCopy;
+
 import com.dario.ast.view.component.sidebar.request.RequestOrFolder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +22,14 @@ public final class Request implements RequestOrFolder {
     this.configParams = other.configParams;
     this.runParams = other.runParams;
     this.folder = other.folder;
+  }
+
+  public Request duplicate() {
+    return new Request(
+        deepCopy(configParams, ConfigParams.class),
+        deepCopy(runParams, RunParams.class),
+        deepCopy(folder, Folder.class)
+    );
   }
 
 }

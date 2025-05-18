@@ -5,6 +5,7 @@ import static com.dario.ast.util.EventUtil.focusFolderName;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.dario.ast.util.EventUtil.folderSelected;
 import static com.vaadin.flow.component.grid.dnd.GridDropMode.ON_TOP;
+import static com.vaadin.flow.component.icon.VaadinIcon.COPY_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
 import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_OPEN_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
@@ -49,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @SpringComponent
 @ReactiveComponent
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
+@CssImport(value = "./styles/request-grid.css", themeFor = "vaadin-grid")
 public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   private static final String DELETE_BUTTON_CLASS = "delete-button";
@@ -132,6 +134,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     // create request button
     addCreateRequestColumn();
 
+    // duplicate request button
+    addDuplicateRequestColumn();
+
     // delete button
     addDeleteButtonColumn();
   }
@@ -199,12 +204,11 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         return createButton;
       }
 
-      var noAction = new Button();
-      noAction.setVisible(false);
-      return noAction;
+      return noActionButton();
     }))
         .setAutoWidth(true)
-        .setFlexGrow(0);
+        .setFlexGrow(0)
+        .setClassNameGenerator(item -> !(item instanceof Folder) ? "empty-cell" : "");
   }
 
   private void createRequest(Folder parentFolder) {
@@ -219,6 +223,32 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     }
   }
 
+  private void addDuplicateRequestColumn() {
+    addColumn(new ComponentRenderer<>(item -> {
+      if (item instanceof Request request) {
+        var duplicateButton = new Button(COPY_O.create(), e -> duplicateRequest(request));
+        duplicateButton.setTooltipText("Duplicate request");
+        duplicateButton.addClassName(DELETE_BUTTON_CLASS);
+        return duplicateButton;
+      }
+
+      return noActionButton();
+    }))
+        .setAutoWidth(true)
+        .setFlexGrow(0)
+        .setClassNameGenerator(item -> !(item instanceof Request) ? "empty-cell" : "");
+  }
+
+  private void duplicateRequest(Request request) {
+    try {
+      requestService.duplicateRequestAndNotify(request);
+    } catch (Exception ex) {
+      log.error("Error duplicating request", ex);
+      ErrorNotification.show("Error duplicating request");
+      throw ex;
+    }
+  }
+
   private void addDeleteButtonColumn() {
     addColumn(new ComponentRenderer<>(item -> {
       var deleteButton = new Button(TRASH.create(), e -> {
@@ -228,6 +258,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
           showDeleteDialog("Delete folder?", () -> deleteFolder(folder));
         }
       });
+
       deleteButton.addClassName(DELETE_BUTTON_CLASS);
       deleteButton.setTooltipText("Delete item");
       return deleteButton;
@@ -437,6 +468,12 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       log.error("Failed to move request to folder", ex);
       ErrorNotification.show("Failed to move request to folder");
     }
+  }
+
+  private static Button noActionButton() {
+    var noAction = new Button();
+    noAction.setVisible(false);
+    return noAction;
   }
 
 }

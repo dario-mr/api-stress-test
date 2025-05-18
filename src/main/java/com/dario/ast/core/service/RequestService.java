@@ -60,6 +60,14 @@ public class RequestService {
     requestCreated(newRequest);
   }
 
+  public void duplicateRequestAndNotify(Request request) {
+    var duplicatedRequest = request.duplicate();
+    duplicatedRequest.getConfigParams().setRequestName(request.getConfigParams().getRequestName() + " new");
+
+    var newRequest = create(duplicatedRequest);
+    requestCreated(newRequest);
+  }
+
   public void delete(long id) {
     requestRepository.delete(id);
   }
