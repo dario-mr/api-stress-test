@@ -117,15 +117,12 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     // name column
     addComponentHierarchyColumn(item -> {
       if (item instanceof Folder folder) {
-        var icon = new Icon(FOLDER_OPEN_O);
-        var name = new Span(folder.getName());
-        name.getStyle().set("margin-left", "var(--lumo-space-s)");
-
-        return new Span(icon, name);
+        return buildFolderNameElement(folder);
       }
       if (item instanceof Request request) {
-        return new Span(request.getConfigParams().getRequestName());
+        return buildRequestNameElement(request);
       }
+
       return new Span("⚠️ Unknown row type [%s]".formatted(item.getClass().getSimpleName()));
     })
         .setFlexGrow(1)
@@ -139,6 +136,23 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     // delete button
     addDeleteButtonColumn();
+  }
+
+  private static Span buildFolderNameElement(Folder folder) {
+    var icon = new Icon(FOLDER_OPEN_O);
+    var name = new Span(folder.getName());
+    name.getStyle().set("margin-left", "var(--lumo-space-s)");
+
+    return new Span(icon, name);
+  }
+
+  private static Span buildRequestNameElement(Request request) {
+    var requestSpan = new Span(request.getConfigParams().getRequestName());
+    if (request.getFolder() != null) {
+      requestSpan.addClassName("request-in-folder");
+    }
+
+    return requestSpan;
   }
 
   private void registerListeners() {

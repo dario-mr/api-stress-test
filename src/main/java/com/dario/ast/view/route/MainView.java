@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @PageTitle("API Stress Test")
 public class MainView extends VerticalLayout {
 
-  // TODO bug: when creating a new key in EntriesSection, focus is often lost
+  // TODO bug: when creating/editing an entry in EntriesSection, focus is lost (major redesign needed)
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;
