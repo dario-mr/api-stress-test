@@ -79,3 +79,9 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* vertical line for requests inside folders */
+.request-in-folder {
+  border-left: 1px solid var(--lumo-primary-color);
+  padding-left: var(--lumo-space-s);
+}
