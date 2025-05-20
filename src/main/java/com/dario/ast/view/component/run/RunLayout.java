@@ -261,9 +261,6 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void onStressTestComplete() {
-    completedRequests = 0;
-    failedRequests = 0;
-
     requestNumberField.setEnabled(true);
     threadPoolSizeField.setEnabled(true);
     stopOnErrorCheckbox.setEnabled(true);
@@ -272,6 +269,9 @@ public class RunLayout extends VerticalLayout {
   }
 
   private void startStressTestUI() {
+    completedRequests = 0;
+    failedRequests = 0;
+
     requestNumberField.setEnabled(false);
     threadPoolSizeField.setEnabled(false);
     stopOnErrorCheckbox.setEnabled(false);
@@ -289,13 +289,9 @@ public class RunLayout extends VerticalLayout {
     responseText.setLabel("%s (%s)".formatted(RESPONSE_LABEL, response.statusCode()));
 
     if (response.statusCode().is2xxSuccessful()) {
-      completedRequests++;
-      completedText.setValue(String.valueOf(completedRequests));
-      responseText.setValue(prettifyJson(response.responseBody()));
+      applySuccessResponse(response);
     } else {
-      failedRequests++;
-      failedText.setValue(String.valueOf(failedRequests));
-      responseText.setValue(prettifyJson(response.errorMessage()));
+      applyFailResponse(response);
 
       if (stopOnErrorCheckbox.getValue()) {
         log.debug("Stress Test stopped due to error: {}", response.statusCode());
@@ -305,6 +301,18 @@ public class RunLayout extends VerticalLayout {
     }
 
     updateProgressBar();
+  }
+
+  private void applySuccessResponse(ApiResponse response) {
+    completedRequests++;
+    completedText.setValue(String.valueOf(completedRequests));
+    responseText.setValue(prettifyJson(response.responseBody()));
+  }
+
+  private void applyFailResponse(ApiResponse response) {
+    failedRequests++;
+    failedText.setValue(String.valueOf(failedRequests));
+    responseText.setValue(prettifyJson(response.errorMessage()));
   }
 
   private void updateProgressBar() {
