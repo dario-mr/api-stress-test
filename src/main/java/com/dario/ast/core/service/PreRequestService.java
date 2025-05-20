@@ -8,7 +8,6 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.proxy.api.ApiProxy;
 import com.dario.ast.proxy.api.dto.ApiResponse;
-import com.dario.ast.view.component.common.notification.WarnNotification;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,12 +64,12 @@ public class PreRequestService {
         .map(preRequestParams -> {
           var response = apiProxy.makeRequest(preRequestParams.toApiRequest());
           if (response.statusCode().isError() || response.responseBody() == null) {
-            WarnNotification.show("Pre-request [%s] failed".formatted(preRequestParams.getRequestName()));
-            return null;
+            throw new RuntimeException(
+                "Pre-request [%s] failed: %s\n\n%s".formatted(
+                    preRequestParams.getRequestName(), response.statusCode(), response.errorMessage()));
           }
           return new SimpleEntry<>(preRequestParams.getRequestName(), response);
         })
-        .filter(Objects::nonNull)
         .collect(toMap(Entry::getKey, Entry::getValue));
   }
 

@@ -249,8 +249,15 @@ public class RunLayout extends VerticalLayout {
         getRunParams(),
         response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
         () -> getUI().ifPresent(ui -> ui.access(() -> {
-          onStressTestComplete();
           log.debug("Stress Test completed");
+          onStressTestComplete();
+        })),
+        ex -> getUI().ifPresent(ui -> ui.access(() -> {
+          log.error("Error during Stress Test", ex);
+          onStressTestComplete();
+          responseText.setValue(ex.getMessage());
+
+          ErrorNotification.show("An error occurred");
         }))
     );
   }

@@ -27,36 +27,54 @@ public class StressTestOrchestrator {
       ConfigParams configParams,
       RunParams runParams,
       Consumer<ApiResponse> onResponse,
-      Runnable onComplete
+      Runnable onComplete,
+      Consumer<Throwable> onError
   ) {
     new Thread(() -> {
-      prerequestService.runAndApplyPreRequests();
+      try {
+        prerequestService.runAndApplyPreRequests();
 
-      var selectedEnvironment = appState.getSelectedEnvironment();
-      var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
+        var selectedEnvironment = appState.getSelectedEnvironment();
+        var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
 
-      executor = newFixedThreadPool(runParams.getThreadPoolSize());
-      var numRequests = runParams.getNumRequests();
-      var completedCount = new AtomicInteger(0);
+        executor = newFixedThreadPool(runParams.getThreadPoolSize());
+        var numRequests = runParams.getNumRequests();
+        var completedCount = new AtomicInteger(0);
 
-      stressTestRunner.run(
-          envConfigParams,
-          runParams,
-          response -> {
-            onResponse.accept(response);
-            if (completedCount.incrementAndGet() == numRequests) {
-              executor.shutdown();
-              onComplete.run();
-            }
-          },
-          executor
-      );
+        stressTestRunner.run(
+            envConfigParams,
+            runParams,
+            response -> {
+              onResponse.accept(response);
+              if (completedCount.incrementAndGet() == numRequests) {
+                shutdownExecutor();
+                onComplete.run();
+              }
+            },
+            executor
+        );
+      } catch (Exception ex) {
+        onError.accept(ex);
+        shutdownNowExecutor();
+      }
     }).start();
   }
 
   public void cancelStressTest() {
+    shutdownNowExecutor();
+  }
+
+  private void shutdownExecutor() {
+    if (executor != null) {
+      executor.shutdown();
+      executor = null;
+    }
+  }
+
+  private void shutdownNowExecutor() {
     if (executor != null) {
       executor.shutdownNow();
+      executor = null;
     }
   }
 
