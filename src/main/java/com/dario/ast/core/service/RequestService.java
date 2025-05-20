@@ -62,7 +62,7 @@ public class RequestService {
 
   public void duplicateRequestAndNotify(Request request) {
     var duplicatedRequest = request.duplicate();
-    duplicatedRequest.getConfigParams().setRequestName(request.getConfigParams().getRequestName() + " new");
+    duplicatedRequest.getConfigParams().setRequestName(request.getConfigParams().getRequestName() + " Copy");
 
     var newRequest = create(duplicatedRequest);
     requestCreated(newRequest);
