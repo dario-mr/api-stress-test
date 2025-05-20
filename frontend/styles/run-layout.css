@@ -12,3 +12,7 @@
 .start-stop-button > vaadin-icon {
   color: var(--start-stop-button-icon);
 }
+
+.progress-bar {
+  height: 0.4em;
+}

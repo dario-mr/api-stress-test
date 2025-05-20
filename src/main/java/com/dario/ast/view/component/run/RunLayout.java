@@ -27,6 +27,7 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -56,6 +57,7 @@ public class RunLayout extends VerticalLayout {
   private final Button startButton = new Button();
   private final Button stopButton = new Button();
   private final Checkbox stopOnErrorCheckbox = new Checkbox("Stop on error");
+  private final ProgressBar progressBar = new ProgressBar();
 
   private long completedRequests = 0, failedRequests = 0;
   private Long requestId;
@@ -91,6 +93,12 @@ public class RunLayout extends VerticalLayout {
     var firstRow = new HorizontalLayout(requestNumberField, threadPoolSizeField, stopOnErrorCheckbox);
     firstRow.setVerticalComponentAlignment(END, stopOnErrorCheckbox);
     firstRow.setWidthFull();
+
+    // progress bar
+    progressBar.setWidthFull();
+    progressBar.setMin(0);
+    progressBar.setMax(1);
+    progressBar.addClassName("progress-bar");
 
     // start + stop buttons
     startButton.addClickListener(event -> startStressTest());
@@ -128,6 +136,7 @@ public class RunLayout extends VerticalLayout {
     add(
         new H4("Run"),
         firstRow,
+        progressBar,
         startButton, stopButton,
         resultsLayout
     );
@@ -215,6 +224,7 @@ public class RunLayout extends VerticalLayout {
     requestNumberField.setValue(params.getNumRequests());
     threadPoolSizeField.setValue(params.getThreadPoolSize());
     stopOnErrorCheckbox.setValue(params.isStopOnError());
+    progressBar.setValue(0);
 
     isUiLoading = false;
     log.debug("Run params [{}] loaded into {}", params.getRequestId(), getClass().getSimpleName());
@@ -272,6 +282,7 @@ public class RunLayout extends VerticalLayout {
     failedText.clear();
     responseText.clear();
     responseText.setLabel(RESPONSE_LABEL);
+    progressBar.setValue(0);
   }
 
   private void applyApiResponse(ApiResponse response) {
@@ -289,8 +300,16 @@ public class RunLayout extends VerticalLayout {
       if (stopOnErrorCheckbox.getValue()) {
         log.debug("Stress Test stopped due to error: {}", response.statusCode());
         stopStressTest();
+        return;
       }
     }
+
+    updateProgressBar();
+  }
+
+  private void updateProgressBar() {
+    var progress = (double) (completedRequests + failedRequests) / requestNumberField.getValue();
+    progressBar.setValue(Math.min(progress, 1.0));
   }
 
 }
