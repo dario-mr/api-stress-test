@@ -33,7 +33,8 @@ public class UserAvatar extends Div {
     loadCurrentUser(); // this is the first bean that is loaded and that has a user session... not great, but it works
 
     setHeightFull();
-    getStyle().set("display", "flex")
+    getStyle()
+        .set("display", "flex")
         .set("align-items", "center"); // center content vertically
 
     var currentUser = userSessionService.getUser();
@@ -67,25 +68,30 @@ public class UserAvatar extends Div {
     var userInfoLayout = new VerticalLayout(avatar, nameItem, emailItem);
     userInfoLayout.setAlignItems(CENTER);
     userInfoLayout.getStyle()
-        .set("gap", "var(--lumo-space-xs)")
-        .set("padding", "var(--lumo-space-s)");
+        .set("gap", "var(--lumo-space-xxs)")
+        .set("padding", "var(--lumo-space-xs)");
+
+    var separator = new Hr();
+    separator.getStyle()
+        .set("margin", "var(--lumo-space-xxxs) var(--lumo-space-xxs)");
 
     var logoutItem = new Div(new Span("Logout"));
     logoutItem.getStyle()
-        .set("cursor", "pointer")
-        .set("padding", "var(--lumo-space-xs)")
+        .set("padding", "var(--lumo-space-xxs)")
         .set("color", "var(--lumo-primary-text-color)");
-    logoutItem.addClickListener(e -> userSessionService.logout());
 
     // wrap logout item in a layout to center it
     var logoutLayout = new VerticalLayout(logoutItem);
     logoutLayout.setPadding(false);
     logoutLayout.setAlignItems(CENTER);
     logoutLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+    logoutLayout.addClickListener(e -> userSessionService.logout());
+    logoutLayout.getStyle()
+        .set("cursor", "pointer");
 
     menu.add(
         userInfoLayout,
-        new Hr(),
+        separator,
         logoutLayout
     );
 

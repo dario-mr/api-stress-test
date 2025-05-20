@@ -15,7 +15,7 @@ public class ConfigTabs extends VerticalLayout {
   public ConfigTabs(Map<String, Component> tabsMap) {
     setSpacing(false);
     setPadding(false);
-    getStyle().set("padding-top", "var(--lumo-space-xs)");
+    getStyle().set("padding-top", "var(--lumo-space-xxs)");
 
     // tabs
     var tabs = new Tabs();
