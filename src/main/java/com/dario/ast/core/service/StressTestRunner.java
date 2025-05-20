@@ -13,14 +13,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class StressTestService {
+public class StressTestRunner {
 
   private final ApiProxy apiProxy;
-  private ExecutorService executor;
 
-  public void startStressTest(ConfigParams configParams, RunParams runParams, Consumer<ApiResponse> responseConsumer,
-      ExecutorService executor) {
-    this.executor = executor;
+  public void run(ConfigParams configParams, RunParams runParams,
+      Consumer<ApiResponse> responseConsumer, ExecutorService executor) {
     var apiRequest = configParams.toApiRequest();
 
     for (int i = 0; i < runParams.getNumRequests(); i++) {
@@ -29,10 +27,5 @@ public class StressTestService {
     }
   }
 
-  public void cancelStressTest() {
-    if (executor != null) {
-      executor.shutdownNow();
-    }
-  }
 
 }

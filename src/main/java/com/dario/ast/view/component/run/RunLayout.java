@@ -1,31 +1,25 @@
 package com.dario.ast.view.component.run;
 
-import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
+import static com.dario.ast.util.JsonUtil.prettifyJson;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.END;
 import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
-import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RunParams;
-import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestService;
 import com.dario.ast.core.service.RequestValidationService;
-import com.dario.ast.core.service.StressTestService;
+import com.dario.ast.core.service.StressTestOrchestrator;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.notification.WarnNotification;
 import com.dario.ast.view.component.common.reactive.ReactiveComponent;
 import com.dario.ast.view.component.common.reactive.ReactiveHandler;
 import com.dario.ast.view.component.common.reactive.ReactiveType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -47,15 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 @ReactiveComponent
 public class RunLayout extends VerticalLayout {
 
-  private static final ObjectMapper JSON_FORMATTER = new ObjectMapper()
-      .enable(SerializationFeature.INDENT_OUTPUT);
   private static final String RESPONSE_LABEL = "Response";
 
-  private final StressTestService stressTestService;
   private final AppState appState;
   private final RequestService requestService;
-  private final PreRequestService prerequestService;
   private final RequestValidationService validationService;
+  private final StressTestOrchestrator stressTestOrchestrator;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -71,16 +62,14 @@ public class RunLayout extends VerticalLayout {
   private boolean isUiLoading = false;
 
   public RunLayout(
-      StressTestService stressTestService,
       AppState appState,
       RequestService requestService,
-      PreRequestService prerequestService,
-      RequestValidationService validationService) {
-    this.stressTestService = stressTestService;
+      RequestValidationService validationService,
+      StressTestOrchestrator stressTestOrchestrator) {
     this.appState = appState;
     this.requestService = requestService;
-    this.prerequestService = prerequestService;
     this.validationService = validationService;
+    this.stressTestOrchestrator = stressTestOrchestrator;
 
     addClassNames("card-layout", "run-layout");
     setWidthFull();
@@ -108,7 +97,10 @@ public class RunLayout extends VerticalLayout {
     startButton.setIcon(PLAY.create());
     startButton.addClassName("start-stop-button");
 
-    stopButton.addClickListener(event -> stopStressTest());
+    stopButton.addClickListener(event -> {
+      stopStressTest();
+      log.debug("Stress Test cancelled by the user");
+    });
     stopButton.setIcon(STOP.create());
     stopButton.setVisible(false);
     stopButton.addClassName("start-stop-button");
@@ -137,8 +129,7 @@ public class RunLayout extends VerticalLayout {
         new H4("Run"),
         firstRow,
         startButton, stopButton,
-        resultsLayout,
-        responseText
+        resultsLayout
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
@@ -238,33 +229,28 @@ public class RunLayout extends VerticalLayout {
       return;
     }
 
-    log.debug("Starting requests");
+    log.debug("Starting stress test");
+
     stopStressTest();
     startStressTestUI();
 
-    // run test preparation in a background thread
-    getUI().ifPresent(ui -> new Thread(() ->
-        prepareAndStartStressTest(ui, configParams)).start());
-  }
-
-  private void prepareAndStartStressTest(UI ui, ConfigParams configParams) {
-    prerequestService.runAndApplyPreRequests();
-
-    var selectedEnvironment = appState.getSelectedEnvironment();
-    var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
-    var runParams = getRunParams();
-    var threadPoolSize = threadPoolSizeField.getValue();
-
-    stressTestService.startStressTest(
-        envConfigParams, runParams,
-        response -> ui.access(() -> applyApiResponse(response)),
-        newFixedThreadPool(threadPoolSize)
+    stressTestOrchestrator.startStressTest(
+        configParams,
+        getRunParams(),
+        response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
+        () -> getUI().ifPresent(ui -> ui.access(() -> {
+          onStressTestComplete();
+          log.debug("Stress Test completed");
+        }))
     );
   }
 
   private void stopStressTest() {
-    stressTestService.cancelStressTest();
+    stressTestOrchestrator.cancelStressTest();
+    onStressTestComplete();
+  }
 
+  private void onStressTestComplete() {
     completedRequests = 0;
     failedRequests = 0;
 
@@ -294,31 +280,16 @@ public class RunLayout extends VerticalLayout {
     if (response.statusCode().is2xxSuccessful()) {
       completedRequests++;
       completedText.setValue(String.valueOf(completedRequests));
-      responseText.setValue(formatJson(response.responseBody()));
+      responseText.setValue(prettifyJson(response.responseBody()));
     } else {
       failedRequests++;
       failedText.setValue(String.valueOf(failedRequests));
-      responseText.setValue(formatJson(response.errorMessage()));
+      responseText.setValue(prettifyJson(response.errorMessage()));
 
       if (stopOnErrorCheckbox.getValue()) {
-        log.debug("Request [{}] failed", requestId);
+        log.debug("Stress Test stopped due to error: {}", response.statusCode());
         stopStressTest();
       }
-    }
-
-    // when stress test is completed, update UI to reflect it (this is janky)
-    if (completedRequests + failedRequests == requestNumberField.getValue()) {
-      log.debug("Requests completed");
-      stopStressTest();
-    }
-  }
-
-  private String formatJson(String json) {
-    try {
-      Object jsonObject = JSON_FORMATTER.readValue(json, Object.class);
-      return JSON_FORMATTER.writeValueAsString(jsonObject);
-    } catch (Exception e) {
-      return json;
     }
   }
 
