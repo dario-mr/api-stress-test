@@ -64,8 +64,9 @@
   --lumo-font-size-xxxl: 2.5rem;
 
   /* spacing */
-  --lumo-space-xxs: 0.12rem;
-  --lumo-space-xs: 0.25rem;
+  --lumo-space-xxxs: 0.12rem;
+  --lumo-space-xxs: 0.25rem;
+  --lumo-space-xs: 0.5rem;
   --lumo-space-s: 0.8rem;
   --lumo-space-m: 1rem;
   --lumo-space-l: 1.5rem;
