@@ -10,6 +10,7 @@ import static com.vaadin.flow.component.orderedlayout.FlexLayout.FlexWrap.WRAP;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
+import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.core.service.PreRequestService;
@@ -24,6 +25,7 @@ import com.dario.ast.view.component.common.reactive.ReactiveHandler;
 import com.dario.ast.view.component.common.reactive.ReactiveType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -240,6 +242,12 @@ public class RunLayout extends VerticalLayout {
     stopStressTest();
     startStressTestUI();
 
+    // run test preparation in a background thread
+    getUI().ifPresent(ui -> new Thread(() ->
+        prepareAndStartStressTest(ui, configParams)).start());
+  }
+
+  private void prepareAndStartStressTest(UI ui, ConfigParams configParams) {
     prerequestService.runAndApplyPreRequests();
 
     var selectedEnvironment = appState.getSelectedEnvironment();
@@ -249,7 +257,7 @@ public class RunLayout extends VerticalLayout {
 
     stressTestService.startStressTest(
         envConfigParams, runParams,
-        response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
+        response -> ui.access(() -> applyApiResponse(response)),
         newFixedThreadPool(threadPoolSize)
     );
   }
