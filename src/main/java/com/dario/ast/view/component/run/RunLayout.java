@@ -136,8 +136,8 @@ public class RunLayout extends VerticalLayout {
     add(
         new H4("Run"),
         firstRow,
-        progressBar,
         startButton, stopButton,
+        progressBar,
         resultsLayout
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
