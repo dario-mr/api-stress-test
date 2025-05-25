@@ -6,6 +6,7 @@ import com.dario.ast.proxy.api.dto.ApiRequest;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -35,12 +36,12 @@ public class ApiProxy {
           String.class);
       var statusCode = (HttpStatus) response.getStatusCode();
 
-      return new ApiResponse(statusCode, statusCode.getReasonPhrase(), response.getBody(), elapsedTimeMs(start));
+      return new ApiResponse(randomId(), statusCode, null, response.getBody(), elapsedTimeMs(start));
     } catch (HttpStatusCodeException e) {
       var statusCode = (HttpStatus) e.getStatusCode();
-      return new ApiResponse(statusCode, e.getResponseBodyAsString(), null, elapsedTimeMs(start));
+      return new ApiResponse(randomId(), statusCode, e.getResponseBodyAsString(), null, elapsedTimeMs(start));
     } catch (Exception e) {
-      return new ApiResponse(INTERNAL_SERVER_ERROR, e.getMessage(), null, elapsedTimeMs(start));
+      return new ApiResponse(randomId(), INTERNAL_SERVER_ERROR, e.getMessage(), null, elapsedTimeMs(start));
     }
   }
 
@@ -48,4 +49,7 @@ public class ApiProxy {
     return Duration.between(start, Instant.now()).toMillis();
   }
 
+  private String randomId() {
+    return UUID.randomUUID().toString();
+  }
 }

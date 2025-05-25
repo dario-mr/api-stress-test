@@ -1,5 +1,7 @@
 package com.dario.ast.view.component.run;
 
+import static com.dario.ast.util.EventUtil.apiRequestCompleted;
+import static com.dario.ast.util.EventUtil.stressTestStarted;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.JsonUtil.prettifyJson;
 import static com.dario.ast.util.MathUtil.average;
@@ -52,6 +54,7 @@ public class RunLayout extends VerticalLayout {
   private final RequestService requestService;
   private final RequestValidationService validationService;
   private final StressTestOrchestrator stressTestOrchestrator;
+  private final ResultGrid resultGrid;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -73,11 +76,13 @@ public class RunLayout extends VerticalLayout {
       AppState appState,
       RequestService requestService,
       RequestValidationService validationService,
-      StressTestOrchestrator stressTestOrchestrator) {
+      StressTestOrchestrator stressTestOrchestrator,
+      ResultGrid resultGrid) {
     this.appState = appState;
     this.requestService = requestService;
     this.validationService = validationService;
     this.stressTestOrchestrator = stressTestOrchestrator;
+    this.resultGrid = resultGrid;
 
     addClassNames("card-layout", "run-layout");
     setWidthFull();
@@ -147,7 +152,8 @@ public class RunLayout extends VerticalLayout {
         firstRow,
         startButton, stopButton,
         progressBar,
-        resultsLayout
+        resultsLayout,
+        resultGrid
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
@@ -252,6 +258,7 @@ public class RunLayout extends VerticalLayout {
 
     stopStressTest();
     startStressTestUI();
+    stressTestStarted();
 
     stressTestOrchestrator.startStressTest(
         configParams,
@@ -263,8 +270,10 @@ public class RunLayout extends VerticalLayout {
   }
 
   private Consumer<ApiResponse> onResponse() {
-    return response -> getUI().ifPresent(ui -> ui.access(() ->
-        applyApiResponse(response)
+    return response -> getUI().ifPresent(ui -> ui.access(() -> {
+          applyApiResponse(response);
+          apiRequestCompleted(response);
+        }
     ));
   }
 

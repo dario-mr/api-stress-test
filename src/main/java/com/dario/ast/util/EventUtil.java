@@ -6,6 +6,7 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.domain.Request;
+import com.dario.ast.event.ApiRequestCompletedEvent;
 import com.dario.ast.event.ApplyEnvironmentEvent;
 import com.dario.ast.event.ApplyPreRequestEvent;
 import com.dario.ast.event.ConfigEntriesUpdatedEvent;
@@ -17,10 +18,12 @@ import com.dario.ast.event.FocusRequestNameEvent;
 import com.dario.ast.event.PreRequestConfigEntriesUpdatedEvent;
 import com.dario.ast.event.PreRequestCreatedEvent;
 import com.dario.ast.event.RequestCreatedEvent;
+import com.dario.ast.event.StressTestStartedEvent;
 import com.dario.ast.event.folder.FocusFolderNameEvent;
 import com.dario.ast.event.folder.FolderCreatedEvent;
 import com.dario.ast.event.folder.FolderSelectedEvent;
 import com.dario.ast.event.folder.FolderUpdatedEvent;
+import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.vaadin.flow.component.UI;
 import lombok.experimental.UtilityClass;
 
@@ -85,6 +88,14 @@ public class EventUtil {
 
   public static void focusFolderName() {
     fireEvent(UI.getCurrent(), new FocusFolderNameEvent());
+  }
+
+  public static void apiRequestCompleted(ApiResponse apiResponse) {
+    fireEvent(UI.getCurrent(), new ApiRequestCompletedEvent(apiResponse));
+  }
+
+  public static void stressTestStarted() {
+    fireEvent(UI.getCurrent(), new StressTestStartedEvent());
   }
 
 }
