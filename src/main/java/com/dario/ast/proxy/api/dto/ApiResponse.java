@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 public record ApiResponse(
     HttpStatus statusCode,
     String errorMessage,
-    String responseBody
+    String responseBody,
+    long responseTimeMs
 ) {
 
 }

@@ -1,6 +1,6 @@
 package com.dario.ast.core.service;
 
-import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
+import static com.dario.ast.util.EnvironmentUtil.applyEnvVarsToConfigParams;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
 import com.dario.ast.core.domain.AppState;
@@ -35,7 +35,7 @@ public class StressTestOrchestrator {
         prerequestService.runAndApplyPreRequests();
 
         var selectedEnvironment = appState.getSelectedEnvironment();
-        var envConfigParams = applyEnvironmentVariables(configParams, selectedEnvironment);
+        var envConfigParams = applyEnvVarsToConfigParams(configParams, selectedEnvironment);
 
         executor = newFixedThreadPool(runParams.getThreadPoolSize());
         var numRequests = runParams.getNumRequests();

@@ -4,6 +4,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import com.dario.ast.proxy.api.dto.ApiRequest;
 import com.dario.ast.proxy.api.dto.ApiResponse;
+import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ public class ApiProxy {
   private final RestTemplate restTemplate;
 
   public ApiResponse makeRequest(ApiRequest request) {
+    var start = Instant.now();
+
     try {
       var uriBuilder = UriComponentsBuilder.fromUriString(request.uri())
           .queryParams(request.queryParams())
@@ -31,12 +35,17 @@ public class ApiProxy {
           String.class);
       var statusCode = (HttpStatus) response.getStatusCode();
 
-      return new ApiResponse(statusCode, statusCode.getReasonPhrase(), response.getBody());
+      return new ApiResponse(statusCode, statusCode.getReasonPhrase(), response.getBody(), elapsedTimeMs(start));
     } catch (HttpStatusCodeException e) {
       var statusCode = (HttpStatus) e.getStatusCode();
-      return new ApiResponse(statusCode, e.getResponseBodyAsString(), null);
+      return new ApiResponse(statusCode, e.getResponseBodyAsString(), null, elapsedTimeMs(start));
     } catch (Exception e) {
-      return new ApiResponse(INTERNAL_SERVER_ERROR, e.getMessage(), null);
+      return new ApiResponse(INTERNAL_SERVER_ERROR, e.getMessage(), null, elapsedTimeMs(start));
     }
   }
+
+  private long elapsedTimeMs(Instant start) {
+    return Duration.between(start, Instant.now()).toMillis();
+  }
+
 }

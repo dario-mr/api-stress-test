@@ -2,6 +2,7 @@ package com.dario.ast.view.component.run;
 
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.JsonUtil.prettifyJson;
+import static com.dario.ast.util.MathUtil.average;
 import static com.vaadin.flow.component.icon.VaadinIcon.PLAY;
 import static com.vaadin.flow.component.icon.VaadinIcon.STOP;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
@@ -33,6 +34,9 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,6 +57,7 @@ public class RunLayout extends VerticalLayout {
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
   private final TextField completedText = new TextField("Completed");
   private final TextField failedText = new TextField("Failed");
+  private final TextField avgResponseTimeText = new TextField("Average Response Time");
   private final TextArea responseText = new TextArea(RESPONSE_LABEL);
   private final Button startButton = new Button();
   private final Button stopButton = new Button();
@@ -62,6 +67,7 @@ public class RunLayout extends VerticalLayout {
   private long completedRequests = 0, failedRequests = 0;
   private Long requestId;
   private boolean isUiLoading = false;
+  private final List<Long> testResponseTimesMs = new ArrayList<>();
 
   public RunLayout(
       AppState appState,
@@ -113,20 +119,23 @@ public class RunLayout extends VerticalLayout {
     stopButton.setVisible(false);
     stopButton.addClassName("start-stop-button");
 
-    // result layout (completed, failed, errors)
+    // result layout (completed, failed, errors, avg response time)
     completedText.setReadOnly(true);
     completedText.setWidth("8em");
 
     failedText.setReadOnly(true);
     failedText.setWidth("8em");
 
+    avgResponseTimeText.setReadOnly(true);
+    avgResponseTimeText.setWidth("8em");
+
     responseText.setReadOnly(true);
     responseText.setWidthFull();
 
-    var resultsLayout = new FlexLayout(completedText, failedText, responseText);
+    var resultsLayout = new FlexLayout(completedText, failedText, avgResponseTimeText, responseText);
     resultsLayout.setWidthFull();
     resultsLayout.setFlexWrap(WRAP);
-    resultsLayout.setFlexGrow(1, completedText, failedText);
+    resultsLayout.setFlexGrow(1, completedText, failedText, avgResponseTimeText);
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
     // add listeners
@@ -247,19 +256,34 @@ public class RunLayout extends VerticalLayout {
     stressTestOrchestrator.startStressTest(
         configParams,
         getRunParams(),
-        response -> getUI().ifPresent(ui -> ui.access(() -> applyApiResponse(response))),
-        () -> getUI().ifPresent(ui -> ui.access(() -> {
-          log.debug("Stress Test completed");
-          onStressTestComplete();
-        })),
-        ex -> getUI().ifPresent(ui -> ui.access(() -> {
+        onResponse(),
+        onComplete(),
+        onError()
+    );
+  }
+
+  private Consumer<ApiResponse> onResponse() {
+    return response -> getUI().ifPresent(ui -> ui.access(() ->
+        applyApiResponse(response)
+    ));
+  }
+
+  private Runnable onComplete() {
+    return () -> getUI().ifPresent(ui -> ui.access(() -> {
+      log.debug("Stress Test completed");
+      onStressTestComplete();
+    }));
+  }
+
+  private Consumer<Throwable> onError() {
+    return ex -> getUI().ifPresent(ui -> ui.access(() -> {
           log.error("Error during Stress Test", ex);
           onStressTestComplete();
           responseText.setValue(ex.getMessage());
 
           ErrorNotification.show("An error occurred");
-        }))
-    );
+        }
+    ));
   }
 
   private void stopStressTest() {
@@ -273,11 +297,14 @@ public class RunLayout extends VerticalLayout {
     stopOnErrorCheckbox.setEnabled(true);
     startButton.setVisible(true);
     stopButton.setVisible(false);
+
+    avgResponseTimeText.setValue(average(testResponseTimesMs) + " ms");
   }
 
   private void startStressTestUI() {
     completedRequests = 0;
     failedRequests = 0;
+    testResponseTimesMs.clear();
 
     requestNumberField.setEnabled(false);
     threadPoolSizeField.setEnabled(false);
@@ -287,12 +314,14 @@ public class RunLayout extends VerticalLayout {
 
     completedText.clear();
     failedText.clear();
+    avgResponseTimeText.clear();
     responseText.clear();
     responseText.setLabel(RESPONSE_LABEL);
     progressBar.setValue(0);
   }
 
   private void applyApiResponse(ApiResponse response) {
+    testResponseTimesMs.add(response.responseTimeMs());
     responseText.setLabel("%s (%s)".formatted(RESPONSE_LABEL, response.statusCode()));
 
     if (response.statusCode().is2xxSuccessful()) {

@@ -1,6 +1,6 @@
 package com.dario.ast.core.service;
 
-import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
+import static com.dario.ast.util.EnvironmentUtil.applyEnvVarsToConfigParams;
 import static java.util.stream.Collectors.toMap;
 
 import com.dario.ast.core.domain.AppState;
@@ -55,7 +55,7 @@ public class PreRequestService {
   private List<ConfigParams> applyEnvToPreRequests(
       Environment selectedEnvironment, List<ConfigParams> activePreRequests) {
     return activePreRequests.stream()
-        .map(preRequestParams -> applyEnvironmentVariables(preRequestParams, selectedEnvironment))
+        .map(preRequestParams -> applyEnvVarsToConfigParams(preRequestParams, selectedEnvironment))
         .toList();
   }
 
