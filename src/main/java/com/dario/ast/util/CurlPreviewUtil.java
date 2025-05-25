@@ -1,6 +1,6 @@
 package com.dario.ast.util;
 
-import static com.dario.ast.util.EnvironmentUtil.applyEnvironmentVariables;
+import static com.dario.ast.util.EnvironmentUtil.applyEnvVarsToConfigParams;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ConfigParams;
@@ -15,7 +15,7 @@ public class CurlPreviewUtil {
       return "";
     }
 
-    var envConfigParams = applyEnvironmentVariables(configParams, environment);
+    var envConfigParams = applyEnvVarsToConfigParams(configParams, environment);
     var previewBuilder = new StringBuilder();
 
     // replace URI variables

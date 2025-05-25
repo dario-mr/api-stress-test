@@ -5,9 +5,9 @@ import static com.dario.ast.util.MapUtil.convertToMultiValueMap;
 import static com.dario.ast.util.MapUtil.flatEntryValueMap;
 import static org.springframework.http.HttpMethod.GET;
 
+import com.dario.ast.core.serializer.HttpMethodDeserializer;
+import com.dario.ast.core.serializer.HttpMethodSerializer;
 import com.dario.ast.proxy.api.dto.ApiRequest;
-import com.dario.ast.util.jackson.HttpMethodDeserializer;
-import com.dario.ast.util.jackson.HttpMethodSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Map;

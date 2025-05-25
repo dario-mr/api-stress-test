@@ -25,14 +25,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, null);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, null);
 
     // then
     assertThat(result).isSameAs(original);
   }
 
   @Test
-  void applyEnvironmentVariables_whenVariablesAreEmpty_shouldReturnSameConfigParams() {
+  void applyEnvVarsToConfigParamsAreEmpty_shouldReturnSameConfigParams() {
     // given
     var original = ConfigParams.builder()
         .uri("https://example.com")
@@ -47,14 +47,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result).isSameAs(original);
   }
 
   @Test
-  void applyEnvironmentVariables_shouldReplaceVariablesInUri() {
+  void applyEnvVarsToConfigParamsInUri() {
     // given
     var original = ConfigParams.builder()
         .uri("https://example.com/{{VAR1}}/path")
@@ -65,14 +65,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result.getUri()).isEqualTo("https://example.com/replaced/path");
   }
 
   @Test
-  void applyEnvironmentVariables_shouldReplaceVariablesInHeaders() {
+  void applyEnvVarsToConfigParamsInHeaders() {
     // given
     var original = ConfigParams.builder()
         .headers(Map.of("Authorization", new RequestHeader("Bearer {{TOKEN}}", null)))
@@ -83,14 +83,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result.getHeaders()).containsEntry("Authorization", new RequestHeader("Bearer abc123", null));
   }
 
   @Test
-  void applyEnvironmentVariables_shouldReplaceVariablesInUriVariables() {
+  void applyEnvVarsToConfigParams() {
     // given
     var original = ConfigParams.builder()
         .uriVariables(Map.of("id", new RequestUriVariable("{{USER_ID}}", null)))
@@ -101,14 +101,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result.getUriVariables()).containsEntry("id", new RequestUriVariable("42", null));
   }
 
   @Test
-  void applyEnvironmentVariables_shouldReplaceVariablesInQueryParams() {
+  void applyEnvVarsToConfigParamsInQueryParams() {
     // given
     var original = ConfigParams.builder()
         .queryParams(Map.of("q", new RequestQueryParam("search {{TERM}}", null)))
@@ -119,14 +119,14 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result.getQueryParams()).containsEntry("q", new RequestQueryParam("search test", null));
   }
 
   @Test
-  void applyEnvironmentVariables_shouldReplaceVariablesInRequestBody() {
+  void applyEnvVarsToConfigParamsInRequestBody() {
     // given
     var original = ConfigParams.builder()
         .requestBody("{ \"user\": \"{{USERNAME}}\" }")
@@ -137,7 +137,7 @@ class EnvironmentUtilTest {
         .build();
 
     // when
-    var result = EnvironmentUtil.applyEnvironmentVariables(original, environment);
+    var result = EnvironmentUtil.applyEnvVarsToConfigParams(original, environment);
 
     // then
     assertThat(result.getRequestBody()).isEqualTo("{ \"user\": \"john_doe\" }");

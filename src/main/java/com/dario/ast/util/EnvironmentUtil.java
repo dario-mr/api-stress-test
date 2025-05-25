@@ -14,7 +14,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class EnvironmentUtil {
 
-  public static ConfigParams applyEnvironmentVariables(ConfigParams configParams, Environment environment) {
+  public static ConfigParams applyEnvVarsToConfigParams(ConfigParams configParams, Environment environment) {
     if (environment == null || environment.getVariables() == null || environment.getVariables().isEmpty()) {
       return configParams;
     }

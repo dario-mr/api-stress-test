@@ -1,4 +1,4 @@
-package com.dario.ast.util.jackson;
+package com.dario.ast.core.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
