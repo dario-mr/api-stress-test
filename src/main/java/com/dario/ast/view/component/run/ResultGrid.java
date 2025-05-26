@@ -1,43 +1,52 @@
 package com.dario.ast.view.component.run;
 
+import com.dario.ast.core.domain.IndexedApiResponse;
 import com.dario.ast.event.ApiRequestCompletedEvent;
 import com.dario.ast.event.StressTestStartedEvent;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
+import java.util.List;
+import org.vaadin.klaudeta.PaginatedGrid;
 
 @UIScope
 @SpringComponent
 @CssImport(value = "./styles/result-grid.css")
-public class ResultGrid extends Grid<ApiResponse> {
+public class ResultGrid extends PaginatedGrid<IndexedApiResponse, Void> {
 
-  // TODO paging: https://vaadin.com/directory/component/flow-viritin or https://vaadin.com/directory/component/beantable
-  // TODO open dialog on click?
+  // TODO open detail on click?
+  // TODO bug: api response makes layout super wide
 
-  private final ListDataProvider<ApiResponse> dataProvider = new ListDataProvider<>(new ArrayList<>());
+  private final ListDataProvider<IndexedApiResponse> dataProvider = new ListDataProvider<>(new ArrayList<>());
 
   public ResultGrid() {
     addClassName("result-grid");
 
     // columns
-    addColumn(ApiResponse::statusCode)
+    addColumn(IndexedApiResponse::index)
+        .setHeader("#")
+        .setWidth("4.5em")
+        .setFlexGrow(0);
+    addColumn(r -> r.response().statusCode())
         .setHeader("Status")
         .setWidth("12em")
         .setFlexGrow(0);
-    addColumn(apiResponse -> apiResponse.responseTimeMs() + " ms")
+    addColumn(r -> r.response().responseTimeMs() + " ms")
         .setHeader("Response Time")
         .setAutoWidth(true)
         .setFlexGrow(0);
-    addColumn(ApiResponse::responseBody)
+    addColumn(r -> r.response().responseBody())
         .setHeader("Response")
         .setAutoWidth(true)
         .setFlexGrow(1);
+
+    setPageSize(50);
+    setPaginatorSize(5);
 
     setDataProvider(dataProvider);
   }
@@ -63,7 +72,9 @@ public class ResultGrid extends Grid<ApiResponse> {
   }
 
   private void addApiResponse(ApiResponse apiResponse) {
-    dataProvider.getItems().add(apiResponse);
+    var items = (List<IndexedApiResponse>) dataProvider.getItems();
+    int newIndex = items.size() + 1;
+    items.add(new IndexedApiResponse(newIndex, apiResponse));
     dataProvider.refreshAll();
   }
 

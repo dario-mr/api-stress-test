@@ -21,6 +21,7 @@
 
     <vaadin.version>24.4.11</vaadin.version>
     <clipboard-helper.version>2.0.0</clipboard-helper.version>
+    <grid-pagination.version>4.0.1</grid-pagination.version>
   </properties>
 
   <dependencies>
@@ -71,6 +72,11 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.vaadin.klaudeta</groupId>
+      <artifactId>grid-pagination</artifactId>
+      <version>${grid-pagination.version}</version>
     </dependency>
 
     <!-- test -->

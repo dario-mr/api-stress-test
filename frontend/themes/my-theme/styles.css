@@ -23,7 +23,7 @@
   --google-button-border: #757775;
   --google-button-hover: whitesmoke;
 
-  --result-grid-background: #2B2F39;
+  --result-grid-header: #2B2F39;
   --result-grid-selected-row: rgba(255, 255, 255, 0.08);
 }
 
@@ -52,12 +52,13 @@
   --google-button-border: #c5c2c2;
   --google-button-hover: #eaeaea;
 
-  --result-grid-background: #c7d2fe;
+  --result-grid-header: #c7d2fe;
   --result-grid-selected-row: rgba(0, 0, 0, 0.05);
 }
 
 :root {
   --card-border-radius: 15px;
+  --result-grid-border-radius: 10px;
 
   /* font size */
   --lumo-font-size-xxs: 0.75rem;
