@@ -1,0 +1,23 @@
+.result-grid {
+  height: 30em;
+  background: transparent;
+  border: none;
+  --_lumo-grid-secondary-border-color: transparent;
+}
+
+.result-grid::part(cell) {
+  background: transparent;
+  font-size: var(--lumo-font-size-s);
+}
+
+.result-grid::part(selected-row) {
+  background-color: var(--result-grid-selected-row);
+}
+
+.result-grid::part(row) {
+  transition: background-color 0.3s ease;
+}
+
+.result-grid vaadin-grid-cell-content {
+  padding: var(--lumo-space-xxs) var(--lumo-space-s);
+}

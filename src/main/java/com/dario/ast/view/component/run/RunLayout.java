@@ -54,7 +54,6 @@ public class RunLayout extends VerticalLayout {
   private final RequestService requestService;
   private final RequestValidationService validationService;
   private final StressTestOrchestrator stressTestOrchestrator;
-  private final ResultGrid resultGrid;
 
   private final IntegerField requestNumberField = new IntegerField("Requests");
   private final IntegerField threadPoolSizeField = new IntegerField("Threads");
@@ -82,7 +81,6 @@ public class RunLayout extends VerticalLayout {
     this.requestService = requestService;
     this.validationService = validationService;
     this.stressTestOrchestrator = stressTestOrchestrator;
-    this.resultGrid = resultGrid;
 
     addClassNames("card-layout", "run-layout");
     setWidthFull();
@@ -143,6 +141,9 @@ public class RunLayout extends VerticalLayout {
     resultsLayout.setFlexGrow(1, completedText, failedText, avgResponseTimeText);
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
+    var resultsTitle = new H4("Results");
+    resultsTitle.getStyle().set("margin-top", "var(--lumo-space-s)");
+
     // add listeners
     addListeners();
 
@@ -150,10 +151,9 @@ public class RunLayout extends VerticalLayout {
     add(
         new H4("Run"),
         firstRow,
-        startButton, stopButton,
-        progressBar,
+        startButton, stopButton, progressBar,
         resultsLayout,
-        resultGrid
+        resultsTitle, resultGrid
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
@@ -357,7 +357,7 @@ public class RunLayout extends VerticalLayout {
   private void applyFailResponse(ApiResponse response) {
     failedRequests++;
     failedText.setValue(String.valueOf(failedRequests));
-    responseText.setValue(prettifyJson(response.errorMessage()));
+    responseText.setValue(prettifyJson(response.responseBody()));
   }
 
   private void updateProgressBar() {

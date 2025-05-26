@@ -22,6 +22,9 @@
 
   --google-button-border: #757775;
   --google-button-hover: whitesmoke;
+
+  --result-grid-background: #2B2F39;
+  --result-grid-selected-row: rgba(255, 255, 255, 0.08);
 }
 
 [theme~="light"] {
@@ -48,6 +51,9 @@
 
   --google-button-border: #c5c2c2;
   --google-button-hover: #eaeaea;
+
+  --result-grid-background: #c7d2fe;
+  --result-grid-selected-row: rgba(0, 0, 0, 0.05);
 }
 
 :root {

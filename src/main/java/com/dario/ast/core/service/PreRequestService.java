@@ -66,7 +66,7 @@ public class PreRequestService {
           if (response.statusCode().isError() || response.responseBody() == null) {
             throw new RuntimeException(
                 "Pre-request [%s] failed: %s\n\n%s".formatted(
-                    preRequestParams.getRequestName(), response.statusCode(), response.errorMessage()));
+                    preRequestParams.getRequestName(), response.statusCode(), response.responseBody()));
           }
           return new SimpleEntry<>(preRequestParams.getRequestName(), response);
         })
