@@ -41,6 +41,11 @@ class CurlPreviewUtilTest {
 
     var environment = buildEnvironment();
 
+    // single quotes in header and request body
+    var headersWithSingleQuote = new LinkedHashMap<String, RequestHeader>();
+    headersWithSingleQuote.put("X-Test", RequestHeader.builder().value("O'Reilly").build());
+    var requestBodyWithSingleQuote = "{ \"text\": \"It's a test\" }";
+
     return Stream.of(
         of(ConfigParams.builder().build(), null, ""),
         of(null, null, ""),
@@ -48,21 +53,27 @@ class CurlPreviewUtilTest {
         of(buildConfigParams(uri, POST, null, null, null, requestBody), null,
             """
                 curl -X POST 'https://www.api.com' \\
-                 -d '{ "requestBody": "requestBodyValue" }'"""),
+                  -d '{ "requestBody": "requestBodyValue" }'"""),
         of(buildConfigParams(uri, POST, null, null, queryParams, requestBody), null,
             """
                 curl -X POST 'https://www.api.com?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
-                 -d '{ "requestBody": "requestBodyValue" }'"""),
+                  -d '{ "requestBody": "requestBodyValue" }'"""),
         of(buildConfigParams(uriWithVar, GET, null, uriVariables, queryParams, requestBody), null,
             """
-                curl -X GET 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
-                 -d '{ "requestBody": "requestBodyValue" }'"""),
+                curl 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
+                  -d '{ "requestBody": "requestBodyValue" }'"""),
         of(buildConfigParams(uriWithVar, POST, headers, uriVariables, queryParams, requestBody), environment,
             """
                 curl -X POST 'https://www.api.com/uriVarValue?queryParam1=queryParamValue1&queryParam2=queryParamValue2' \\
-                 -H 'header1: this is a header' \\
-                 -H 'header2: headerValue2' \\
-                 -d '{ "requestBody": "requestBodyValue" }'""")
+                  -H 'header1: this is a header' \\
+                  -H 'header2: headerValue2' \\
+                  -d '{ "requestBody": "requestBodyValue" }'"""),
+        // test case: single quotes in header and request body
+        of(buildConfigParams(uri, POST, headersWithSingleQuote, null, null, requestBodyWithSingleQuote), null,
+            """
+                curl -X POST 'https://www.api.com' \\
+                  -H 'X-Test: O'"'"'Reilly' \\
+                  -d '{ "text": "It'"'"'s a test" }'""")
     );
   }
 
