@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO bug: when creating/editing an entry in EntriesSection, focus is lost (major redesign needed)
-  // TODO result history in RunLayout
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;

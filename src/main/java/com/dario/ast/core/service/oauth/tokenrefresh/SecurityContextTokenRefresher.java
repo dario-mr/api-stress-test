@@ -78,7 +78,7 @@ public class SecurityContextTokenRefresher implements TokenRefresher {
     var securityContext = SecurityContextHolder.getContext();
     securityContext.setAuthentication(newPrincipal);
 
-    log.debug("Refreshed token via security context for user {} (provider {})", userId, provider);
+    log.debug("Refreshed token via security context for user {} (provider: {})", userId, provider);
   }
 
   private static boolean isAccessTokenStillValid(Instant accessTokenExpiresAt) {

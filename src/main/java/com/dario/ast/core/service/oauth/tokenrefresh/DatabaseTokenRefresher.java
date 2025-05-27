@@ -70,6 +70,6 @@ public class DatabaseTokenRefresher implements TokenRefresher {
         refreshedAccessToken.getRefreshToken());
 
     authorizedClientService.saveAuthorizedClient(newClient, principal);
-    log.debug("Refreshed token via DB for user {} (provider {})", userId, provider);
+    log.debug("Refreshed token via DB for user {} (provider: {})", userId, provider);
   }
 }

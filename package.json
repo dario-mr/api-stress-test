@@ -3,6 +3,9 @@
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
+    "@polymer/iron-iconset-svg": "^3.0.1",
+    "@polymer/paper-button": "^3.0.1",
+    "@polymer/paper-icon-button": "^3.0.2",
     "@polymer/polymer": "3.5.1",
     "@vaadin/bundles": "24.4.7",
     "@vaadin/common-frontend": "0.0.19",
@@ -17,6 +20,8 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "date-fns": "2.29.3",
     "lit": "3.1.4",
+    "lit-element": "^3.2.2",
+    "lit-html": "2.4.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.26.1"
@@ -43,6 +48,9 @@
   },
   "vaadin": {
     "dependencies": {
+      "@polymer/iron-iconset-svg": "^3.0.1",
+      "@polymer/paper-button": "^3.0.1",
+      "@polymer/paper-icon-button": "^3.0.2",
       "@polymer/polymer": "3.5.1",
       "@vaadin/bundles": "24.4.7",
       "@vaadin/common-frontend": "0.0.19",
@@ -57,6 +65,8 @@
       "construct-style-sheets-polyfill": "3.1.0",
       "date-fns": "2.29.3",
       "lit": "3.1.4",
+      "lit-element": "^3.2.2",
+      "lit-html": "2.4.0",
       "react": "18.3.1",
       "react-dom": "18.3.1",
       "react-router-dom": "6.26.1"
@@ -81,7 +91,7 @@
       "workbox-core": "7.1.0",
       "workbox-precaching": "7.1.0"
     },
-    "hash": "6b2604d60cf53e20ba883b88f9e0f0148dbdb41b43885db3bef3ebba52616a53"
+    "hash": "065b8a62353c462b7dfb9486ce0650d3356ff20b3322d306d7d873773670e0a1"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -100,6 +110,11 @@
     "date-fns": "$date-fns",
     "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
     "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
-    "@vaadin/vaadin-material-styles": "$@vaadin/vaadin-material-styles"
+    "@vaadin/vaadin-material-styles": "$@vaadin/vaadin-material-styles",
+    "@polymer/iron-iconset-svg": "$@polymer/iron-iconset-svg",
+    "lit-element": "$lit-element",
+    "@polymer/paper-button": "$@polymer/paper-button",
+    "lit-html": "$lit-html",
+    "@polymer/paper-icon-button": "$@polymer/paper-icon-button"
   }
 }
