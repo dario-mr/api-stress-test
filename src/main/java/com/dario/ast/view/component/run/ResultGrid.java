@@ -1,8 +1,8 @@
 package com.dario.ast.view.component.run;
 
 import com.dario.ast.core.domain.IndexedApiResponse;
-import com.dario.ast.event.ApiRequestCompletedEvent;
-import com.dario.ast.event.StressTestStartedEvent;
+import com.dario.ast.event.stresstest.ApiRequestCompletedEvent;
+import com.dario.ast.event.stresstest.StressTestStartedEvent;
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;

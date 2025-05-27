@@ -1,4 +1,4 @@
-package com.dario.ast.event;
+package com.dario.ast.event.apply;
 
 import com.dario.ast.core.domain.ConfigParams;
 import com.vaadin.flow.component.Component;

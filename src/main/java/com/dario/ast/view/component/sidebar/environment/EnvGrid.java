@@ -7,7 +7,7 @@ import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Environment;
 import com.dario.ast.core.service.EnvironmentService;
-import com.dario.ast.event.EnvironmentCreatedEvent;
+import com.dario.ast.event.created.EnvironmentCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.reactive.ReactiveComponent;
 import com.dario.ast.view.component.common.reactive.ReactiveHandler;
