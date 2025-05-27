@@ -1,14 +1,12 @@
-package com.dario.ast.event;
+package com.dario.ast.event.focus;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
-import lombok.Getter;
 
-@Getter
-public class StressTestStartedEvent extends ComponentEvent<Component> {
+public class FocusPreRequestNameEvent extends ComponentEvent<Component> {
 
-  public StressTestStartedEvent() {
+  public FocusPreRequestNameEvent() {
     super(new UI(), false);
   }
 }

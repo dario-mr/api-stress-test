@@ -36,20 +36,24 @@ public class ApiProxy {
           String.class);
       var statusCode = (HttpStatus) response.getStatusCode();
 
-      return new ApiResponse(randomId(), statusCode, response.getBody(), elapsedTimeMs(start));
+      return createApiResponse(statusCode, response.getBody(), start);
     } catch (HttpStatusCodeException e) {
       var statusCode = (HttpStatus) e.getStatusCode();
-      return new ApiResponse(randomId(), statusCode, e.getResponseBodyAsString(), elapsedTimeMs(start));
+      return createApiResponse(statusCode, e.getResponseBodyAsString(), start);
     } catch (Exception e) {
-      return new ApiResponse(randomId(), INTERNAL_SERVER_ERROR, e.getMessage(), elapsedTimeMs(start));
+      return createApiResponse(INTERNAL_SERVER_ERROR, e.getMessage(), start);
     }
   }
 
-  private long elapsedTimeMs(Instant start) {
-    return Duration.between(start, Instant.now()).toMillis();
+  private ApiResponse createApiResponse(HttpStatus statusCode, String body, Instant start) {
+    return new ApiResponse(randomId(), statusCode, body, elapsedTimeMs(start));
   }
 
   private String randomId() {
     return UUID.randomUUID().toString();
+  }
+
+  private long elapsedTimeMs(Instant start) {
+    return Duration.between(start, Instant.now()).toMillis();
   }
 }

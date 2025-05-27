@@ -15,7 +15,7 @@ import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.service.FolderService;
 import com.dario.ast.core.service.RequestService;
-import com.dario.ast.event.RequestCreatedEvent;
+import com.dario.ast.event.created.RequestCreatedEvent;
 import com.dario.ast.event.folder.FolderCreatedEvent;
 import com.dario.ast.event.folder.FolderUpdatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;

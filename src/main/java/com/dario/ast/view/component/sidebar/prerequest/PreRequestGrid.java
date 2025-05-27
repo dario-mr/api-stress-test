@@ -10,7 +10,7 @@ import com.dario.ast.core.domain.ConfigParams;
 import com.dario.ast.core.domain.Request;
 import com.dario.ast.core.service.PreRequestService;
 import com.dario.ast.core.service.RequestService;
-import com.dario.ast.event.PreRequestCreatedEvent;
+import com.dario.ast.event.created.PreRequestCreatedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
 import com.dario.ast.view.component.common.reactive.ReactiveComponent;
 import com.dario.ast.view.component.common.reactive.ReactiveHandler;

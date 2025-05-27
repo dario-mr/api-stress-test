@@ -1,4 +1,4 @@
-package com.dario.ast.event;
+package com.dario.ast.event.stresstest;
 
 import com.dario.ast.proxy.api.dto.ApiResponse;
 import com.vaadin.flow.component.Component;

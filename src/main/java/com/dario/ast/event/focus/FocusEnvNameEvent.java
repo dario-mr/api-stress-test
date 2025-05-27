@@ -1,12 +1,12 @@
-package com.dario.ast.event;
+package com.dario.ast.event.focus;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
 
-public class EnvironmentEntriesUpdatedEvent extends ComponentEvent<Component> {
+public class FocusEnvNameEvent extends ComponentEvent<Component> {
 
-  public EnvironmentEntriesUpdatedEvent() {
+  public FocusEnvNameEvent() {
     super(new UI(), false);
   }
 }
