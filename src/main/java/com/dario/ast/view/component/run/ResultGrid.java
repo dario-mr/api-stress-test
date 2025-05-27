@@ -19,9 +19,6 @@ import org.vaadin.klaudeta.PaginatedGrid;
 @CssImport(value = "./styles/result-grid.css")
 public class ResultGrid extends PaginatedGrid<IndexedApiResponse, Void> {
 
-  // TODO open detail on click?
-  // TODO bug: api response makes layout super wide
-
   private final ListDataProvider<IndexedApiResponse> dataProvider = new ListDataProvider<>(new ArrayList<>());
 
   public ResultGrid() {
@@ -42,9 +39,16 @@ public class ResultGrid extends PaginatedGrid<IndexedApiResponse, Void> {
         .setFlexGrow(0);
     addColumn(r -> r.response().responseBody())
         .setHeader("Response")
-        .setAutoWidth(true)
-        .setFlexGrow(1);
+        .setFlexGrow(1)
+        .setClassNameGenerator(item -> "response-column");
 
+    // on click: show detail dialog
+    addItemClickListener(event -> {
+      var detail = new ResultDetail(event.getItem());
+      detail.open();
+    });
+
+    // paging
     setPageSize(50);
     setPaginatorSize(5);
 

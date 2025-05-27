@@ -1,0 +1,4 @@
+/* Remove padding from dialog */
+[part='content'] {
+  padding: 0 !important;
+}
