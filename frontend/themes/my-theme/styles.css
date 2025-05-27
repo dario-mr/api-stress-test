@@ -25,6 +25,7 @@
 
   --result-grid-header: #2B2F39;
   --result-grid-selected-row: rgba(255, 255, 255, 0.08);
+  --result-detail-background: #384156;
 }
 
 [theme~="light"] {
@@ -54,6 +55,7 @@
 
   --result-grid-header: #c7d2fe;
   --result-grid-selected-row: rgba(0, 0, 0, 0.05);
+  --result-detail-background: #d5d5ff;
 }
 
 :root {
