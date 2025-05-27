@@ -58,7 +58,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
       log.debug("Refresh token stored in DB for user [{}], access token expires at {}", userId,
           client.getAccessToken().getExpiresAt());
     } else {
-      log.warn("No refresh token received for user [{}] (provider [{}])", userId, provider);
+      log.warn("No refresh token received for user [{}] (provider: [{}])", userId, provider);
     }
 
     response.sendRedirect(request.getContextPath() + "/");

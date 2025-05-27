@@ -1,5 +1,7 @@
 package com.dario.ast.view.component.run;
 
+import static com.dario.ast.util.EventUtil.apiRequestCompleted;
+import static com.dario.ast.util.EventUtil.stressTestStarted;
 import static com.dario.ast.util.IntegerFieldUtil.integerValidationListener;
 import static com.dario.ast.util.JsonUtil.prettifyJson;
 import static com.dario.ast.util.MathUtil.average;
@@ -73,7 +75,8 @@ public class RunLayout extends VerticalLayout {
       AppState appState,
       RequestService requestService,
       RequestValidationService validationService,
-      StressTestOrchestrator stressTestOrchestrator) {
+      StressTestOrchestrator stressTestOrchestrator,
+      ResultGrid resultGrid) {
     this.appState = appState;
     this.requestService = requestService;
     this.validationService = validationService;
@@ -138,6 +141,9 @@ public class RunLayout extends VerticalLayout {
     resultsLayout.setFlexGrow(1, completedText, failedText, avgResponseTimeText);
     resultsLayout.getStyle().set("gap", "var(--lumo-space-m)");
 
+    var resultsTitle = new H4("Results");
+    resultsTitle.getStyle().set("margin-top", "var(--lumo-space-s)");
+
     // add listeners
     addListeners();
 
@@ -145,9 +151,9 @@ public class RunLayout extends VerticalLayout {
     add(
         new H4("Run"),
         firstRow,
-        startButton, stopButton,
-        progressBar,
-        resultsLayout
+        startButton, stopButton, progressBar,
+        resultsLayout,
+        resultsTitle, resultGrid
     );
     setHorizontalComponentAlignment(CENTER, startButton, stopButton);
   }
@@ -252,6 +258,7 @@ public class RunLayout extends VerticalLayout {
 
     stopStressTest();
     startStressTestUI();
+    stressTestStarted();
 
     stressTestOrchestrator.startStressTest(
         configParams,
@@ -263,8 +270,10 @@ public class RunLayout extends VerticalLayout {
   }
 
   private Consumer<ApiResponse> onResponse() {
-    return response -> getUI().ifPresent(ui -> ui.access(() ->
-        applyApiResponse(response)
+    return response -> getUI().ifPresent(ui -> ui.access(() -> {
+          applyApiResponse(response);
+          apiRequestCompleted(response);
+        }
     ));
   }
 
@@ -348,7 +357,7 @@ public class RunLayout extends VerticalLayout {
   private void applyFailResponse(ApiResponse response) {
     failedRequests++;
     failedText.setValue(String.valueOf(failedRequests));
-    responseText.setValue(prettifyJson(response.errorMessage()));
+    responseText.setValue(prettifyJson(response.responseBody()));
   }
 
   private void updateProgressBar() {
