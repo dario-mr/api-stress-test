@@ -1,6 +1,8 @@
 package com.dario.ast.util;
 
 import static com.dario.ast.util.EnvironmentUtil.applyEnvVarsToConfigParams;
+import static java.util.stream.Collectors.joining;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.util.StringUtils.hasText;
 
 import com.dario.ast.core.domain.ConfigParams;
@@ -16,72 +18,75 @@ public class CurlPreviewUtil {
     }
 
     var envConfigParams = applyEnvVarsToConfigParams(configParams, environment);
-    var previewBuilder = new StringBuilder();
 
-    // replace URI variables
-    final String[] uriArr = {envConfigParams.getUri()};
-    if (envConfigParams.getUriVariables() != null) {
-      envConfigParams.getUriVariables().entrySet().stream()
-          .filter(uriVar -> hasText(uriVar.getKey()) && hasText(uriVar.getValue().getValue()))
-          .forEach(uriVar ->
-              uriArr[0] = uriArr[0].replace("{%s}".formatted(uriVar.getKey()), uriVar.getValue().getValue()));
-    }
-    var uri = uriArr[0];
+    String uri = buildUriWithVariables(envConfigParams);
+    String queryString = buildQueryString(envConfigParams);
+    StringBuilder previewBuilder = new StringBuilder("curl");
 
-    // append http method
-    if (envConfigParams.getMethod() != null) {
-      previewBuilder.append(envConfigParams.getMethod().name());
+    // only add -X if not GET
+    if (envConfigParams.getMethod() != null && !GET.equals(envConfigParams.getMethod())) {
+      previewBuilder.append(" -X ").append(envConfigParams.getMethod().name());
     }
 
-    // append uri
     previewBuilder.append(" '").append(uri);
-
-    // append query parameters
-    if (envConfigParams.getQueryParams() != null) {
-      final boolean[] isFirstQueryParam = {true};
-
-      envConfigParams.getQueryParams().entrySet().stream()
-          .filter(queryParam -> hasText(queryParam.getKey()) && hasText(queryParam.getValue().getValue()))
-          .forEach(queryParam -> {
-            if (isFirstQueryParam[0]) {
-              previewBuilder.append("?");
-              isFirstQueryParam[0] = false;
-            } else {
-              previewBuilder.append("&");
-            }
-            previewBuilder.append(queryParam.getKey()).append("=").append(queryParam.getValue().getValue());
-          });
+    if (!queryString.isEmpty()) {
+      previewBuilder.append("?").append(queryString);
     }
-
-    // close uri
     previewBuilder.append("'");
 
-    // append headers
+    // headers
     if (envConfigParams.getHeaders() != null) {
       envConfigParams.getHeaders().entrySet().stream()
           .filter(header -> hasText(header.getKey()) && hasText(header.getValue().getValue()))
-          .forEach(header -> previewBuilder
-              .append(" \\\n")
-              .append(" -H '")
-              .append(header.getKey()).append(": ").append(header.getValue().getValue())
-              .append("'"));
+          .forEach(header -> previewBuilder.append(formatHeader(header.getKey(), header.getValue().getValue())));
     }
 
-    // append request body
+    // request body
     if (hasText(envConfigParams.getRequestBody())) {
       previewBuilder
-          .append(" \\\n")
-          .append(" -d '")
-          .append(envConfigParams.getRequestBody())
+          .append(" \\\n  -d '")
+          .append(escapeSingleQuotes(envConfigParams.getRequestBody()))
           .append("'");
     }
 
-    // if no item in the preview builder, return empty string
-    if (previewBuilder.isEmpty()) {
+    return previewBuilder.toString();
+  }
+
+  private static String buildUriWithVariables(ConfigParams params) {
+    var uri = params.getUri();
+    var uriVariables = params.getUriVariables();
+    if (uriVariables == null || uriVariables.isEmpty()) {
+      return uri;
+    }
+
+    for (var entry : uriVariables.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue().getValue();
+      if (hasText(key) && hasText(value)) {
+        uri = uri.replace("{%s}".formatted(key), value);
+      }
+    }
+
+    return uri;
+  }
+
+  private static String buildQueryString(ConfigParams params) {
+    var queryParams = params.getQueryParams();
+    if (queryParams == null || queryParams.isEmpty()) {
       return "";
     }
 
-    return "curl -X " + previewBuilder;
+    return queryParams.entrySet().stream()
+        .filter(qp -> hasText(qp.getKey()) && hasText(qp.getValue().getValue()))
+        .map(qp -> qp.getKey() + "=" + qp.getValue().getValue())
+        .collect(joining("&"));
   }
 
+  private static String formatHeader(String key, String value) {
+    return " \\\n  -H '" + escapeSingleQuotes(key) + ": " + escapeSingleQuotes(value) + "'";
+  }
+
+  private static String escapeSingleQuotes(String value) {
+    return value == null ? "" : value.replace("'", "'\"'\"'");
+  }
 }
