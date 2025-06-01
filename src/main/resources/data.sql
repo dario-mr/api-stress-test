@@ -24,7 +24,11 @@ VALUES (1, 1, 'Request 1 with a very long nameeeeeeeeeeeeeee', '2024-02-23T12:00
         'http://localhost:8099/v1/authz-token?env={{env}}', 'GET', '{ "key": "body AuthzToken" }', 1, 1, true,
         'PRE_REQUEST', true, null),
        (6, 1, 'Pre-request 3', '2024-02-23T13:00:00Z', '2024-02-23T13:00:00Z', 'https://example.com/api/test2', 'GET',
-        NULL, 1, 1, true, 'PRE_REQUEST', false, null);
+        NULL, 1, 1, true, 'PRE_REQUEST', false, null),
+       (7, 1, 'Request 4', '2024-03-30T13:00:00Z', '2024-03-30T13:00:00Z', 'https://example.com/api/test2', 'GET',
+        NULL, 10, 1, true, 'REQUEST', true, null),
+       (8, 1, 'Request 5', '2024-03-30T13:00:00Z', '2024-03-30T13:00:00Z', 'https://example.com/api/test2', 'GET',
+        NULL, 10, 1, true, 'REQUEST', true, 2);
 
 -- Insert headers for ast_request 1
 INSERT INTO my_schema.ast_request_headers (ast_request_id, header_key, header_value, created_on)
@@ -100,7 +104,7 @@ VALUES (3, 'var1', 'QA value 1', '2025-03-02 12:00:00'),
 ALTER TABLE my_schema.ast_user
     ALTER COLUMN id RESTART WITH 3;
 ALTER TABLE my_schema.ast_request
-    ALTER COLUMN id RESTART WITH 8;
+    ALTER COLUMN id RESTART WITH 10;
 ALTER TABLE my_schema.ast_environment
     ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE my_schema.ast_request_folder

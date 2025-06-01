@@ -18,6 +18,7 @@ import com.dario.ast.repository.jpa.entity.RequestEntity;
 import com.dario.ast.repository.jpa.entity.RequestHeaderEntity;
 import com.dario.ast.repository.jpa.entity.RequestQueryParameterEntity;
 import com.dario.ast.repository.jpa.entity.RequestUriVariableEntity;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -84,6 +85,7 @@ public class RequestRepository {
         .map(this::mapToDomain);
   }
 
+  @Transactional
   public Request create(Request request) {
     var now = Instant.now();
 

@@ -321,7 +321,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     var treeData = new TreeData<RequestOrFolder>();
     userRequestsByFolder.forEach((folder, requests) -> {
-      if (folder == null) {
+      if (folder == null) { // root level request
         requests.forEach(request -> treeData.addItem(null, request));
       } else {
         treeData.addItem(null, folder);
