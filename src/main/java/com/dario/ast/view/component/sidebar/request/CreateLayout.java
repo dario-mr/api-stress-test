@@ -1,7 +1,5 @@
 package com.dario.ast.view.component.sidebar.request;
 
-import static com.dario.ast.core.domain.Folder.defaultFolder;
-import static com.dario.ast.util.EventUtil.folderCreated;
 import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
 import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_ADD;
 import static com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment.CENTER;
@@ -73,11 +71,9 @@ public class CreateLayout extends HorizontalLayout {
 
   private void createFolder() {
     var currentUserId = appState.getCurrentUser().getId();
-    var folder = defaultFolder(currentUserId);
 
     try {
-      var newFolder = folderService.save(folder);
-      folderCreated(newFolder);
+      folderService.createFolder(currentUserId, null);
     } catch (Exception ex) {
       log.error("Error creating folder", ex);
       ErrorNotification.show("Error creating folder");

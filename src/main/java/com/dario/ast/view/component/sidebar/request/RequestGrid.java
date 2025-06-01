@@ -7,6 +7,7 @@ import static com.dario.ast.util.EventUtil.folderSelected;
 import static com.vaadin.flow.component.grid.dnd.GridDropMode.ON_TOP;
 import static com.vaadin.flow.component.icon.VaadinIcon.COPY_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
+import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_ADD;
 import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_OPEN_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
@@ -52,8 +53,9 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
 @CssImport(value = "./styles/request-grid.css", themeFor = "vaadin-grid")
 public class RequestGrid extends TreeGrid<RequestOrFolder> {
+  // TODO better icons
 
-  private static final String DELETE_BUTTON_CLASS = "delete-button";
+  private static final String GRID_BUTTON_CLASS = "grid-button";
 
   private final RequestService requestService;
   private final AppState appState;
@@ -130,6 +132,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     // create request button
     addCreateRequestColumn();
+
+    // create folder button
+    addCreateFolderColumn();
 
     // duplicate request button
     addDuplicateRequestColumn();
@@ -211,10 +216,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   private void addCreateRequestColumn() {
     addColumn(new ComponentRenderer<>(item -> {
       if (item instanceof Folder folder) {
-        // TODO better icon
         var createButton = new Button(FILE_ADD.create(), e -> createRequest(folder));
         createButton.setTooltipText("Create request");
-        createButton.addClassName(DELETE_BUTTON_CLASS);
+        createButton.addClassName(GRID_BUTTON_CLASS);
         return createButton;
       }
 
@@ -223,6 +227,35 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         .setAutoWidth(true)
         .setFlexGrow(0)
         .setClassNameGenerator(item -> !(item instanceof Folder) ? "empty-cell" : "");
+  }
+
+  private void addCreateFolderColumn() {
+    addColumn(new ComponentRenderer<>(item -> {
+      if (item instanceof Folder parentFolder) {
+        var createButton = new Button(FOLDER_ADD.create(), e -> createFolder(parentFolder));
+        createButton.setTooltipText("Create folder");
+        createButton.addClassName(GRID_BUTTON_CLASS);
+        return createButton;
+      }
+
+      return noActionButton();
+    }))
+        .setAutoWidth(true)
+        .setFlexGrow(0)
+        .setClassNameGenerator(item -> !(item instanceof Folder) ? "empty-cell" : "");
+  }
+
+
+  private void createFolder(Folder parentFolder) {
+    var currentUserId = appState.getCurrentUser().getId();
+
+    try {
+      folderService.createFolder(currentUserId, parentFolder);
+    } catch (Exception ex) {
+      log.error("Error creating folder", ex);
+      ErrorNotification.show("Error creating folder");
+      throw ex;
+    }
   }
 
   private void createRequest(Folder parentFolder) {
@@ -242,7 +275,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       if (item instanceof Request request) {
         var duplicateButton = new Button(COPY_O.create(), e -> duplicateRequest(request));
         duplicateButton.setTooltipText("Duplicate request");
-        duplicateButton.addClassName(DELETE_BUTTON_CLASS);
+        duplicateButton.addClassName(GRID_BUTTON_CLASS);
         return duplicateButton;
       }
 
@@ -273,7 +306,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         }
       });
 
-      deleteButton.addClassName(DELETE_BUTTON_CLASS);
+      deleteButton.addClassName(GRID_BUTTON_CLASS);
       deleteButton.setTooltipText("Delete item");
       return deleteButton;
     }))
@@ -281,6 +314,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         .setFlexGrow(0);
   }
 
+  // TODO redesign to support nested folders
   private void loadRequests() {
     var currentUserId = appState.getCurrentUser().getId();
     var userRequestsByFolder = getUserRequestsByFolder(currentUserId);

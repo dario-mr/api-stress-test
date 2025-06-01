@@ -3,8 +3,10 @@ INSERT INTO my_schema.ast_user (id, email, created_on, active)
 VALUES (1, 'dario.mauri9@gmail.com', '2024-02-23T10:00:00Z', true);
 
 -- folders
-INSERT INTO my_schema.ast_request_folder (id, name, created_on, user_id)
-VALUES (1, 'folder 1', '2025-04-16 12:00:00', 1);
+INSERT INTO my_schema.ast_request_folder (id, name, created_on, user_id, parent_folder_id)
+VALUES (1, 'folder 1', '2025-04-16 12:00:00', 1, null);
+INSERT INTO my_schema.ast_request_folder (id, name, created_on, user_id, parent_folder_id)
+VALUES (2, 'nested folder', '2025-04-17 12:00:00', 1, 1);
 
 -- requests
 INSERT INTO my_schema.ast_request (id, user_id, name, created_on, modified_on, uri, method, request_body, num_requests,
@@ -102,4 +104,4 @@ ALTER TABLE my_schema.ast_request
 ALTER TABLE my_schema.ast_environment
     ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE my_schema.ast_request_folder
-    ALTER COLUMN id RESTART WITH 2;
+    ALTER COLUMN id RESTART WITH 3;
