@@ -21,6 +21,11 @@ public final class Folder implements RequestOrFolder {
   private Instant createdOn;
   private Folder parentFolder;
 
+  @Override
+  public Folder getParentFolder() {
+    return parentFolder;
+  }
+
   public static Folder defaultFolder(long userId, Folder parentFolder) {
     return new Folder(null, userId, "New folder", Instant.now(), parentFolder);
   }
@@ -32,5 +37,4 @@ public final class Folder implements RequestOrFolder {
     this.createdOn = other.createdOn;
     this.parentFolder = other.parentFolder;
   }
-
 }

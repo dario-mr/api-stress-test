@@ -1,11 +1,15 @@
 package com.dario.ast.core.service;
 
 import static com.dario.ast.core.domain.Folder.defaultFolder;
+import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.folderCreated;
 
 import com.dario.ast.core.domain.Folder;
 import com.dario.ast.repository.FolderRepository;
 import com.dario.ast.repository.RequestRepository;
+import com.dario.ast.view.component.sidebar.request.RequestOrFolder;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +34,17 @@ public class FolderService {
   public void delete(long folderId) {
     requestRepository.deleteByFolderId(folderId);
     folderRepository.delete(folderId);
+  }
+
+  public List<RequestOrFolder> getRequestsAndFoldersByUserId(long userId) {
+    var folders = folderRepository.findByUserId(userId);
+    var requests = requestRepository.findByUserIdAndType(userId, REQUEST);
+
+    var items = new ArrayList<RequestOrFolder>();
+    items.addAll(folders);
+    items.addAll(requests);
+
+    return items;
   }
 
 }

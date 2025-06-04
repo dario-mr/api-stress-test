@@ -1,6 +1,5 @@
 package com.dario.ast.repository;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 
 import com.dario.ast.core.converter.FolderMapper;
@@ -20,7 +19,6 @@ import com.dario.ast.repository.jpa.entity.RequestQueryParameterEntity;
 import com.dario.ast.repository.jpa.entity.RequestUriVariableEntity;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,41 +36,8 @@ public class RequestRepository {
   private final FolderJpaRepository folderJpaRepository;
   private final FolderMapper folderMapper;
 
-  public Map<Folder, List<Request>> getRequestsByUserIdAndTypeAndStatusGroupedByFolder(
-      long userId, RequestType requestType, boolean active) {
-    var requestsByFolder = findRequestsGroupedByFolder(userId, requestType, active);
-    var userFolders = findFoldersByUser(userId);
 
-    // merge requests by folder + all folders (necessary for empty ones)
-    userFolders.forEach(folder ->
-        requestsByFolder.computeIfAbsent(folder, absentFolder -> new ArrayList<>())
-    );
-
-    return requestsByFolder;
-  }
-
-  private LinkedHashMap<Folder, List<Request>> findRequestsGroupedByFolder(
-      long userId, RequestType requestType, boolean active) {
-    return jpaRepository.findByUserIdAndRequestTypeAndActiveOrderByCreatedOn(
-            userId, requestType.toString(), active).stream()
-        .map(this::mapToDomain)
-        .collect(toMap(
-            Request::getFolder,
-            request -> new ArrayList<>(singletonList(request)), // mutable list
-            (list1, list2) -> {
-              list1.addAll(list2);
-              return list1;
-            },
-            LinkedHashMap::new
-        ));
-  }
-
-  private List<Folder> findFoldersByUser(long userId) {
-    return folderJpaRepository.findByUserIdOrderByCreatedOn(userId).stream()
-        .map(folderMapper::toDomain)
-        .toList();
-  }
-
+  @Transactional
   public List<Request> findByUserIdAndType(long userId, RequestType requestType) {
     return jpaRepository.findByUserIdAndRequestTypeOrderByCreatedOn(userId, requestType.toString())
         .stream()

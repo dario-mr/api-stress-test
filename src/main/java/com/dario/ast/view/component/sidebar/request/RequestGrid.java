@@ -1,6 +1,5 @@
 package com.dario.ast.view.component.sidebar.request;
 
-import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.focusFolderName;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.dario.ast.util.EventUtil.folderSelected;
@@ -42,8 +41,11 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +55,12 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/grid-tree-toggle-adjust.css", themeFor = "vaadin-grid-tree-toggle")
 @CssImport(value = "./styles/request-grid.css", themeFor = "vaadin-grid")
 public class RequestGrid extends TreeGrid<RequestOrFolder> {
+
   // TODO better icons
+  // TODO drag and drop with new nested folders design
+  // TODO projections to avoid transactional everywhere?
+  // TODO request 3 is contained by request 1, instead of folder 1 ?!
+  // TODO create folder does not work for nested folders
 
   private static final String GRID_BUTTON_CLASS = "grid-button";
 
@@ -314,34 +321,49 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         .setFlexGrow(0);
   }
 
-  // TODO redesign to support nested folders
   private void loadRequests() {
     var currentUserId = appState.getCurrentUser().getId();
-    var userRequestsByFolder = getUserRequestsByFolder(currentUserId);
+    var items = folderService.getRequestsAndFoldersByUserId(currentUserId);
 
     var treeData = new TreeData<RequestOrFolder>();
-    userRequestsByFolder.forEach((folder, requests) -> {
-      if (folder == null) { // root level request
-        requests.forEach(request -> treeData.addItem(null, request));
-      } else {
-        treeData.addItem(null, folder);
-        requests.forEach(request -> treeData.addItem(folder, request));
-      }
-    });
+
+    // Group children by parent ID
+    var childrenByParentId = new HashMap<Long, List<RequestOrFolder>>();
+    for (RequestOrFolder item : items) {
+      var parent = item.getParentFolder();
+      var parentId = parent != null ? parent.getId() : null;
+      childrenByParentId.computeIfAbsent(parentId, unused -> new ArrayList<>()).add(item);
+    }
+
+    // Recursively build tree starting at root level (parentId == null)
+    var addedItems = new HashSet<RequestOrFolder>();
+    addTreeItemsRecursively(null, childrenByParentId, treeData, addedItems);
 
     dataProvider = new TreeDataProvider<>(treeData);
     setDataProvider(dataProvider);
-
     selectFirstRequest();
   }
 
-  private Map<Folder, List<Request>> getUserRequestsByFolder(long currentUserId) {
-    try {
-      return requestService.getFoldersByUserIdAndTypeAndStatus(currentUserId, REQUEST, true);
-    } catch (Exception ex) {
-      log.error("Error fetching requests for user [{}]", currentUserId, ex);
-      ErrorNotification.show("Error fetching requests");
-      throw ex;
+  private void addTreeItemsRecursively(
+      RequestOrFolder parent,
+      Map<Long, List<RequestOrFolder>> childrenByParentId,
+      TreeData<RequestOrFolder> treeData,
+      Set<RequestOrFolder> addedItems
+  ) {
+    var parentId = parent != null ? parent.getId() : null;
+    var children = childrenByParentId.get(parentId);
+    if (children == null) {
+      return;
+    }
+
+    for (RequestOrFolder child : children) {
+      if (addedItems.contains(child)) {
+        continue;
+      }
+
+      treeData.addItem(parent, child);
+      addedItems.add(child);
+      addTreeItemsRecursively(child, childrenByParentId, treeData, addedItems);
     }
   }
 
