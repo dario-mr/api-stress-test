@@ -36,7 +36,6 @@ public class RequestRepository {
   private final FolderJpaRepository folderJpaRepository;
   private final FolderMapper folderMapper;
 
-
   @Transactional
   public List<Request> findByUserIdAndType(long userId, RequestType requestType) {
     return jpaRepository.findByUserIdAndRequestTypeOrderByCreatedOn(userId, requestType.toString())

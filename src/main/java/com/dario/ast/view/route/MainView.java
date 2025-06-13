@@ -28,9 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class MainView extends VerticalLayout {
 
   // TODO bug: when creating/editing an entry in EntriesSection, focus is lost (major redesign needed)
-  // TODO nested folders
   // TODO mappers for all domain-entity
-  // TODO parallel pre-requests
+  // TODO electron app
 
   private final HeadlineLayout headlineLayout;
   private final MainSidebar mainSidebar;
