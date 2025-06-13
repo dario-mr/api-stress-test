@@ -86,9 +86,12 @@ CREATE TABLE my_schema.oauth_token
 
 CREATE TABLE my_schema.ast_request_folder
 (
-    id         BIGSERIAL PRIMARY KEY,
-    name       TEXT        NOT NULL,
-    created_on TIMESTAMPTZ NOT NULL,
-    user_id    BIGINT      NOT NULL,
-    CONSTRAINT fk_ast_request_folder_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE
+    id               BIGSERIAL PRIMARY KEY,
+    name             TEXT        NOT NULL,
+    created_on       TIMESTAMPTZ NOT NULL,
+    user_id          BIGINT      NOT NULL,
+    parent_folder_id BIGINT,
+    CONSTRAINT fk_ast_request_folder_user FOREIGN KEY (user_id) REFERENCES my_schema.ast_user (id) ON DELETE CASCADE,
+    CONSTRAINT fk_ast_request_folder_folder FOREIGN KEY (parent_folder_id) REFERENCES my_schema.ast_request_folder (id) ON DELETE CASCADE
 );
+CREATE INDEX idx_ast_request_folder_parent_folder_id ON my_schema.ast_request_folder (parent_folder_id);

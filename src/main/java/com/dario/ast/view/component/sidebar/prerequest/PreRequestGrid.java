@@ -107,7 +107,7 @@ public class PreRequestGrid extends Grid<ConfigParams> {
   private void addDeleteColumn() {
     addColumn(new ComponentRenderer<>(preRequestParams -> {
       var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(preRequestParams));
-      deleteButton.addClassName("delete-button");
+      deleteButton.addClassName("grid-button");
       return deleteButton;
     }))
         .setAutoWidth(true)

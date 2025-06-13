@@ -63,13 +63,13 @@
 }
 
 /* Delete button */
-.delete-button {
+.grid-button {
   padding: 0;
   margin: 0;
   background: transparent;
 }
 
-.sidebar-grid vaadin-grid-cell-content:has(.delete-button) {
+.sidebar-grid vaadin-grid-cell-content:has(.grid-button) {
   padding-left: 0;
   padding-right: 0;
 }

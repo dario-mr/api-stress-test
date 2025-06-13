@@ -87,7 +87,7 @@ public class EnvGrid extends Grid<Environment> {
   private void addDeleteColumn() {
     addColumn(new ComponentRenderer<>(env -> {
       var deleteButton = new Button(TRASH.create(), e -> showDeleteDialog(env));
-      deleteButton.addClassName("delete-button");
+      deleteButton.addClassName("grid-button");
       return deleteButton;
     }))
         .setAutoWidth(true)

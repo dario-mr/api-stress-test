@@ -6,7 +6,6 @@ import static org.springframework.util.StringUtils.hasText;
 import com.dario.ast.core.domain.AppState;
 import com.dario.ast.core.domain.Folder;
 import com.dario.ast.core.service.FolderService;
-import com.dario.ast.core.service.RequestService;
 import com.dario.ast.event.folder.FocusFolderNameEvent;
 import com.dario.ast.event.folder.FolderSelectedEvent;
 import com.dario.ast.view.component.common.notification.ErrorNotification;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FolderLayout extends VerticalLayout {
 
   private final AppState appState;
-  private final RequestService requestService;
   private final FolderService folderService;
 
   private final TextField nameText = new TextField();
@@ -35,9 +33,8 @@ public class FolderLayout extends VerticalLayout {
   private boolean isUiLoading = false;
   private Folder selectedFolder;
 
-  public FolderLayout(AppState appState, RequestService requestService, FolderService folderService) {
+  public FolderLayout(AppState appState, FolderService folderService) {
     this.appState = appState;
-    this.requestService = requestService;
     this.folderService = folderService;
 
     setWidthFull();
@@ -124,7 +121,8 @@ public class FolderLayout extends VerticalLayout {
         selectedFolder.getId(),
         selectedFolder.getUserId(),
         name,
-        selectedFolder.getCreatedOn()
+        selectedFolder.getCreatedOn(),
+        selectedFolder.getParentFolder()
     );
   }
 

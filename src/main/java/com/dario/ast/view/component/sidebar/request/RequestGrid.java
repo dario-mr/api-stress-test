@@ -1,12 +1,12 @@
 package com.dario.ast.view.component.sidebar.request;
 
-import static com.dario.ast.core.domain.RequestType.REQUEST;
 import static com.dario.ast.util.EventUtil.focusFolderName;
 import static com.dario.ast.util.EventUtil.focusRequestName;
 import static com.dario.ast.util.EventUtil.folderSelected;
 import static com.vaadin.flow.component.grid.dnd.GridDropMode.ON_TOP;
 import static com.vaadin.flow.component.icon.VaadinIcon.COPY_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.FILE_ADD;
+import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_ADD;
 import static com.vaadin.flow.component.icon.VaadinIcon.FOLDER_OPEN_O;
 import static com.vaadin.flow.component.icon.VaadinIcon.TRASH;
 
@@ -41,8 +41,11 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,7 +56,9 @@ import lombok.extern.slf4j.Slf4j;
 @CssImport(value = "./styles/request-grid.css", themeFor = "vaadin-grid")
 public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
-  private static final String DELETE_BUTTON_CLASS = "delete-button";
+  // TODO better icons
+
+  private static final String GRID_BUTTON_CLASS = "grid-button";
 
   private final RequestService requestService;
   private final AppState appState;
@@ -62,7 +67,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   private final FolderService folderService;
 
   private TreeDataProvider<RequestOrFolder> dataProvider = new TreeDataProvider<>(new TreeData<>());
-  private Request currentlyDraggedRequest;
+  private RequestOrFolder currentlyDraggedItem;
 
   public RequestGrid(
       RequestService requestService,
@@ -131,6 +136,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
     // create request button
     addCreateRequestColumn();
 
+    // create folder button
+    addCreateFolderColumn();
+
     // duplicate request button
     addDuplicateRequestColumn();
 
@@ -165,7 +173,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
     addItemClickListener(this::handleItemClick);
     addDragStartListener(this::handleDragStart);
-    addDragEndListener(event -> currentlyDraggedRequest = null);
+    addDragEndListener(event -> currentlyDraggedItem = null);
     addDropListener(this::handleDropEvent);
   }
 
@@ -211,10 +219,9 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   private void addCreateRequestColumn() {
     addColumn(new ComponentRenderer<>(item -> {
       if (item instanceof Folder folder) {
-        // TODO better icon
         var createButton = new Button(FILE_ADD.create(), e -> createRequest(folder));
         createButton.setTooltipText("Create request");
-        createButton.addClassName(DELETE_BUTTON_CLASS);
+        createButton.addClassName(GRID_BUTTON_CLASS);
         return createButton;
       }
 
@@ -223,6 +230,35 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         .setAutoWidth(true)
         .setFlexGrow(0)
         .setClassNameGenerator(item -> !(item instanceof Folder) ? "empty-cell" : "");
+  }
+
+  private void addCreateFolderColumn() {
+    addColumn(new ComponentRenderer<>(item -> {
+      if (item instanceof Folder parentFolder) {
+        var createButton = new Button(FOLDER_ADD.create(), e -> createFolder(parentFolder));
+        createButton.setTooltipText("Create folder");
+        createButton.addClassName(GRID_BUTTON_CLASS);
+        return createButton;
+      }
+
+      return noActionButton();
+    }))
+        .setAutoWidth(true)
+        .setFlexGrow(0)
+        .setClassNameGenerator(item -> !(item instanceof Folder) ? "empty-cell" : "");
+  }
+
+
+  private void createFolder(Folder parentFolder) {
+    var currentUserId = appState.getCurrentUser().getId();
+
+    try {
+      folderService.createFolder(currentUserId, parentFolder);
+    } catch (Exception ex) {
+      log.error("Error creating folder", ex);
+      ErrorNotification.show("Error creating folder");
+      throw ex;
+    }
   }
 
   private void createRequest(Folder parentFolder) {
@@ -242,7 +278,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
       if (item instanceof Request request) {
         var duplicateButton = new Button(COPY_O.create(), e -> duplicateRequest(request));
         duplicateButton.setTooltipText("Duplicate request");
-        duplicateButton.addClassName(DELETE_BUTTON_CLASS);
+        duplicateButton.addClassName(GRID_BUTTON_CLASS);
         return duplicateButton;
       }
 
@@ -273,7 +309,7 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
         }
       });
 
-      deleteButton.addClassName(DELETE_BUTTON_CLASS);
+      deleteButton.addClassName(GRID_BUTTON_CLASS);
       deleteButton.setTooltipText("Delete item");
       return deleteButton;
     }))
@@ -283,31 +319,48 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
   private void loadRequests() {
     var currentUserId = appState.getCurrentUser().getId();
-    var userRequestsByFolder = getUserRequestsByFolder(currentUserId);
+    var items = folderService.getRequestsAndFoldersByUserId(currentUserId);
 
     var treeData = new TreeData<RequestOrFolder>();
-    userRequestsByFolder.forEach((folder, requests) -> {
-      if (folder == null) {
-        requests.forEach(request -> treeData.addItem(null, request));
-      } else {
-        treeData.addItem(null, folder);
-        requests.forEach(request -> treeData.addItem(folder, request));
-      }
-    });
+
+    // Group children by parent
+    var childrenByParent = new HashMap<Folder, List<RequestOrFolder>>();
+    for (var item : items) {
+      var parent = item.getParentFolder();
+      childrenByParent.computeIfAbsent(parent, unused -> new ArrayList<>()).add(item);
+    }
+
+    // Recursively build tree starting at root level (parentId == null)
+    var addedItems = new HashSet<RequestOrFolder>();
+    addTreeItemsRecursively(null, childrenByParent, treeData, addedItems);
 
     dataProvider = new TreeDataProvider<>(treeData);
     setDataProvider(dataProvider);
-
     selectFirstRequest();
   }
 
-  private Map<Folder, List<Request>> getUserRequestsByFolder(long currentUserId) {
-    try {
-      return requestService.getFoldersByUserIdAndTypeAndStatus(currentUserId, REQUEST, true);
-    } catch (Exception ex) {
-      log.error("Error fetching requests for user [{}]", currentUserId, ex);
-      ErrorNotification.show("Error fetching requests");
-      throw ex;
+  private void addTreeItemsRecursively(
+      Folder parent,
+      Map<Folder, List<RequestOrFolder>> childrenByParent,
+      TreeData<RequestOrFolder> treeData,
+      Set<RequestOrFolder> addedItems
+  ) {
+    var children = childrenByParent.get(parent);
+    if (children == null) {
+      return;
+    }
+
+    for (RequestOrFolder child : children) {
+      if (addedItems.contains(child)) {
+        continue;
+      }
+
+      treeData.addItem(parent, child);
+      addedItems.add(child);
+
+      if (child instanceof Folder folderChild) {
+        addTreeItemsRecursively(folderChild, childrenByParent, treeData, addedItems);
+      }
     }
   }
 
@@ -358,12 +411,13 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   }
 
   private void addFolder(Folder folder) {
-    dataProvider.getTreeData().addRootItems(folder);
+    dataProvider.getTreeData().addItem(folder.getParentFolder(), folder);
     dataProvider.refreshAll();
 
     requestLayout.setVisible(false);
     folderLayout.setVisible(true);
 
+    expand(folder.getParentFolder());
     selectFolder(folder);
   }
 
@@ -442,45 +496,119 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   }
 
   private void handleDragStart(GridDragStartEvent<RequestOrFolder> event) {
-    // only allow dragging requests
-    var draggedItem = event.getDraggedItems().stream().findFirst().orElse(null);
-    if (draggedItem instanceof Request request) {
-      currentlyDraggedRequest = request;
-    } else {
-      currentlyDraggedRequest = null;
-    }
+    currentlyDraggedItem = event.getDraggedItems().stream().findFirst().orElse(null);
   }
 
   private void handleDropEvent(GridDropEvent<RequestOrFolder> event) {
-    if (currentlyDraggedRequest == null) {
+    if (currentlyDraggedItem == null) {
       return;
     }
 
     var dropTarget = event.getDropTargetItem().orElse(null);
 
     if (dropTarget instanceof Folder targetFolder) {
-      moveRequestToFolder(currentlyDraggedRequest, targetFolder);
+      moveItemToFolder(currentlyDraggedItem, targetFolder);
     }
   }
 
-  private void moveRequestToFolder(Request request, Folder newFolder) {
+  private void moveItemToFolder(RequestOrFolder item, Folder newFolder) {
+    if (item instanceof Request request) {
+      moveRequestToFolder(request, newFolder);
+    } else if (item instanceof Folder folder) {
+      moveFolderToFolder(folder, newFolder);
+    }
+  }
+
+  private void moveRequestToFolder(Request request, Folder folder) {
     try {
       // Update in backend
-      requestService.updateFolder(request.getConfigParams().getRequestId(), newFolder);
+      requestService.updateFolder(request.getConfigParams().getRequestId(), folder);
 
       // Update UI
       var treeData = dataProvider.getTreeData();
       treeData.removeItem(request);
-      request.setFolder(newFolder);
-      treeData.addItem(newFolder, request);
+      request.setFolder(folder);
+      treeData.addItem(folder, request);
 
       dataProvider.refreshAll();
 
-      expand(newFolder);
+      expand(folder);
       selectRequest(request);
     } catch (Exception ex) {
       log.error("Failed to move request to folder", ex);
       ErrorNotification.show("Failed to move request to folder");
+    }
+  }
+
+  /**
+   * Moves a folder, together with all nested folders and requests, into {@code newFolder}.
+   * <p>
+   * If {@code newFolder == null}, the folder is moved to the root level.
+   */
+  private void moveFolderToFolder(Folder currentFolder, Folder newFolder) {
+    try {
+      // Update in backend
+      currentFolder.setParentFolder(newFolder);
+      folderService.save(currentFolder);
+
+      // Snapshot the whole sub‑tree
+      var treeData = dataProvider.getTreeData();
+      var snapshot = new HashMap<Folder, List<RequestOrFolder>>();
+      snapshotSubtree(currentFolder, treeData, snapshot);
+
+      // Remove the folder (this also detaches its children) and re-attach it at the new location
+      treeData.removeItem(currentFolder);
+      treeData.addItem(newFolder, currentFolder);
+
+      // Restore the saved children recursively
+      restoreSubtree(currentFolder, treeData, snapshot);
+
+      // refresh data provider and select moved folder
+      dataProvider.refreshAll();
+      expand(newFolder);
+      selectFolder(currentFolder);
+    } catch (Exception ex) {
+      log.error("Failed to move folder", ex);
+      ErrorNotification.show("Failed to move folder");
+    }
+  }
+
+  /**
+   * Saves the entire sub‑tree of {@code folder} into {@code snapshot}.
+   */
+  private void snapshotSubtree(
+      Folder folder,
+      TreeData<RequestOrFolder> treeData,
+      Map<Folder, List<RequestOrFolder>> snapshot
+  ) {
+    var children = new ArrayList<>(treeData.getChildren(folder));
+    snapshot.put(folder, children);
+
+    for (var child : children) {
+      if (child instanceof Folder childFolder) {
+        snapshotSubtree(childFolder, treeData, snapshot);
+      }
+    }
+  }
+
+  /**
+   * Re‑attaches the sub‑tree recorded in {@code snapshot}.
+   */
+  private void restoreSubtree(
+      Folder folder,
+      TreeData<RequestOrFolder> treeData,
+      Map<Folder, List<RequestOrFolder>> snapshot
+  ) {
+    var children = snapshot.get(folder);
+    if (children == null) {
+      return;
+    }
+
+    for (var child : children) {
+      treeData.addItem(folder, child);
+      if (child instanceof Folder childFolder) {
+        restoreSubtree(childFolder, treeData, snapshot);
+      }
     }
   }
 
