@@ -59,7 +59,6 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
   // TODO better icons
   // TODO drag and drop with new nested folders design
   // TODO projections to avoid transactional everywhere?
-  // TODO request 3 is contained by request 1, instead of folder 1 ?!
   // TODO create folder does not work for nested folders
 
   private static final String GRID_BUTTON_CLASS = "grid-button";
@@ -363,7 +362,10 @@ public class RequestGrid extends TreeGrid<RequestOrFolder> {
 
       treeData.addItem(parent, child);
       addedItems.add(child);
-      addTreeItemsRecursively(child, childrenByParentId, treeData, addedItems);
+
+      if (child instanceof Folder) {
+        addTreeItemsRecursively(child, childrenByParentId, treeData, addedItems);
+      }
     }
   }
 
