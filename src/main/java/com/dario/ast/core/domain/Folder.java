@@ -19,9 +19,15 @@ public final class Folder implements RequestOrFolder {
   private Long userId;
   private String name;
   private Instant createdOn;
+  private Folder parentFolder;
 
-  public static Folder defaultFolder(long userId) {
-    return new Folder(null, userId, "New folder", Instant.now());
+  @Override
+  public Folder getParentFolder() {
+    return parentFolder;
+  }
+
+  public static Folder defaultFolder(long userId, Folder parentFolder) {
+    return new Folder(null, userId, "New folder", Instant.now(), parentFolder);
   }
 
   public void updateFrom(Folder other) {
@@ -29,6 +35,6 @@ public final class Folder implements RequestOrFolder {
     this.userId = other.userId;
     this.name = other.name;
     this.createdOn = other.createdOn;
+    this.parentFolder = other.parentFolder;
   }
-
 }

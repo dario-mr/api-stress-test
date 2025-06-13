@@ -11,7 +11,6 @@ import com.dario.ast.core.domain.RequestType;
 import com.dario.ast.core.domain.RunParams;
 import com.dario.ast.repository.RequestRepository;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,11 +23,6 @@ public class RequestService {
 
   public List<Request> getByUserIdAndType(long userId, RequestType requestType) {
     return requestRepository.findByUserIdAndType(userId, requestType);
-  }
-
-  public Map<Folder, List<Request>> getFoldersByUserIdAndTypeAndStatus(
-      long userId, RequestType requestType, boolean active) {
-    return requestRepository.getRequestsByUserIdAndTypeAndStatusGroupedByFolder(userId, requestType, active);
   }
 
   public Optional<Request> getById(Long id) {
