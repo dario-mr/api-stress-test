@@ -32,7 +32,6 @@ public class FolderService {
   }
 
   public void delete(long folderId) {
-    requestRepository.deleteByFolderId(folderId);
     folderRepository.delete(folderId);
   }
 
