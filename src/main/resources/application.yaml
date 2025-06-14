@@ -16,7 +16,7 @@ spring.security.oauth2.client.registration.google:
   authorization-grant-type: authorization_code
 
 # Security
-security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**
+security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health
 app.encryption.secret-key: ${ENCRYPTION_KEY}
 
 logging.level.com.dario.ast: DEBUG
