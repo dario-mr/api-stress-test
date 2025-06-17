@@ -25,23 +25,26 @@ const BACKEND_LOG_FILE = fs.openSync(
     path.join(
         app.isPackaged ? app.getPath('logs') : path.join(ROOT, 'electron'),
         CONFIG.backendLogName
-    ),
-    'a'
+    ), 'a'
+);
+const FRONTEND_LOG_PATH = path.join(
+    app.isPackaged ? app.getPath('logs') : path.join(ROOT, 'electron'),
+    CONFIG.frontendLogName
 );
 const ENV = parseEnvFile(path.join(app.getPath('home'), CONFIG.envFileName));
 
-let splashWindow, mainWindow, backendProcess;
+let splashWindow, backendProcess;
 
 app.on('ready', () => {
   redirectConsoleToFile();
 
-  splashWindow = createSplash();
-  backendProcess = launchBackend();
+  splashWindow = createSplashWindow();
+  backendProcess = startBackend();
 
   waitForBackendReady(CONFIG.appUrl + "/actuator/health")
   .then(() => {
     splashWindow.close();
-    mainWindow = createMainWindow();
+    createMainWindow();
   })
   .catch(err => {
     console.error('Backend failed to startup: ', err);
@@ -64,7 +67,7 @@ app.on('window-all-closed', () => {
   });
 });
 
-function launchBackend() {
+function startBackend() {
   const javaArgs = [...toSystemProps(ENV), '-jar', JAR_PATH];
   console.log('Java command:', JAVA_PATH, maskSecrets(javaArgs).join(' '));
 
@@ -73,7 +76,7 @@ function launchBackend() {
   });
 }
 
-function createSplash() {
+function createSplashWindow() {
   const window = new BrowserWindow({
     width: 400, height: 300,
     icon: ICON_PATH,
@@ -82,6 +85,7 @@ function createSplash() {
 
   window.loadFile(path.join(ROOT, CONFIG.splashScreenPath));
   window.once('ready-to-show', () => window.show());
+
   return window;
 }
 
@@ -97,7 +101,6 @@ function createMainWindow() {
 
   window.loadURL(CONFIG.appUrl);
   window.on('closed', () => console.log('User closed the main window'));
-  return window;
 }
 
 function waitForBackendReady(url, timeoutMs = CONFIG.waitTimeoutMs, intervalMs = CONFIG.waitIntervalMs) {
@@ -144,13 +147,7 @@ function parseEnvFile(filePath) {
 }
 
 function redirectConsoleToFile() {
-  const FRONTEND_LOG_STREAM = fs.createWriteStream(
-      path.join(
-          app.isPackaged ? app.getPath('logs') : path.join(ROOT, 'electron'),
-          CONFIG.frontendLogName
-      ),
-      {flags: 'a'}
-  );
+  const FRONTEND_LOG_STREAM = fs.createWriteStream(FRONTEND_LOG_PATH, {flags: 'a'});
 
   const write = stream => (...args) => {
     const timestamp = new Date().toISOString();
