@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Starting...</title>
@@ -9,14 +10,16 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      font-family: system-ui, 'Segoe UI', sans-serif;
-      background: -webkit-linear-gradient(120deg, #1e3c72 30%, #3975da);
-      color: white;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      animation: fadeIn 0.5s ease-in-out;
+      overflow: hidden;
+
+      background: linear-gradient(120deg, #1e3c72, #4183f3);
+      background-size: 400% 400%;
+      animation: fadeIn 0.5s ease-in-out forwards;
     }
 
     @keyframes fadeIn {
@@ -30,38 +33,48 @@
       }
     }
 
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 200%;
+      background-image: radial-gradient(white 1px, transparent 2px);
+      background-size: 20px 20px;
+      opacity: 20%;
+      pointer-events: none;
+      animation: drift 12s linear infinite;
+    }
+
+    @keyframes drift {
+      0% {
+        transform: translate(0, 0);
+      }
+      100% {
+        transform: translate(-25%, -25%);
+      }
+    }
+
     img {
       width: 100px;
       margin-bottom: 20px;
-    }
-
-    .spinner {
-      border: 6px solid rgba(255, 255, 255, 0.2);
-      border-top: 6px solid #fff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
     }
 
     h2 {
       margin: 0;
       font-weight: 400;
-      font-size: 18px;
+      font-size: 20px;
       opacity: 0.9;
+      color: white;
     }
   </style>
 </head>
+
 <body>
 <img src="logo.png" alt="App Logo"/>
-<div class="spinner"></div>
-<h2>Launching app...</h2>
+<h2>API Stress Test</h2>
 </body>
+
 </html>
