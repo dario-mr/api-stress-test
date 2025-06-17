@@ -6,8 +6,6 @@ spring:
     username: postgres.rsuhstqfoaoabfzgezxr
     password: ${DB_PASSWORD}
 
-# Tailscale-specific configurations
-# this is necessary because on prod the app is deployed on https://xyz/api-stress-test/
-server.servlet.context-path: /api-stress-test/
-# forward tailscale headers to the spring app
-server.forward-headers-strategy: framework
+# Tailscale-specific configurations, necessary because on prod the app is deployed on https://xyz/api-stress-test/
+#server.servlet.context-path: /api-stress-test/
+#server.forward-headers-strategy: framework

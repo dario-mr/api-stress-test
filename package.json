@@ -1,5 +1,49 @@
 {
-  "name": "no-name",
+  "name": "api-stress-test",
+  "productName": "API Stress Test",
+  "version": "1.0.0",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "prepare-jar": "mvn clean package && cp target/*.jar electron/app.jar",
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.dario.ast",
+    "files": [
+      "electron/main.cjs",
+      "electron/icon.icns"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/app.jar",
+        "to": "electron/app.jar"
+      },
+      {
+        "from": "electron/jre",
+        "to": "electron/jre"
+      },
+      {
+        "from": "electron/splash.html",
+        "to": "electron/splash.html"
+      },
+      {
+        "from": "electron/logo.png",
+        "to": "electron/logo.png"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "dmg",
+      "icon": "electron/icon.icns",
+      "identity": null,
+      "entitlements": "entitlements.mac.plist",
+      "extendInfo": {
+        "CFBundleDisplayName": "API Stress Test",
+        "CFBundleName": "API Stress Test"
+      }
+    }
+  },
   "license": "UNLICENSED",
   "type": "module",
   "dependencies": {
@@ -34,6 +78,8 @@
     "@types/react-dom": "18.3.0",
     "@vitejs/plugin-react": "4.3.1",
     "async": "3.2.6",
+    "electron": "^36.4.0",
+    "electron-builder": "^26.0.12",
     "glob": "10.4.5",
     "rollup-plugin-brotli": "3.1.0",
     "rollup-plugin-visualizer": "5.12.0",
@@ -91,7 +137,7 @@
       "workbox-core": "7.1.0",
       "workbox-precaching": "7.1.0"
     },
-    "hash": "065b8a62353c462b7dfb9486ce0650d3356ff20b3322d306d7d873773670e0a1"
+    "hash": "e8c76240f815f243c69d9a9c564274546b9ce76e2954021a5870ebe0efa6e744"
   },
   "overrides": {
     "@vaadin/bundles": "$@vaadin/bundles",
@@ -116,5 +162,17 @@
     "@polymer/paper-button": "$@polymer/paper-button",
     "lit-html": "$lit-html",
     "@polymer/paper-icon-button": "$@polymer/paper-icon-button"
-  }
+  },
+  "description": "App that helps you perform stress test of your APIs, or just run some requests.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dario-mr/api-stress-test.git"
+  },
+  "keywords": [
+  ],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/dario-mr/api-stress-test/issues"
+  },
+  "homepage": "https://github.com/dario-mr/api-stress-test#readme"
 }

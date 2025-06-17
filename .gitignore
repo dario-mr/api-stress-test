@@ -14,3 +14,7 @@ frontend/index.html
 /webpack.generated.js
 vite.generated.ts
 src/main/bundles
+
+dist/
+electron/*.log
+electron/*.jar
