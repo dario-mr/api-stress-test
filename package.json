@@ -6,7 +6,7 @@
   "scripts": {
     "prepare-jar": "mvn clean package && cp target/*.jar electron/app.jar",
     "start": "electron .",
-    "dist": "electron-builder"
+    "package": "electron-builder"
   },
   "build": {
     "appId": "com.dario.ast",

@@ -1,6 +1,6 @@
 server:
   port: ${PORT:8083}
-  servlet.session.timeout: 30d
+  forward-headers-strategy: framework # honor the original external request context (host, scheme, prefix)
 
 spring:
   application.name: api-stress-test
@@ -9,11 +9,12 @@ spring:
 
 # Google OAuth
 oath.google.url: /oauth2/authorization/google
-spring.security.oauth2.client.registration.google:
-  client-id: ${OAUTH_CLIENT_ID}
-  client-secret: ${OAUTH_CLIENT_SECRET}
-  scope: openid, profile, email
-  authorization-grant-type: authorization_code
+spring.security.oauth2.client.registration:
+  google:
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    scope: openid, profile, email
+    authorization-grant-type: authorization_code
 
 # Security
 security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health

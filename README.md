@@ -58,10 +58,10 @@ npm run prepare-jar
 npm run start
 ```
 
-### Build macOS app
+### Package macOS app
 
 ```shell
-npm run dist
+npm run package
 ```
 
 Then, install it as a normal `dmg` app.
