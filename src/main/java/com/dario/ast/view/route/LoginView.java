@@ -1,5 +1,6 @@
 package com.dario.ast.view.route;
 
+import com.dario.ast.util.PathResolver;
 import com.dario.ast.view.component.headline.Headline;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -9,7 +10,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -22,10 +22,8 @@ public class LoginView extends VerticalLayout {
   public LoginView(@Value("${oath.google.url}") String googleOAuthUrl) {
     setAlignItems(Alignment.CENTER);
 
-    // dynamically get the context path
-    var contextPath = VaadinServlet.getCurrent().getServletContext().getContextPath();
-
-    var googleIcon = new Image(contextPath + "/images/google.png", "Google Logo");
+    var googleIconPath = PathResolver.resolve("/images/google.png");
+    var googleIcon = new Image(googleIconPath, "Google Logo");
     googleIcon.setHeight("35px");
     googleIcon.setWidth("35px");
 
@@ -35,8 +33,11 @@ public class LoginView extends VerticalLayout {
 
     var loginButton = new Button(buttonContent);
     loginButton.addClassNames("google-login-button");
-    loginButton.addClickListener(e -> getUI().ifPresent(ui ->
-        ui.getPage().executeJs("window.location.href = $0;", contextPath + googleOAuthUrl)));
+    loginButton.addClickListener(e -> {
+      var target = PathResolver.resolve(googleOAuthUrl);
+      getUI().ifPresent(ui ->
+          ui.getPage().executeJs("window.location.href = $0;", target));
+    });
 
     add(
         new Headline(),
