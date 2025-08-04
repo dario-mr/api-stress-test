@@ -1,5 +1,6 @@
 server:
   port: ${PORT:8083}
+  servlet.session.timeout: 30d
   forward-headers-strategy: framework # honor the original external request context (host, scheme, prefix)
 
 spring:
