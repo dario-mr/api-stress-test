@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.1</version>
+    <version>3.5.4</version>
     <relativePath/>
   </parent>
 
@@ -19,7 +19,7 @@
   <properties>
     <java.version>21</java.version>
 
-    <vaadin.version>24.4.11</vaadin.version>
+    <vaadin.version>24.8.5</vaadin.version>
     <clipboard-helper.version>2.0.0</clipboard-helper.version>
     <grid-pagination.version>4.0.1</grid-pagination.version>
   </properties>
