@@ -19,7 +19,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class RequestHeaderEntity {
 
-  @Column(name = "header_value")
+  @Column(name = "header_value", length = 2048)
   private String value;
 
   @Column(name = "created_on")

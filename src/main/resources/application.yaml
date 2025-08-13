@@ -8,6 +8,9 @@ spring:
   profiles.active: ${PROFILE:prod}
   config.import: optional:file:.env[.properties] # enable scanning of .env file
 
+management:
+  endpoints.web.exposure.include: health,info
+
 # Google OAuth
 oath.google.url: /oauth2/authorization/google
 spring.security.oauth2.client.registration:
@@ -18,7 +21,7 @@ spring.security.oauth2.client.registration:
     authorization-grant-type: authorization_code
 
 # Security
-security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health
+security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health,/actuator/info
 app.encryption.secret-key: ${ENCRYPTION_KEY}
 
 logging.level.com.dario.ast: DEBUG
