@@ -27,7 +27,7 @@ spring.security.oauth2.client.registration:
     authorization-grant-type: authorization_code
 
 # Security
-security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health,/actuator/info
+security.whitelist.ant-patterns: /icons/**,/images/**,/h2-console/**,/actuator/health,/actuator/info,/actuator/prometheus
 app.encryption.secret-key: ${ENCRYPTION_KEY}
 
 logging.level.com.dario.ast: DEBUG
