@@ -10,7 +10,9 @@ The app can either be run as a java app or an electron app, find instructions be
 - `PROFILE`: spring profile to apply (default: `prod`)
     - `dev`: in-memory DB is used
     - `prod`: prod DB is used
-- `DB_PASSWORD`: database password (default: `null`)
+- `DB_USER`: Database user (default: `postgres.rsuhstqfoaoabfzgezxr`)
+- `DB_PASSWORD`: Database password (default: `<empty>`)
+- `DB_PORT`: Database port (default: `6543`)
 - `OAUTH_CLIENT_ID`: google OAuth client ID (default: `null`)
 - `OAUTH_CLIENT_SECRET`: google OAuth client secret (default: `null`)
 - `DEV_REFRESH_TOKEN`: google refresh token, optional, only for `dev` profile (default: `null`)
@@ -29,8 +31,8 @@ java -jar target/app.jar
 
 ### Pre-requisites
 
-- `.api-stress-test.env` file is present in the user's root directory (`~/.api-stress-test.env`) containing all
-  necessary environment variables
+- `.api-stress-test.env` file is present in the user's root directory (`~/.api-stress-test.env`)
+  containing all necessary environment variables
 
 ### Generate icon from png
 
@@ -68,9 +70,11 @@ Then, install it as a normal `dmg` app.
 
 ## Notes
 
-- `CASCADE` constraints do not work properly for nested records in `H2` database (dev profile), therefore deleting
+- `CASCADE` constraints do not work properly for nested records in `H2` database (dev profile),
+  therefore deleting
   folders fails. I do not care enough to fix this anytime soon.
-- how to generate a slim JRE (using the java version in your machine) to be shipped with the electron app:
+- how to generate a slim JRE (using the java version in your machine) to be shipped with the
+  electron app:
 
 ```shell
 rm -rf jre

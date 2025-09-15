@@ -9,7 +9,13 @@ spring:
   config.import: optional:file:.env[.properties] # enable scanning of .env file
 
 management:
-  endpoints.web.exposure.include: health,info
+  endpoints:
+    web.exposure.include: health,info,prometheus
+  endpoint:
+    health.probes.enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 # Google OAuth
 oath.google.url: /oauth2/authorization/google

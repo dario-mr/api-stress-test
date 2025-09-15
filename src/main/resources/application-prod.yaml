@@ -2,10 +2,6 @@ vaadin.productionMode: true
 
 spring:
   datasource:
-    url: jdbc:postgresql://aws-0-eu-central-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
-    username: postgres.rsuhstqfoaoabfzgezxr
+    url: jdbc:postgresql://aws-0-eu-central-1.pooler.supabase.com:${DB_PORT:6543}/postgres?prepareThreshold=0
+    username: ${DB_USER:postgres.rsuhstqfoaoabfzgezxr}
     password: ${DB_PASSWORD}
-
-# Tailscale-specific configurations, necessary because on prod the app is deployed on https://xyz/api-stress-test/
-#server.servlet.context-path: /api-stress-test/
-#server.forward-headers-strategy: framework
