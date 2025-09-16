@@ -66,7 +66,7 @@ npm run start
 npm run package
 ```
 
-Then, install it as a normal `dmg` app.
+Then, install it as a normal `dmg` app from the `dist` directory.
 
 ## Notes
 
