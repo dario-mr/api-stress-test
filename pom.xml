@@ -7,20 +7,20 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.6</version>
+    <version>3.5.8</version>
     <relativePath/>
   </parent>
 
   <groupId>com.dario</groupId>
   <artifactId>api-stress-test</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 
   <name>API Stress Test</name>
 
   <properties>
     <java.version>21</java.version>
 
-    <vaadin.version>24.9.3</vaadin.version>
+    <vaadin.version>24.9.6</vaadin.version>
     <clipboard-helper.version>2.0.0</clipboard-helper.version>
     <grid-pagination.version>4.0.1</grid-pagination.version>
     <logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
