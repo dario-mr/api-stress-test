@@ -134,7 +134,8 @@
   "overrides": {
     "electron-builder": {
       "form-data": "4.0.4",
-      "tmp": "0.2.4"
+      "tmp": "0.2.4",
+      "glob": "10.5.0"
     },
     "@vaadin/bundles": "$@vaadin/bundles",
     "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
